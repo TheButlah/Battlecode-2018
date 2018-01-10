@@ -1,6 +1,14 @@
 # Scaffold for Battlecode 2018
 
-This is how you run games!  To start, install docker, and make sure it's started.  
+## How to get the code
+Simply run the following to clone the repo:
+```bash
+git clone --recurse-submodules git@github.com:TheButlah/Battlecode-2018.git
+```
+
+## How to run the code
+
+To start, install docker, and make sure it's started.  
 
 ### Unix instructions
 
