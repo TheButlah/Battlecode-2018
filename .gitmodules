@@ -1,0 +1,3 @@
+[submodule "FuzzyWuzzy"]
+	path = FuzzyWuzzy
+	url = git@github.com:TheButlah/FuzzyWuzzy.git
