@@ -74,24 +74,23 @@ public class PathFinding {
         if (!visited[r][c]) {
             if (WEIGHT[r][c] != distance[r][c]) {
                 distance[r][c] = Math.min(distance[r][c], distance[row][col] + WEIGHT[r][c]);
-                if (!queue.contains(new Node(r,c))) queue.add(new Node(r,c));
+                if (!queue.contains(new Node(r,c))) {
+                    queue.add(new Node(r,c));
+                }
+                else {
+                    queue.remove(new Node(r, c));
+                    queue.add(new Node(r, c));
+                }
             }
         }
     }
 
     private static int nextPosition() {
-        int min = Integer.MAX_VALUE;
-        int pos = 0;
-
-        for (Node n : queue) {
-            int current = distance[n.r][n.c];
-
-            if (current < min) {
-                min = current;
-                pos = n.r * LEN + n.c;
-            }
+        if (queue.isEmpty()) {
+            return 0;
         }
-
+        Node closest = queue.peek();
+        int pos = closest.r * LEN + closest.c;
         return pos;
     }
 
