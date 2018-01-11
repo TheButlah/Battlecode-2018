@@ -32,3 +32,9 @@ jar {
     }
     dependsOn shadowJar  //By default jar doesn't depend on this so we add it
 }
+
+task copyJar(type: Copy) {
+    from shadowJar
+    into "examplefuncsplayer-java"
+}
+build.dependsOn copyJar
