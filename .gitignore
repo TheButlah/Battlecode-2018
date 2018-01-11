@@ -17,3 +17,9 @@ out/
 
 #OSX Files
 .DS_Store
+
+#Battlecode Replays
+*.bc18
+
+#Generated fat jar
+examplefuncsplayer-java/*.jar

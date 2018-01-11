@@ -28,13 +28,12 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'org.battlecode.bc18.Player'
+        attributes 'Main-Class': 'org.battlecode.bc18.bots.NoobBot'
     }
-    dependsOn shadowJar  //By default jar doesn't depend on this so we add it
 }
 
 task copyJar(type: Copy) {
-    from shadowJar
+    from shadowJar //Instead of giving a path, this gets the path that the jar is from shadowJar
     into "examplefuncsplayer-java"
 }
-build.dependsOn copyJar
+build.dependsOn shadowJar, copyJar
