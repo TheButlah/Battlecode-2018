@@ -1,19 +1,17 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import bc.Unit;
-import bc.UnitType;
+import bc.*;
+import static org.battlecode.bc18.Utils.gc;
 
 /**
  * Superclass for all the different types of bots.
  */
 public abstract class Bot {
 
-    public final int ID;
-    public final UnitType TYPE;
+    protected final int id;
 
-    public Bot(Unit u) {
-        this.ID = u.id();
-        this.TYPE = u.unitType();
+    public Bot(int id) {
+        this.id = id;
     }
 
     /**
@@ -26,17 +24,17 @@ public abstract class Bot {
         if (this == obj) return true; //short circuit
         if (!(obj instanceof Bot)) return false;
         Bot other = (Bot) obj;
-        return this.ID == other.ID;
+        return this.id == other.id;
     }
 
     @Override
     public int hashCode() {
-        return ID;
+        return id;
     }
 
     @Override
     public String toString() {
-        return "[" + TYPE + ":" + ID + "]";
+        return "[" + getType() + ":" + this.id + "]";
     }
 
     /**
@@ -45,6 +43,13 @@ public abstract class Bot {
      */
     protected void println(Object obj) {
         System.out.println(this + " " + obj);
+    }
+
+    public abstract UnitType getType();
+
+    public Unit getAsUnit() {
+        return gc.unit(id);
+        //TODO: cache this somehow
     }
 
 }

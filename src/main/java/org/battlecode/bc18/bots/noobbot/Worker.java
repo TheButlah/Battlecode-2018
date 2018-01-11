@@ -1,18 +1,22 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import bc.Direction;
-import bc.Unit;
-import bc.UnitType;
-import bc.bc;
+import bc.*;
+import org.battlecode.bc18.Utils;
 
-import static org.battlecode.bc18.bots.noobbot.Main.gc;
+import java.util.HashSet;
+
+import static org.battlecode.bc18.Utils.bots;
+import static org.battlecode.bc18.Utils.gc;
 
 public class Worker extends Bot {
-    
-    private boolean hasBuiltFactory = false;
 
-    public Worker(Unit u) {
-        super(u);
+    public static final UnitType TYPE = UnitType.Worker;
+    
+    private static int factoryID = -1; //-1 indicates no factory has been placed
+    private static boolean builtFactory = false;
+
+    public Worker(int id) {
+        super(id);
     }
 
     @Override
@@ -21,42 +25,80 @@ public class Worker extends Bot {
         // if the factory has not been built, replicate if can and help building a factory.
         // else, move randomly.
         // try mining if walked over the Karbonite.
-
         long turn = gc.round();
 
-        // for each direction, find the first availability for building a blueprint for factory.
-        // if it can put down a blueprint, it performs gc.blueprint (although we don't know how to access
-        // blueprint_id, which needs to get accessed in order to call gc.build() function.
-        for (Direction dir : Direction.values()) {
-            if (!hasBuiltFactory && gc.karbonite() >= bc.bcUnitTypeBlueprintCost(UnitType.Factory)) {
-                if (gc.canBlueprint(this.ID, UnitType.Factory, dir)) {
-                    gc.blueprint(this.ID, UnitType.Factory, dir);
+        // for each direction, find the first availability spot for a factory.
+        for (Direction dir : Main.dirs) {
+            if (!hasPlacedFactory() && gc.canBlueprint(this.id, UnitType.Factory, dir)) {
+                println("Blueprinting");
+                gc.blueprint(this.id, UnitType.Factory, dir);
+                Unit factory = gc.senseUnitAtLocation(getAsUnit().location().mapLocation().add(dir));
+                factoryID = factory.id();
+                bots.put(factoryID, new Factory(factoryID));
+                return;
+            }
+        }
+
+        // building a factory based on the blueprint created.
+        if (gc.canBuild(this.id, factoryID)) {
+            println("Building");
+            gc.build(this.id, factoryID);
+            return;
+        }
+
+        if (!builtFactory &&
+            gc.canSenseUnit(factoryID) &&
+            Utils.toBool(gc.unit(factoryID).structureIsBuilt())) builtFactory = true;
+
+        // replicate if factory not yet built
+        if (hasPlacedFactory() && !builtFactory) { //factory placed but not built
+            println("factory building");
+            MapLocation factoryLoc = bots.get(factoryID).getAsUnit().location().mapLocation();
+            for (Direction dir : Main.dirs) {
+                //only replicate into spots adjacent to factory (since I don't feel like using pathfinding yet)
+                if (!(getAsUnit().location().mapLocation().add(dir).isAdjacentTo(factoryLoc))) continue;
+                println("found spot next to factory");
+                if (gc.canReplicate(this.id, dir)) {
+                    println("Replicating");
+                    gc.replicate(this.id, dir);
+                    Unit newWorker = gc.senseUnitAtLocation(getAsUnit().location().mapLocation().add(dir));
+                    bots.put(newWorker.id(), new Worker(newWorker.id()));
+                    return;
                 }
             }
         }
 
-        int blueprint_id = 1; // ??
 
-        // we need to check whether this unit has already performed an action this turn.
-        // If not, it will have one of the following options to perform.
-
-        // building a factory based on the blueprint created.
-        if (gc.canBuild(this.ID, blueprint_id)) {
-            gc.build(this.ID, blueprint_id);
-        }
-
-        // or move randomly.
+        // if can see Karbonite, mine it
         for (Direction dir : Direction.values()) {
-            if (gc.canReplicate(this.ID, dir)) {
-                gc.replicate(this.ID, dir);
+            if (gc.canHarvest(this.id, dir)) {
+                println("Harvesting'");
+                gc.harvest(this.id, dir);
+                return;
             }
         }
 
-        // if stepped on the Karbonite, it will try mining up to its limit.
-        for (Direction dir : Direction.values()) {
-            if (gc.canHarvest(this.ID, dir)) {
-                gc.harvest(this.ID, dir);
+        //Move randomly
+        if (gc.isMoveReady(this.id)) {
+            int rand = Utils.rand.nextInt(Main.dirs.length);
+            for (int i=0; i<Main.dirs.length; i++) {
+                Direction dir = Main.dirs[(i + rand) % Main.dirs.length]; //Cycle through based on random offset
+                if (gc.canMove(this.id, dir)) {
+                    //println("Moving");
+                    gc.moveRobot(this.id, dir);
+                    return;
+                }
             }
         }
+
+    }
+
+    @Override
+    public UnitType getType() {
+        return Worker.TYPE;
+    }
+
+    private boolean hasPlacedFactory() {
+        return factoryID != -1;
     }
 }

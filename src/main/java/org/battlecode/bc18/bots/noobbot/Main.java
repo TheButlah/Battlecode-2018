@@ -1,70 +1,64 @@
 package org.battlecode.bc18.bots.noobbot;
 
 import bc.*;
-
-import java.util.HashMap;
+import org.battlecode.bc18.Utils;
+import static org.battlecode.bc18.Utils.gc;
 
 public class Main {
 
-    public static final HashMap<Integer, Bot> bots = new HashMap<>();
-    public static GameController gc;
+    public static final Direction[] dirs = Direction.values();
 
     public static void main(String[] args) {
-        /*
-        // MapLocation is a data structure you'll use a lot.
-        MapLocation loc = new MapLocation(Planet.Earth, 10, 20);
-        System.out.println("loc: "+loc+", one step to the Northwest: "+loc.add(Direction.Northwest));
-        System.out.println("loc x: "+loc.getX());
-
-        // One slightly weird thing: some methods are currently static methods on a static class called bc.
-        // This will eventually be fixed :/
-        System.out.println("Opposite of " + Direction.North + ": " + bc.bcDirectionOpposite(Direction.North));
-        */
-
         // Connect to the manager, starting the game
         gc = new GameController();
 
         while (true) {
-            System.out.println("Current round: "+gc.round());
+            System.out.println("Current round: " + gc.round());
             // VecUnit is a class that you can think of as similar to ArrayList<Unit>, but immutable.
             VecUnit units = gc.myUnits();
             for (int i = 0; i < units.size(); i++) {
                 try { //Avoid breaking the loop leading to instant loss
-                    Unit unit = units.get(i);
+                    Unit unit = units.get(i);  //Dont try to hold a reference to this, it
                     UnitType type = unit.unitType();
                     int id = unit.id();
-                    Bot bot = bots.get(id);
+                    Bot bot = Utils.bots.get(id);
                     if (bot == null) {
                         bot = makeBot(unit);
-                        bots.put(id, bot);
+                        Utils.bots.put(id, bot);
                     }
                     bot.act();
                 } catch (Exception e){
                     e.printStackTrace();
                 }
             }
+            gc.nextTurn();
         }
     }
 
-    private static Bot makeBot(Unit unit) throws Exception {
+    /**
+     * Constructs a Bot object based off of a Unit.
+     * @exception RuntimeException Occurs when `unit.unitType()` is not recognized.
+     */
+    private static Bot makeBot(Unit unit) throws RuntimeException {
         UnitType type = unit.unitType();
+        int id = unit.id();
         switch(type) {
             case Worker:
-                return new Worker(unit);
+                return new Worker(id);
             case Knight:
-                return new Knight(unit);
+                return new Knight(id);
             case Ranger:
-                return new Ranger(unit);
+                return new Ranger(id);
             case Mage:
-                return new Mage(unit);
+                return new Mage(id);
             case Healer:
-                return new Healer(unit);
+                return new Healer(id);
             case Factory:
-                return new Factory(unit);
+                return new Factory(id);
             case Rocket:
-                return new Rocket(unit);
+                return new Rocket(id);
             default:
-                throw new Exception("Undefined UnitType!"); //Should never happen
+                throw new RuntimeException("Unrecognized UnitType!"); //Should never happen
         }
     }
 }
