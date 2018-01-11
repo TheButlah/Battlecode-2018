@@ -1,6 +1,4 @@
-const PLAYER_EXCLUDES = [ ".git"
-                        , "bin"
-                        , "FuzzyWuzzy"
+const PLAYER_EXCLUDES = [ "bin"
                         , "examplefuncsplayer-python"
                         ];
 
@@ -13,7 +11,7 @@ let blueIndex = 0;
 function runGame() {
     if (blueIndex < blueOptions.length) {
         blue.selectedIndex = blueOptions[blueIndex++][0];
-        replayName.value = `${redPlayer}-vs-${blue.options[blue.selectedIndex].value}`;
+        replayName.value = `${redPlayer}-vs-${blue.options[blue.selectedIndex].value}.bc18`;
         submit.click();
     }
 }
