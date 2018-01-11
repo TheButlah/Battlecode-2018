@@ -72,19 +72,33 @@ public class PathFinding {
             visited[row][col] = true;
             queue.remove(new Node(row, col));
 
-            int r = row - 1;
-            int c = col;
-            if (r >= 0) operate(r, c, row, col);
-
-            r = row + 1;
-            if (r != rows) operate(r, c, row, col);
-
+            int r, c;
             r = row;
             c = col - 1;
             if (c >= 0) operate(r, c, row, col);
-
+            
             c = col + 1;
             if (c != cols) operate(r, c, row, col);
+            
+            r = row - 1;
+            if (r >= 0) {
+                c = col - 1;
+                if (c >= 0) operate(r, c, row, col);
+                c = col;
+                operate(r, c, row, col);
+                c = col + 1;
+                if (c != cols) operate(r, c, row, col);
+            }
+            
+            r = row + 1;
+            if (r != rows) {
+                c = col - 1;
+                if (c >= 0) operate(r, c, row, col);
+                c = col;
+                operate(r, c, row, col);
+                c = col + 1;
+                if (c != cols) operate(r, c, row, col);
+            }
 
             position = nextPosition();
 
@@ -98,8 +112,8 @@ public class PathFinding {
         if (!visited[r][c]) {
             if (weights[r][c] != distance[r][c]) {
                 distance[r][c] = Math.min(distance[r][c], distance[row][col] + weights[r][c]);
-                if (!queue.contains(new Node(r,c))) {
-                    queue.add(new Node(r,c));
+                if (!queue.contains(new Node(r, c))) {
+                    queue.add(new Node(r, c));
                 }
                 else {
                     queue.remove(new Node(r, c));
