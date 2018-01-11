@@ -1,3 +1,5 @@
+package org.battlecode.bc18;
+
 import java.util.PriorityQueue;
 import java.util.ArrayList;
 import java.util.Arrays;

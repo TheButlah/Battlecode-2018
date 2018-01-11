@@ -1,9 +1,13 @@
-// import the API.
+package org.battlecode.bc18;// import the API.
 // See xxx for the javadocs.
 import bc.*;
+import me.thebutlah.fuzzywuzzy.*;
 
 public class Player {
     public static void main(String[] args) {
+        FuzzyEngine engine = new FuzzyEngine("test");
+        System.out.println(engine.getName());
+
         // MapLocation is a data structure you'll use a lot.
         MapLocation loc = new MapLocation(Planet.Earth, 10, 20);
         System.out.println("loc: "+loc+", one step to the Northwest: "+loc.add(Direction.Northwest));

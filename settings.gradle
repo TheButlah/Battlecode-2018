@@ -1,0 +1,3 @@
+rootProject.name = 'Battlecode-2018'
+
+include 'lib:FuzzyWuzzy'
