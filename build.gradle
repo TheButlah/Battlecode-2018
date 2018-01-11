@@ -1,6 +1,17 @@
 group 'org.battlecode.bc18'
 version '0.1'
 
+//Code for fat jar plugin `shadow`
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.2'
+    }
+}
+apply plugin: 'com.github.johnrengelman.shadow'
+
 apply plugin: 'java'
 
 sourceCompatibility = 1.8
@@ -10,7 +21,14 @@ repositories {
 }
 
 dependencies {
-    compile project(':lib:FuzzyWuzzy')
-    compile files('lib/battlecode.jar')
+    compile project(':lib:FuzzyWuzzy')  //Get all the artifacts from FuzzyWuzzy
+    compile files('lib/battlecode.jar')  //Get all the artifacts from battlecode api
     testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.battlecode.bc18.Player'
+    }
+    dependsOn shadowJar  //By default jar doesn't depend on this so we add it
 }
