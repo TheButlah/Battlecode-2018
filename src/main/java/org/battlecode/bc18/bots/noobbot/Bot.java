@@ -36,7 +36,15 @@ public abstract class Bot {
 
     @Override
     public String toString() {
-        return TYPE + ": " + ID;
+        return "[" + TYPE + ":" + ID + "]";
+    }
+
+    /**
+     * Prints to stdout the contents of `obj` prefixed by the bot info.
+     * @param obj The data to print out.
+     */
+    protected void println(Object obj) {
+        System.out.println(this + " " + obj);
     }
 
 }
