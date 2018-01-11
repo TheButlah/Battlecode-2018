@@ -1,6 +1,5 @@
-package org.battlecode.bc18.bots;
+package org.battlecode.bc18.bots.examplefuncsplayer;
 import bc.*;
-import me.thebutlah.fuzzywuzzy.*;
 
 public class Player {
     public static void main(String[] args) {
