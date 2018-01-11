@@ -14,36 +14,60 @@ import java.util.Arrays;
  */
 public class PathFinding {
 
-    private static final int LEN = 80;
+    private final int rows;
+    private final int cols;
+    private final boolean[][] visited;
+    private final int[][] distance;
+    private final PriorityQueue<Node> queue;
+    private int[][] weights;
 
-    private static boolean[][] visited = new boolean[LEN][LEN];
-    private static int[][] distance = new int[LEN][LEN];
+    public PathFinding(int rows, int cols) {
+        this.rows = rows;
+        this.cols = cols;
+        visited = new boolean[rows][cols];
+        distance = new int[rows][cols];
+        queue = new PriorityQueue<>(Comparator.comparingInt(o -> distance[o.r][o.c]));
+    }
 
-    private static PriorityQueue<Node> queue = new PriorityQueue<>(Comparator.comparingInt(o -> distance[o.r][o.c]));
+    public void setWeights(int[][] weights) {
+        this.weights = weights;
+        if (weights.length != rows) {
+            throw new RuntimeException("Incorrect number of rows provided in weights!");
+        }
+        if (weights[0].length != cols) {
+            throw new RuntimeException("Incorrect number of cols provided in weights!");
+        }
+    }
 
     public static void main(String[] args) {
-        for (int[] row : distance)
-            Arrays.fill(row, Integer.MAX_VALUE);
-
-        distance[0][0] = WEIGHT[0][0];
-        queue.add(new Node(0,0));
-
         // execution time calculation
+        PathFinding pf = new PathFinding(WEIGHT.length, WEIGHT[0].length);
         long start = System.nanoTime();
-        System.out.println(search(LEN-1, 0, 0, LEN-1)); // search
+        pf.setWeights(WEIGHT);
+        System.out.println(pf.search(WEIGHT.length-1, 0, 0, WEIGHT[0].length-1)); // search
         long end = System.nanoTime();
         System.out.println("exe time is " + (end - start) / 1000000d + " ms");
 
     }
 
-    private static int search(int fromr, int fromc, int tor, int toc) {
-        int total = LEN * LEN;
-        int position = (LEN - 1 - fromr) * LEN + fromc;
+    public int search(int fromr, int fromc, int tor, int toc) {
+        queue.clear();
+        for (int[] row : distance) {
+            Arrays.fill(row, Integer.MAX_VALUE);
+        }
+        for (boolean[] row : visited) {
+            Arrays.fill(row, false);
+        }
+        distance[rows - 1 - fromr][fromc] = WEIGHT[rows - 1 - fromr][fromc];
+        queue.add(new Node(rows - 1 - fromr, fromc));
+
+        int total = rows * cols;
+        int position = (rows - 1 - fromr) * cols + fromc;
         int visit = 0;
 
         while (visit < total) {
-            int row = position / LEN;
-            int col = position % LEN;
+            int row = position / cols;
+            int col = position % cols;
 
             visited[row][col] = true;
             queue.remove(new Node(row, col));
@@ -53,24 +77,24 @@ public class PathFinding {
             if (r >= 0) operate(r, c, row, col);
 
             r = row + 1;
-            if (r != LEN) operate(r, c, row, col);
+            if (r != rows) operate(r, c, row, col);
 
             r = row;
             c = col - 1;
             if (c >= 0) operate(r, c, row, col);
 
             c = col + 1;
-            if (c != LEN) operate(r, c, row, col);
+            if (c != cols) operate(r, c, row, col);
 
             position = nextPosition();
 
             visit++;
         }
 
-        return distance[LEN - 1 - tor][toc];
+        return distance[rows - 1 - tor][toc];
     }
 
-    private static void operate(int r, int c, int row, int col) {
+    private void operate(int r, int c, int row, int col) {
         if (!visited[r][c]) {
             if (WEIGHT[r][c] != distance[r][c]) {
                 distance[r][c] = Math.min(distance[r][c], distance[row][col] + WEIGHT[r][c]);
@@ -85,16 +109,16 @@ public class PathFinding {
         }
     }
 
-    private static int nextPosition() {
+    private int nextPosition() {
         if (queue.isEmpty()) {
             return 0;
         }
         Node closest = queue.peek();
-        int pos = closest.r * LEN + closest.c;
+        int pos = closest.r * cols + closest.c;
         return pos;
     }
 
-    private static class Node {
+    private class Node {
         private int r;
         private int c;
 
