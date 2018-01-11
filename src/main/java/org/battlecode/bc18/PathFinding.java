@@ -41,10 +41,10 @@ public class PathFinding {
 
     public static void main(String[] args) {
         // execution time calculation
-        PathFinding pf = new PathFinding(WEIGHT.length, WEIGHT[0].length);
+        PathFinding pf = new PathFinding(WEIGHT2.length, WEIGHT2[0].length);
         long start = System.nanoTime();
-        pf.setWeights(WEIGHT);
-        System.out.println(pf.search(WEIGHT.length-1, 0, 0, WEIGHT[0].length-1)); // search
+        pf.setWeights(WEIGHT2);
+        System.out.println(pf.search(WEIGHT2.length - 1, 0, 0, WEIGHT2[0].length-1)); // search
         long end = System.nanoTime();
         System.out.println("exe time is " + (end - start) / 1000000d + " ms");
 
@@ -58,11 +58,11 @@ public class PathFinding {
         for (boolean[] row : visited) {
             Arrays.fill(row, false);
         }
-        distance[rows - 1 - fromr][fromc] = WEIGHT[rows - 1 - fromr][fromc];
-        queue.add(new Node(rows - 1 - fromr, fromc));
+        distance[fromr][fromc] = weights[fromr][fromc];
+        queue.add(new Node(fromr, fromc));
 
         int total = rows * cols;
-        int position = (rows - 1 - fromr) * cols + fromc;
+        int position = fromr * cols + fromc;
         int visit = 0;
 
         while (visit < total) {
@@ -91,13 +91,13 @@ public class PathFinding {
             visit++;
         }
 
-        return distance[rows - 1 - tor][toc];
+        return distance[tor][toc];
     }
 
     private void operate(int r, int c, int row, int col) {
         if (!visited[r][c]) {
-            if (WEIGHT[r][c] != distance[r][c]) {
-                distance[r][c] = Math.min(distance[r][c], distance[row][col] + WEIGHT[r][c]);
+            if (weights[r][c] != distance[r][c]) {
+                distance[r][c] = Math.min(distance[r][c], distance[row][col] + weights[r][c]);
                 if (!queue.contains(new Node(r,c))) {
                     queue.add(new Node(r,c));
                 }
