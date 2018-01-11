@@ -12,8 +12,9 @@ public class Worker extends Bot {
 
     public static final UnitType TYPE = UnitType.Worker;
     
-    private static int factoryID = -1; //-1 indicates no factory has been placed
-    private static boolean builtFactory = false;
+    private int factoryId = -1; //-1 indicates no factory has been placed
+    private boolean builtFactory = false;
+    private Unit targetFactory = null;
 
     public Worker(int id) {
         super(id);
@@ -26,48 +27,75 @@ public class Worker extends Bot {
         // else, move randomly.
         // try mining if walked over the Karbonite.
         long turn = gc.round();
-
-        // for each direction, find the first availability spot for a factory.
-        for (Direction dir : Main.dirs) {
-            if (!hasPlacedFactory() && gc.canBlueprint(this.id, UnitType.Factory, dir)) {
-                println("Blueprinting");
-                gc.blueprint(this.id, UnitType.Factory, dir);
-                Unit factory = gc.senseUnitAtLocation(getAsUnit().location().mapLocation().add(dir));
-                factoryID = factory.id();
-                bots.put(factoryID, new Factory(factoryID));
-                return;
-            }
-        }
-
-        // building a factory based on the blueprint created.
-        if (gc.canBuild(this.id, factoryID)) {
-            println("Building");
-            gc.build(this.id, factoryID);
+        Unit myUnit = getAsUnit();
+        Location myLoc = myUnit.location();
+        if (!myLoc.isOnMap()) {
+            println("TODO: handle worker in space");
             return;
         }
+        MapLocation myMapLoc = myLoc.mapLocation();
 
-        if (!builtFactory &&
-            gc.canSenseUnit(factoryID) &&
-            Utils.toBool(gc.unit(factoryID).structureIsBuilt())) builtFactory = true;
-
-        // replicate if factory not yet built
-        if (hasPlacedFactory() && !builtFactory) { //factory placed but not built
-            println("factory building");
-            MapLocation factoryLoc = bots.get(factoryID).getAsUnit().location().mapLocation();
+        if (turn == 1) {
+            // for each direction, find the first availability spot for a factory.
             for (Direction dir : Main.dirs) {
-                //only replicate into spots adjacent to factory (since I don't feel like using pathfinding yet)
-                if (!(getAsUnit().location().mapLocation().add(dir).isAdjacentTo(factoryLoc))) continue;
-                println("found spot next to factory");
-                if (gc.canReplicate(this.id, dir)) {
-                    println("Replicating");
-                    gc.replicate(this.id, dir);
-                    Unit newWorker = gc.senseUnitAtLocation(getAsUnit().location().mapLocation().add(dir));
-                    bots.put(newWorker.id(), new Worker(newWorker.id()));
+                if (!hasPlacedFactory() && gc.canBlueprint(this.id, UnitType.Factory, dir)) {
+                    println("Blueprinting");
+                    gc.blueprint(this.id, UnitType.Factory, dir);
+                    targetFactory = gc.senseUnitAtLocation(myMapLoc.add(dir));
+                    factoryId = targetFactory.id();
+                    bots.put(factoryId, new Factory(factoryId));
                     return;
                 }
             }
         }
 
+        // building a factory based on the blueprint created.
+        if (targetFactory != null && gc.canBuild(this.id, factoryId)) {
+            println("Building");
+            gc.build(this.id, factoryId);
+            return;
+        }
+        else {
+            VecUnit nearbyFactories = gc.senseNearbyUnitsByType(myMapLoc, myUnit.visionRange(), UnitType.Factory);
+            Unit closestFactory = null;
+            long closestFactoryDist = Long.MAX_VALUE;
+            for (int i = 0; i < nearbyFactories.size(); ++i) {
+                Unit factory = nearbyFactories.get(i);
+                if (factory.team() == myUnit.team() && !Utils.toBool(factory.structureIsBuilt())) {
+                    long distance = factory.location().mapLocation().distanceSquaredTo(myMapLoc);
+                    if (distance < closestFactoryDist) {
+                        closestFactory = factory;
+                        closestFactoryDist = distance;
+                        break;
+                    }
+                }
+            }
+            targetFactory = closestFactory;
+        }
+
+        if (hasPlacedFactory() && !builtFactory) { //factory placed but not built
+            if (gc.canSenseUnit(factoryId) && Utils.toBool(gc.unit(factoryId).structureIsBuilt())) {
+                builtFactory = true;
+                println("Finished building factory");
+            }
+        }
+        // replicate if factory not yet built
+        if (targetFactory != null) {
+            println("factory building");
+            MapLocation factoryLoc = targetFactory.location().mapLocation();
+            for (Direction dir : Main.dirs) {
+                //only replicate into spots adjacent to factory (since I don't feel like using pathfinding yet)
+                if (!(myMapLoc.add(dir).isAdjacentTo(factoryLoc))) continue;
+                println("found spot next to factory");
+                if (gc.canReplicate(this.id, dir)) {
+                    println("Replicating");
+                    gc.replicate(this.id, dir);
+                    Unit newWorker = gc.senseUnitAtLocation(myMapLoc.add(dir));
+                    bots.put(newWorker.id(), new Worker(newWorker.id()));
+                    return;
+                }
+            }
+        }
 
         // if can see Karbonite, mine it
         for (Direction dir : Direction.values()) {
@@ -78,15 +106,24 @@ public class Worker extends Bot {
             }
         }
 
-        //Move randomly
         if (gc.isMoveReady(this.id)) {
-            int rand = Utils.rand.nextInt(Main.dirs.length);
-            for (int i=0; i<Main.dirs.length; i++) {
-                Direction dir = Main.dirs[(i + rand) % Main.dirs.length]; //Cycle through based on random offset
-                if (gc.canMove(this.id, dir)) {
-                    //println("Moving");
-                    gc.moveRobot(this.id, dir);
+            if (targetFactory != null) {
+                Direction towardsFactory = myMapLoc.directionTo(targetFactory.location().mapLocation());
+                if (gc.canMove(this.id, towardsFactory)) {
+                    gc.moveRobot(this.id, towardsFactory);
                     return;
+                }
+            }
+            else {
+                //Move randomly
+                int rand = Utils.rand.nextInt(Main.dirs.length);
+                for (int i = 0; i < Main.dirs.length; i++) {
+                    Direction dir = Main.dirs[(i + rand) % Main.dirs.length]; //Cycle through based on random offset
+                    if (gc.canMove(this.id, dir)) {
+                        //println("Moving");
+                        gc.moveRobot(this.id, dir);
+                        return;
+                    }
                 }
             }
         }
@@ -99,6 +136,6 @@ public class Worker extends Bot {
     }
 
     private boolean hasPlacedFactory() {
-        return factoryID != -1;
+        return factoryId != -1;
     }
 }
