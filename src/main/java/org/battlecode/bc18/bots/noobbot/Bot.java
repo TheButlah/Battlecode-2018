@@ -11,9 +11,9 @@ public abstract class Bot {
     public final int ID;
     public final UnitType TYPE;
 
-    public Bot(Unit unit) {
-        this.ID = unit.id();
-        this.TYPE = unit.unitType();
+    public Bot(Unit u) {
+        this.ID = u.id();
+        this.TYPE = u.unitType();
     }
 
     /**
