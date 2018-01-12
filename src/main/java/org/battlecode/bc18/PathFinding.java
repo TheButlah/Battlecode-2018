@@ -1,13 +1,13 @@
 package org.battlecode.bc18;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
+import bc.Direction;
 import bc.MapLocation;
 import bc.Planet;
 import bc.PlanetMap;
-
-import java.util.Arrays;
 
 /**
  * Path Finding Algorithm for Grid-like Graph.
@@ -67,12 +67,14 @@ public class PathFinding {
         PathFinding pf = new PathFinding(testWeights.length, testWeights[0].length);
         long start = System.nanoTime();
         pf.setWeights(testWeights);
-        System.out.println(pf.search(testWeights.length - 1, 0, 0, testWeights[0].length-1)); // search
+        int[][] distances = pf.search(testWeights.length - 1, 0, 0, testWeights[0].length-1);
+        System.out.println(Arrays.deepToString(distances)); // search
+        System.out.println(PathFinding.moveDirectionToDestination(distances, 0, testWeights[0].length - 1, Planet.Earth));
         long end = System.nanoTime();
         System.out.println("exe time is " + (end - start) / 1000000d + " ms");
     }
 
-    public int search(int fromr, int fromc, int tor, int toc) {
+    public int[][] search(int fromr, int fromc, int tor, int toc) {
         queue.clear();
         for (int[] row : distance) {
             Arrays.fill(row, INFINITY);
@@ -127,7 +129,7 @@ public class PathFinding {
             visit++;
         }
 
-        return distance[tor][toc];
+        return distance;
     }
 
     private void operate(int r, int c, int row, int col) {
@@ -171,6 +173,26 @@ public class PathFinding {
             Node n = (Node) obj;
             return n.r == this.r && n.c == this.c;
         }
+    }
+
+    public static Direction moveDirectionToDestination(int[][] distances, int startRow, int startCol, Planet planet) {
+        Direction optimalDirection = Direction.Center;
+        int optimalDist = INFINITY;
+        MapLocation start = new MapLocation(planet, startCol, startRow);
+        int rows = distances.length;
+        int cols = distances[0].length;
+        for (Direction dir : Direction.values()) {
+            MapLocation location = start.add(dir);
+            int x = location.getX();
+            int y = location.getY();
+            if (0 <= x && x < cols && 0 <= y && y < rows) {
+                if (distances[y][x] < optimalDist) {
+                    optimalDist = distances[y][x];
+                    optimalDirection = dir;
+                }
+            }
+        }
+        return optimalDirection;
     }
 
     private static final int[][] WEIGHT2 = {
