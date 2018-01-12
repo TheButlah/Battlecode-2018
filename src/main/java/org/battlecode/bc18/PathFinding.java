@@ -7,7 +7,6 @@ import bc.MapLocation;
 import bc.Planet;
 import bc.PlanetMap;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 /**

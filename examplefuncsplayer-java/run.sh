@@ -11,4 +11,4 @@
 #echo java -classpath .:../battlecode/java Player
 #java -classpath .:../battlecode/java Player
 
-java -classpath /battlecode-java:. -jar Battlecode-2018-0.1-all.jar
+java -classpath ../battlecode/build/classes/java/main -jar Battlecode-2018-0.1-all.jar

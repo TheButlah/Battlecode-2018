@@ -1,0 +1,16 @@
+group 'org.battlecode.battlecode'
+version '0.9.4'
+
+apply plugin: 'java-library'
+
+sourceCompatibility = 1.8
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['java']
+        }
+    }
+}
+
+

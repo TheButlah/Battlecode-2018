@@ -21,8 +21,8 @@ repositories {
 }
 
 dependencies {
-    compile project(':lib:FuzzyWuzzy')  //Get all the artifacts from FuzzyWuzzy
-    compile files('lib/battlecode.jar')  //Get all the artifacts from battlecode api
+    compile project('lib:FuzzyWuzzy')  //Get all the artifacts from FuzzyWuzzy
+    compileOnly project('battlecode')
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
@@ -36,4 +36,5 @@ task copyJar(type: Copy) {
     from shadowJar //Instead of giving a path, this gets the path that the jar is from shadowJar
     into "examplefuncsplayer-java"
 }
-build.dependsOn shadowJar, copyJar
+build.dependsOn copyJar, shadowJar
+
