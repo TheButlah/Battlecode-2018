@@ -15,8 +15,6 @@ import bc.VecUnit;
 
 public class Main {
 
-    public static final Direction[] dirs = Direction.values();
-
     public static void main(String[] args) {
         // Connect to the manager, starting the game
         gc = new GameController();

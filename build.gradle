@@ -28,7 +28,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'org.battlecode.bc18.bots.noobbot.Main'
+        attributes 'Main-Class': 'org.battlecode.bc18.bots.noobbot.Main', 'Class-Path': '../battlecode/java/'
     }
 }
 

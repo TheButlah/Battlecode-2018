@@ -37,7 +37,7 @@ public class Worker extends Bot {
 
         if (turn == 1) {
             // for each direction, find the first availability spot for a factory.
-            for (Direction dir : Main.dirs) {
+            for (Direction dir : Utils.dirs) {
                 if (!hasPlacedFactory() && gc.canBlueprint(this.id, UnitType.Factory, dir)) {
                     println("Blueprinting");
                     gc.blueprint(this.id, UnitType.Factory, dir);
@@ -83,7 +83,7 @@ public class Worker extends Bot {
         if (targetFactory != null) {
             println("factory building");
             MapLocation factoryLoc = targetFactory.location().mapLocation();
-            for (Direction dir : Main.dirs) {
+            for (Direction dir : Utils.dirs) {
                 //only replicate into spots adjacent to factory (since I don't feel like using pathfinding yet)
                 if (!(myMapLoc.add(dir).isAdjacentTo(factoryLoc))) continue;
                 println("found spot next to factory");
@@ -116,9 +116,9 @@ public class Worker extends Bot {
             }
             else {
                 //Move randomly
-                int rand = Utils.rand.nextInt(Main.dirs.length);
-                for (int i = 0; i < Main.dirs.length; i++) {
-                    Direction dir = Main.dirs[(i + rand) % Main.dirs.length]; //Cycle through based on random offset
+                int rand = Utils.rand.nextInt(Utils.dirs.length);
+                for (int i = 0; i < Utils.dirs.length; i++) {
+                    Direction dir = Utils.dirs[(i + rand) % Utils.dirs.length]; //Cycle through based on random offset
                     if (gc.canMove(this.id, dir)) {
                         //println("Moving");
                         gc.moveRobot(this.id, dir);

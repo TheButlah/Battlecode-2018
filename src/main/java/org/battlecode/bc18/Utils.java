@@ -1,5 +1,6 @@
 package org.battlecode.bc18;
 
+import bc.Direction;
 import bc.GameController;
 import org.battlecode.bc18.bots.noobbot.Bot;
 
@@ -11,7 +12,9 @@ public final class Utils {
 
     public static final long SEED = 8675309;
     public static final Random rand = new Random(SEED);
-    
+
+    public static final Direction[] dirs = Direction.values();
+
     public static GameController gc;
     /** Mapping from id to Bot objects */
     public static final HashMap<Integer, Bot> bots = new HashMap<>();
