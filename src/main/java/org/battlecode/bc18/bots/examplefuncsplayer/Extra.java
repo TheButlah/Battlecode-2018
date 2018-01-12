@@ -1,3 +1,5 @@
+package org.battlecode.bc18.bots.examplefuncsplayer;
+
 import bc.*;
 
 class Extra {
