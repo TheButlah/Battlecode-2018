@@ -20,6 +20,7 @@ public class Worker extends Robot {
 
     /**
      * Replicate this worker to the first available direction.
+     * Subtracts the cost of the worker from the team's resource pool.
      * @return true if replication was successful, false otherwise
      */
     public boolean replicate() {
@@ -32,7 +33,8 @@ public class Worker extends Robot {
     }
 
     /**
-     * Replicate this worker to the specified direction.
+     * Replicates a worker in the given direction.
+     * Subtracts the cost of the worker from the team's resource pool.
      * @param dir the specified direction
      * @return true if replication to the direction was successful, false otherwise
      */

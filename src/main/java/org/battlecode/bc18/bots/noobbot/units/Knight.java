@@ -1,6 +1,10 @@
 package org.battlecode.bc18.bots.noobbot.units;
 
 import bc.*;
+import org.battlecode.bc18.Utils;
+import org.battlecode.bc18.bots.noobbot.Main;
+
+import static org.battlecode.bc18.Utils.gc;
 
 public class Knight extends Robot {
 
@@ -8,6 +12,20 @@ public class Knight extends Robot {
 
     Knight(int id) {
         super(id);
+    }
+
+    /**
+     * Javelins the robot, dealing the knight's standard damage.
+     * @param targetID target unit id
+     * @return true if javelin was successful, false otherwise
+     */
+    public boolean javelin(int targetID) {
+        if (gc.isJavelinReady(this.id) &&
+                gc.canJavelin(this.id, targetID)) {
+            gc.javelin(this.id, targetID);
+            return true;
+        }
+        return false;
     }
 
     @Override
