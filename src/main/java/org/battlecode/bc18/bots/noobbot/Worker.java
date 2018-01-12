@@ -89,12 +89,7 @@ public class Worker extends Bot {
         }
         // replicate if factory not yet built
         if (targetFactory != null) {
-            println("factory building");
-            MapLocation factoryLoc = targetFactory.location().mapLocation();
             for (Direction dir : Utils.dirs) {
-                //only replicate into spots adjacent to factory (since I don't feel like using pathfinding yet)
-                if (!(myMapLoc.add(dir).isAdjacentTo(factoryLoc))) continue;
-                println("found spot next to factory");
                 if (gc.canReplicate(this.id, dir)) {
                     println("Replicating");
                     gc.replicate(this.id, dir);
@@ -106,7 +101,7 @@ public class Worker extends Bot {
         }
 
         // if can see Karbonite, mine it
-        for (Direction dir : Direction.values()) {
+        for (Direction dir : Utils.dirs) {
             if (gc.canHarvest(this.id, dir)) {
                 println("Harvesting'");
                 gc.harvest(this.id, dir);
