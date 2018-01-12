@@ -15,7 +15,19 @@ public class Factory extends Bot {
 
     @Override
     public void act() {
-        //TODO: implement this
+        // make and place workers until you can't :D
+        if (gc.canProduceRobot(this.id, UnitType.Worker)) {
+            gc.produceRobot(this.id, UnitType.Worker);
+            // check where it can be unloaded, and unload it
+            for (Direction dir : Utils.dirs) {
+                // if there are no more units to unload, break
+                if (this.getAsUnit().structureGarrison().size() == 0) break;
+                if (gc.canUnload(this.id, dir)) {
+                    gc.unload(this.id, dir);
+                    // no break here so it can unload multiple (I think that's allowed)
+                }
+            }
+        }
     }
 
     @Override
