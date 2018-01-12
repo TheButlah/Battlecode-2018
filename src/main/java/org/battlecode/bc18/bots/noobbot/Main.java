@@ -19,8 +19,7 @@ public class Main {
         // Connect to the manager, starting the game
         gc = new GameController();
         PlanetMap earthMap = gc.startingMap(Planet.Earth);
-        PathFinding earthPathfinder = new PathFinding((int)earthMap.getHeight(), (int)earthMap.getWidth());
-        earthPathfinder.setWeights(earthMap);
+        PathFinding.initializeEarthPathfinder(earthMap);
 
         while (true) {
             System.out.println("Current round: " + gc.round());

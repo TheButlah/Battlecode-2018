@@ -1,12 +1,17 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import bc.*;
-import org.battlecode.bc18.Utils;
-
-import java.util.HashSet;
-
 import static org.battlecode.bc18.Utils.bots;
 import static org.battlecode.bc18.Utils.gc;
+
+import org.battlecode.bc18.PathFinding;
+import org.battlecode.bc18.Utils;
+
+import bc.Direction;
+import bc.Location;
+import bc.MapLocation;
+import bc.Unit;
+import bc.UnitType;
+import bc.VecUnit;
 
 public class Worker extends Bot {
 
@@ -108,7 +113,9 @@ public class Worker extends Bot {
 
         if (gc.isMoveReady(this.id)) {
             if (targetFactory != null) {
-                Direction towardsFactory = myMapLoc.directionTo(targetFactory.location().mapLocation());
+                MapLocation factoryLoc = targetFactory.location().mapLocation();
+                int[][] distances = PathFinding.earthPathfinder.search(factoryLoc.getY(), factoryLoc.getX());
+                Direction towardsFactory = PathFinding.moveDirectionToDestination(distances, myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
                 if (gc.canMove(this.id, towardsFactory)) {
                     gc.moveRobot(this.id, towardsFactory);
                     return;

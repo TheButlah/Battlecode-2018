@@ -26,6 +26,8 @@ public class PathFinding {
     private final PriorityQueue<Node> queue;
     private int[][] weights;
 
+    public static PathFinding earthPathfinder;
+
     public PathFinding(int rows, int cols) {
         this.rows = rows;
         this.cols = cols;
@@ -67,14 +69,14 @@ public class PathFinding {
         PathFinding pf = new PathFinding(testWeights.length, testWeights[0].length);
         long start = System.nanoTime();
         pf.setWeights(testWeights);
-        int[][] distances = pf.search(testWeights.length - 1, 0, 0, testWeights[0].length-1);
+        int[][] distances = pf.search(testWeights.length - 1, 0);
         System.out.println(Arrays.deepToString(distances)); // search
         System.out.println(PathFinding.moveDirectionToDestination(distances, 0, testWeights[0].length - 1, Planet.Earth));
         long end = System.nanoTime();
         System.out.println("exe time is " + (end - start) / 1000000d + " ms");
     }
 
-    public int[][] search(int fromr, int fromc, int tor, int toc) {
+    public int[][] search(int targetRow, int targetCol) {
         queue.clear();
         for (int[] row : distance) {
             Arrays.fill(row, INFINITY);
@@ -82,11 +84,11 @@ public class PathFinding {
         for (boolean[] row : visited) {
             Arrays.fill(row, false);
         }
-        distance[fromr][fromc] = weights[fromr][fromc];
-        queue.add(new Node(fromr, fromc));
+        distance[targetRow][targetCol] = weights[targetRow][targetCol];
+        queue.add(new Node(targetRow, targetCol));
 
         int total = rows * cols;
-        int position = fromr * cols + fromc;
+        int position = targetRow * cols + targetCol;
         int visit = 0;
 
         while (visit < total) {
@@ -173,6 +175,11 @@ public class PathFinding {
             Node n = (Node) obj;
             return n.r == this.r && n.c == this.c;
         }
+    }
+
+    public static void initializeEarthPathfinder(PlanetMap earthMap) {
+        earthPathfinder = new PathFinding((int)earthMap.getHeight(), (int)earthMap.getWidth());
+        earthPathfinder.setWeights(earthMap);
     }
 
     public static Direction moveDirectionToDestination(int[][] distances, int startRow, int startCol, Planet planet) {

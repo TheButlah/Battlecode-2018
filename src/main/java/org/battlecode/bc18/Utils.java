@@ -1,11 +1,12 @@
 package org.battlecode.bc18;
 
-import bc.Direction;
-import bc.GameController;
-import org.battlecode.bc18.bots.noobbot.Bot;
-
 import java.util.HashMap;
 import java.util.Random;
+
+import org.battlecode.bc18.bots.noobbot.Bot;
+
+import bc.Direction;
+import bc.GameController;
 
 public final class Utils {
     private Utils() {} //Prevent instantiation
@@ -34,5 +35,5 @@ public final class Utils {
     public static boolean toBool(long x) {
         return x > 0;
     }
-    
+
 }
