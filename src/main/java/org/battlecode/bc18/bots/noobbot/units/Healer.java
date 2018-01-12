@@ -1,13 +1,12 @@
-package org.battlecode.bc18.bots.noobbot;
+package org.battlecode.bc18.bots.noobbot.units;
 
 import bc.*;
-import static org.battlecode.bc18.Utils.gc;
 
-public class Healer extends Bot {
+public class Healer extends Robot {
 
     public static final UnitType TYPE = UnitType.Healer;
 
-    public Healer(int id) {
+    Healer(int id) {
         super(id);
     }
 

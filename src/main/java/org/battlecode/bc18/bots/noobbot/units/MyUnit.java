@@ -1,29 +1,24 @@
-package org.battlecode.bc18.bots.noobbot;
+package org.battlecode.bc18.bots.noobbot.units;
 
 import bc.*;
+
+import java.util.HashMap;
+
 import static org.battlecode.bc18.Utils.gc;
 
 /**
- * Superclass for all the different types of bots.
+ * Superclass for all the different types of units.
  */
-public abstract class Bot {
+public abstract class MyUnit {
 
-    protected final int id;
-
-    public Bot(int id) {
-        this.id = id;
-    }
-
-    /**
-     * Tells the bot to perform its action for this turn.
-     */
+    /** Tells the unit to perform its action for this turn */
     public abstract void act();
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true; //short circuit
-        if (!(obj instanceof Bot)) return false;
-        Bot other = (Bot) obj;
+        if (!(obj instanceof MyUnit)) return false;
+        MyUnit other = (MyUnit) obj;
         return this.id == other.id;
     }
 
@@ -38,18 +33,31 @@ public abstract class Bot {
     }
 
     /**
-     * Prints to stdout the contents of `obj` prefixed by the bot info.
+     * Prints to stdout the contents of `obj` prefixed by the unit info.
      * @param obj The data to print out.
      */
     protected void println(Object obj) {
         System.out.println(this + " " + obj);
     }
 
+    /** Gets the type of unit */
     public abstract UnitType getType();
 
+    /** Gets the unit as a Unit object */
     public Unit getAsUnit() {
         return gc.unit(id);
         //TODO: cache this somehow
     }
+
+    /////END OF API/////
+    /** Mapping from id to MyUnit objects */
+    static final HashMap<Integer, MyUnit> bots = new HashMap<>();
+
+    protected final int id;
+
+    MyUnit(int id) {
+        this.id = id;
+    }
+
 
 }

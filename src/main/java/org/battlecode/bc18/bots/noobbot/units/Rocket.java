@@ -1,13 +1,12 @@
-package org.battlecode.bc18.bots.noobbot;
+package org.battlecode.bc18.bots.noobbot.units;
 
 import bc.*;
-import static org.battlecode.bc18.Utils.gc;
 
-public class Rocket extends Bot {
+public class Rocket extends Structure {
 
     public static final UnitType TYPE = UnitType.Rocket;
 
-    public Rocket(int id) {
+    Rocket(int id) {
         super(id);
     }
 

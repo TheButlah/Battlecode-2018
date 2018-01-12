@@ -1,13 +1,12 @@
-package org.battlecode.bc18.bots.noobbot;
+package org.battlecode.bc18.bots.noobbot.units;
 
 import bc.*;
-import static org.battlecode.bc18.Utils.gc;
 
-public class Mage extends Bot{
+public class Mage extends Robot {
 
     public static final UnitType TYPE = UnitType.Mage;
 
-    public Mage(int id) {
+    Mage(int id) {
         super(id);
     }
 

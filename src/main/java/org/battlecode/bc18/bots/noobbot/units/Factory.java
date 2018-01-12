@@ -1,15 +1,12 @@
-package org.battlecode.bc18.bots.noobbot;
+package org.battlecode.bc18.bots.noobbot.units;
 
 import bc.*;
-import org.battlecode.bc18.Utils;
 
-import static org.battlecode.bc18.Utils.gc;
-
-public class Factory extends Bot {
+public class Factory extends Structure {
 
     public static final UnitType TYPE = UnitType.Factory;
 
-    public Factory(int id) {
+    Factory(int id) {
         super(id);
     }
 
