@@ -15,9 +15,9 @@ public class Factory extends Bot {
 
     @Override
     public void act() {
-        // make and place workers until you can't :D
-        if (gc.canProduceRobot(this.id, UnitType.Worker)) {
-            gc.produceRobot(this.id, UnitType.Worker);
+        // make and place knights until you can't :D
+        if (gc.canProduceRobot(this.id, UnitType.Knight)) {
+            gc.produceRobot(this.id, UnitType.Knight);
             // check where it can be unloaded, and unload it
             for (Direction dir : Utils.dirs) {
                 // if there are no more units to unload, break
