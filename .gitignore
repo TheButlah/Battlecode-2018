@@ -23,3 +23,5 @@ out/
 
 #Generated fat jar
 examplefuncsplayer-java/*.jar
+
+working_dir
