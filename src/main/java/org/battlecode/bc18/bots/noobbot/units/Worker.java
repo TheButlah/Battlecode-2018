@@ -19,15 +19,64 @@ public class Worker extends Robot {
     }
 
     /**
-     * Replicate this worker to the first available direction.
-     * Subtracts the cost of the worker from the team's resource pool.
-     * @return true if replication was successful, false otherwise
+     * Blueprints a unit of the given type in the given direction.
+     * Subtract cost of that unit from the team's resource pool.
+     * @param ut UnitType to blueprint
+     * @param dir the given direction
+     * @return true if blueprinting was successful, false otherwise
      */
-    public boolean replicate() {
-        for (Direction dir : Direction.values()) {
-            if (replicate(dir)) {
-                return true;
-            }
+    public boolean blueprint(UnitType ut, Direction dir) {
+        if (gc.canBlueprint(this.id, ut, dir)) {
+            println("Blueprinting: " + ut + " toward " + dir);
+            gc.blueprint(this.id, UnitType.Factory, dir);
+            factoryId = gc.senseUnitAtLocation(getMyMapLocation().add(dir)).id();
+            bots.put(factoryId, new Factory(factoryId));
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Builds a given blueprint, increasing its health by the worker's build amount.
+     * If raised to maximum health, the blueprint becomes a completed structure.
+     * @param buildUnitID UnitID to build
+     * @return true if building was successful, false otherwise
+     */
+    public boolean build(int buildUnitID) {
+        if (gc.canBuild(this.id, buildUnitID)) {
+            println("Building " + buildUnitID);
+            gc.build(this.id, factoryId);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Commands the worker to repair a structure, replenishing health to it.
+     * This can only be done to structures which have been fully built.
+     * @param structureID structure id to repair
+     * @return true if repairing was successful, false otherwise
+     */
+    public boolean repair(int structureID) {
+        if (gc.canRepair(this.id, structureID)) {
+            println("Repairing " + structureID);
+            gc.repair(this.id, structureID);
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Harvests up to the worker's harvest amount of karbonite from the given location,
+     * adding it to the team's resource pool.
+     * @param dir the given direction to harvest
+     * @return true if harvesting was successful, false otherwise
+     */
+    public boolean harvest(Direction dir) {
+        if (gc.canHarvest(this.id, dir)) {
+            println("Harvesting");
+            gc.harvest(this.id, dir);
+            return true;
         }
         return false;
     }
@@ -40,8 +89,10 @@ public class Worker extends Robot {
      */
     public boolean replicate(Direction dir) {
         if (gc.canReplicate(this.id, dir)) {
+            println("Replicating");
             gc.replicate(this.id, dir);
-            MyUnit.bots.put(this.id, this);
+            int newUnitID = gc.senseUnitAtLocation(getMyMapLocation().add(dir)).id();
+            bots.put(newUnitID, new Worker(newUnitID));
             return true;
         }
         return false;
@@ -65,22 +116,17 @@ public class Worker extends Robot {
         if (turn == 1) {
             // for each direction, find the first availability spot for a factory.
             for (Direction dir : Utils.dirs) {
-                if (!hasPlacedFactory() && gc.canBlueprint(this.id, UnitType.Factory, dir)) {
-                    println("Blueprinting");
-                    gc.blueprint(this.id, UnitType.Factory, dir);
-                    targetFactory = gc.senseUnitAtLocation(myMapLoc.add(dir));
-                    factoryId = targetFactory.id();
-                    bots.put(factoryId, new Factory(factoryId));
-                    return;
+                if (!hasPlacedFactory()) {
+                    if (blueprint(UnitType.Factory, dir))
+                        return;
                 }
             }
         }
 
         // building a factory based on the blueprint created.
-        if (targetFactory != null && gc.canBuild(this.id, factoryId)) {
-            println("Building");
-            gc.build(this.id, factoryId);
-            return;
+        if (targetFactory != null) {
+            if (build(factoryId))
+                return;
         }
         else {
             VecUnit nearbyFactories = gc.senseNearbyUnitsByType(myMapLoc, myUnit.visionRange(), UnitType.Factory);
@@ -114,43 +160,30 @@ public class Worker extends Robot {
                 //only replicate into spots adjacent to factory (since I don't feel like using pathfinding yet)
                 if (!(myMapLoc.add(dir).isAdjacentTo(factoryLoc))) continue;
                 println("found spot next to factory");
-                if (gc.canReplicate(this.id, dir)) {
-                    println("Replicating");
-                    gc.replicate(this.id, dir);
-                    Unit newWorker = gc.senseUnitAtLocation(myMapLoc.add(dir));
-                    bots.put(newWorker.id(), new Worker(newWorker.id()));
+                if (replicate(dir))
                     return;
-                }
             }
         }
 
         // if can see Karbonite, mine it
         for (Direction dir : Direction.values()) {
-            if (gc.canHarvest(this.id, dir)) {
-                println("Harvesting'");
-                gc.harvest(this.id, dir);
+            if (harvest(dir))
                 return;
-            }
         }
 
         if (gc.isMoveReady(this.id)) {
             if (targetFactory != null) {
                 Direction towardsFactory = myMapLoc.directionTo(targetFactory.location().mapLocation());
-                if (gc.canMove(this.id, towardsFactory)) {
-                    gc.moveRobot(this.id, towardsFactory);
+                if (move(towardsFactory))
                     return;
-                }
             }
             else {
                 //Move randomly
                 int rand = Utils.rand.nextInt(Utils.dirs.length);
                 for (int i = 0; i < Utils.dirs.length; i++) {
                     Direction dir = Utils.dirs[(i + rand) % Utils.dirs.length]; //Cycle through based on random offset
-                    if (gc.canMove(this.id, dir)) {
-                        //println("Moving");
-                        gc.moveRobot(this.id, dir);
+                    if (move(dir))
                         return;
-                    }
                 }
             }
         }

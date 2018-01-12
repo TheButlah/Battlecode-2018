@@ -49,6 +49,17 @@ public abstract class MyUnit {
         //TODO: cache this somehow
     }
 
+    /**
+     * Access the robot's current map location.
+     * @return current map location
+     */
+    public MapLocation getMyMapLocation() {
+        Unit myUnit = getAsUnit();
+        Location myLoc = myUnit.location();
+        // TODO: handle the case in which !myLoc.isOnMap()
+        return myLoc.mapLocation();
+    }
+
     /////END OF API/////
     /** Mapping from id to MyUnit objects */
     static final HashMap<Integer, MyUnit> bots = new HashMap<>();
