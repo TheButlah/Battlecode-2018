@@ -2,7 +2,7 @@ package org.battlecode.bc18;
 
 import bc.Direction;
 import bc.GameController;
-import org.battlecode.bc18.bots.noobbot.Bot;
+import org.battlecode.bc18.bots.noobbot.units.MyUnit;
 
 import java.util.HashMap;
 import java.util.Random;
@@ -16,8 +16,6 @@ public final class Utils {
     public static final Direction[] dirs = Direction.values();
 
     public static GameController gc;
-    /** Mapping from id to Bot objects */
-    public static final HashMap<Integer, Bot> bots = new HashMap<>();
 
     public static boolean toBool(short x) {
         return x > 0;

@@ -1,13 +1,12 @@
-package org.battlecode.bc18.bots.noobbot;
+package org.battlecode.bc18.bots.noobbot.units;
 
 import bc.*;
-import static org.battlecode.bc18.Utils.gc;
 
-public class Ranger extends Bot{
+public class Ranger extends Robot {
 
     public static final UnitType TYPE = UnitType.Ranger;
 
-    public Ranger(int id) {
+    Ranger(int id) {
         super(id);
     }
 

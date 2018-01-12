@@ -1,14 +1,12 @@
-package org.battlecode.bc18.bots.noobbot;
+package org.battlecode.bc18.bots.noobbot.units;
 
 import bc.*;
 import org.battlecode.bc18.Utils;
+import org.battlecode.bc18.bots.noobbot.Main;
 
-import java.util.HashSet;
-
-import static org.battlecode.bc18.Utils.bots;
 import static org.battlecode.bc18.Utils.gc;
 
-public class Worker extends Bot {
+public class Worker extends Robot {
 
     public static final UnitType TYPE = UnitType.Worker;
     
@@ -16,7 +14,7 @@ public class Worker extends Bot {
     private boolean builtFactory = false;
     private Unit targetFactory = null;
 
-    public Worker(int id) {
+    Worker(int id) {
         super(id);
     }
 
