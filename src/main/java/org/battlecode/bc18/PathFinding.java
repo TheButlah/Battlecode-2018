@@ -2,6 +2,11 @@ package org.battlecode.bc18;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;
+
+import bc.MapLocation;
+import bc.Planet;
+import bc.PlanetMap;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -14,6 +19,7 @@ import java.util.Arrays;
  */
 public class PathFinding {
 
+    public static final int INFINITY = Integer.MAX_VALUE / 2 - 1;
     private final int rows;
     private final int cols;
     private final boolean[][] visited;
@@ -29,13 +35,30 @@ public class PathFinding {
         queue = new PriorityQueue<>(Comparator.comparingInt(o -> distance[o.r][o.c]));
     }
 
+    /**
+     * Precondition: All weights should be at most {@value #INFINITY}}, otherwise integer overflow may occur
+     */
     public void setWeights(int[][] weights) {
         this.weights = weights;
         if (weights.length != rows) {
-            throw new RuntimeException("Incorrect number of rows provided in weights!");
+            throw new IllegalArgumentException("Incorrect number of rows provided in weights!");
         }
         if (weights[0].length != cols) {
-            throw new RuntimeException("Incorrect number of cols provided in weights!");
+            throw new IllegalArgumentException("Incorrect number of cols provided in weights!");
+        }
+    }
+
+    public void setWeights(PlanetMap terrainMap) {
+        if (weights == null) {
+            weights = new int[rows][cols];
+        }
+        Planet planet = terrainMap.getPlanet();
+        for (int r = 0; r < rows; ++r) {
+            for (int c = 0; c < cols; ++c) {
+                weights[r][c] =
+                     Utils.toBool(terrainMap.isPassableTerrainAt(new MapLocation(planet, r, c)))
+                     ? 1 : INFINITY;
+            }
         }
     }
 
@@ -47,13 +70,12 @@ public class PathFinding {
         System.out.println(pf.search(WEIGHT2.length - 1, 0, 0, WEIGHT2[0].length-1)); // search
         long end = System.nanoTime();
         System.out.println("exe time is " + (end - start) / 1000000d + " ms");
-
     }
 
     public int search(int fromr, int fromc, int tor, int toc) {
         queue.clear();
         for (int[] row : distance) {
-            Arrays.fill(row, Integer.MAX_VALUE);
+            Arrays.fill(row, INFINITY);
         }
         for (boolean[] row : visited) {
             Arrays.fill(row, false);
