@@ -3,12 +3,15 @@ package org.battlecode.bc18.bots.noobbot;
 import static org.battlecode.bc18.Utils.bots;
 import static org.battlecode.bc18.Utils.gc;
 
+import java.util.ArrayList;
+
 import org.battlecode.bc18.PathFinding;
 import org.battlecode.bc18.Utils;
 
 import bc.Direction;
 import bc.Location;
 import bc.MapLocation;
+import bc.Planet;
 import bc.Unit;
 import bc.UnitType;
 import bc.VecUnit;
@@ -113,6 +116,7 @@ public class Worker extends Bot {
 
         if (gc.isMoveReady(this.id)) {
             if (targetFactory != null) {
+                // Move towards target factory
                 MapLocation factoryLoc = targetFactory.location().mapLocation();
                 int[][] distances = PathFinding.earthPathfinder.search(factoryLoc.getY(), factoryLoc.getX());
                 Direction towardsFactory = PathFinding.moveDirectionToDestination(distances, myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
@@ -122,19 +126,58 @@ public class Worker extends Bot {
                 }
             }
             else {
-                //Move randomly
-                int rand = Utils.rand.nextInt(Utils.dirs.length);
-                for (int i = 0; i < Utils.dirs.length; i++) {
-                    Direction dir = Utils.dirs[(i + rand) % Utils.dirs.length]; //Cycle through based on random offset
-                    if (gc.canMove(this.id, dir)) {
-                        //println("Moving");
-                        gc.moveRobot(this.id, dir);
+                // Look for nearby karbonite
+                ArrayList<MapLocation> nearbyKarbonite = senseNearbyKarbonite(myMapLoc, (int)myUnit.visionRange());
+                if (nearbyKarbonite.size() != 0) {
+                    MapLocation targetKarbonite = Utils.closest(nearbyKarbonite, myMapLoc);
+                    int[][] distances = PathFinding.earthPathfinder.search(targetKarbonite.getY(), targetKarbonite.getX());
+                    Direction towardsKarbonite = PathFinding.moveDirectionToDestination(distances, myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
+                    if (gc.canMove(this.id, towardsKarbonite)) {
+                        gc.moveRobot(this.id, towardsKarbonite);
                         return;
+                    }
+                }
+                else {
+                    //Move randomly
+                    int rand = Utils.rand.nextInt(Utils.dirs.length);
+                    for (int i = 0; i < Utils.dirs.length; i++) {
+                        Direction dir = Utils.dirs[(i + rand) % Utils.dirs.length]; //Cycle through based on random offset
+                        if (gc.canMove(this.id, dir)) {
+                            //println("Moving");
+                            gc.moveRobot(this.id, dir);
+                            return;
+                        }
                     }
                 }
             }
         }
 
+    }
+
+    public ArrayList<MapLocation> senseNearbyKarbonite(MapLocation here, int senseRange) {
+        int x = here.getX();
+        int y = here.getY();
+        Planet planet = here.getPlanet();
+        ArrayList<MapLocation> nearbyKarbonite = new ArrayList<>();
+        senseRange = (int)Math.sqrt(senseRange);
+        for (int r = y - senseRange; r <= y + senseRange; ++r) {
+            if (r < 0 || r > Utils.earthHeight) {
+                continue;
+            }
+            for (int c = x - senseRange; c <= x + senseRange; ++c) {
+                if (c < 0 || c > Utils.earthWidth) {
+                    continue;
+                }
+                try {
+                    MapLocation loc = new MapLocation(planet, c, r);
+                    if (gc.karboniteAt(loc) > 0) {
+                        nearbyKarbonite.add(loc);
+                    }
+                }
+                catch (Exception e) { }
+            }
+        }
+        return nearbyKarbonite;
     }
 
     @Override

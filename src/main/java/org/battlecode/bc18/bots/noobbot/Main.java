@@ -5,7 +5,6 @@ import static org.battlecode.bc18.Utils.gc;
 import org.battlecode.bc18.PathFinding;
 import org.battlecode.bc18.Utils;
 
-import bc.Direction;
 import bc.GameController;
 import bc.Planet;
 import bc.PlanetMap;
@@ -19,6 +18,7 @@ public class Main {
         // Connect to the manager, starting the game
         gc = new GameController();
         PlanetMap earthMap = gc.startingMap(Planet.Earth);
+        Utils.setEarthDims(earthMap);
         PathFinding.initializeEarthPathfinder(earthMap);
 
         while (true) {

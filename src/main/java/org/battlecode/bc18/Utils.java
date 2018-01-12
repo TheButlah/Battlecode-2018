@@ -1,5 +1,6 @@
 package org.battlecode.bc18;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -7,6 +8,8 @@ import org.battlecode.bc18.bots.noobbot.Bot;
 
 import bc.Direction;
 import bc.GameController;
+import bc.MapLocation;
+import bc.PlanetMap;
 
 public final class Utils {
     private Utils() {} //Prevent instantiation
@@ -15,6 +18,8 @@ public final class Utils {
     public static final Random rand = new Random(SEED);
 
     public static final Direction[] dirs = Direction.values();
+    public static int earthWidth;
+    public static int earthHeight;
 
     public static GameController gc;
     /** Mapping from id to Bot objects */
@@ -34,6 +39,24 @@ public final class Utils {
 
     public static boolean toBool(long x) {
         return x > 0;
+    }
+
+    public static void setEarthDims(PlanetMap earthMap) {
+        earthWidth = (int)earthMap.getWidth();
+        earthHeight = (int)earthMap.getHeight();
+    }
+
+    public static MapLocation closest(ArrayList<MapLocation> locations, MapLocation here) {
+        MapLocation closest = null;
+        long closestDist = Integer.MAX_VALUE;
+        for (MapLocation loc : locations) {
+            long dist = loc.distanceSquaredTo(here);
+            if (dist < closestDist) {
+                closestDist = dist;
+                closest = loc;
+            }
+        }
+        return closest;
     }
 
 }
