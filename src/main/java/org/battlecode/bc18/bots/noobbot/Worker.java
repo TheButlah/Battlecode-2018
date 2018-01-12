@@ -43,7 +43,7 @@ public class Worker extends Bot {
         }
         MapLocation myMapLoc = myLoc.mapLocation();
 
-        if (turn == 1) {
+        if (turn == 1 || gc.karbonite() >= 300) {
             // for each direction, find the first availability spot for a factory.
             for (Direction dir : Utils.dirs) {
                 if (!hasPlacedFactory() && gc.canBlueprint(this.id, UnitType.Factory, dir)) {
@@ -52,24 +52,18 @@ public class Worker extends Bot {
                     targetFactory = gc.senseUnitAtLocation(myMapLoc.add(dir));
                     factoryId = targetFactory.id();
                     bots.put(factoryId, new Factory(factoryId));
-                    return;
                 }
             }
         }
 
-        // building a factory based on the blueprint created.
-        if (targetFactory != null && gc.canBuild(this.id, factoryId)) {
-            println("Building");
-            gc.build(this.id, factoryId);
-            return;
-        }
-        else {
+        if (targetFactory == null) {
             VecUnit nearbyFactories = gc.senseNearbyUnitsByType(myMapLoc, myUnit.visionRange(), UnitType.Factory);
             Unit closestFactory = null;
             long closestFactoryDist = Long.MAX_VALUE;
             for (int i = 0; i < nearbyFactories.size(); ++i) {
                 Unit factory = nearbyFactories.get(i);
-                if (factory.team() == myUnit.team() && !Utils.toBool(factory.structureIsBuilt())) {
+                if (factory.team() == myUnit.team() &&
+                  (!Utils.toBool(factory.structureIsBuilt()) || factory.health() < factory.maxHealth() * 3 / 4)) {
                     long distance = factory.location().mapLocation().distanceSquaredTo(myMapLoc);
                     if (distance < closestFactoryDist) {
                         closestFactory = factory;
@@ -81,21 +75,74 @@ public class Worker extends Bot {
             targetFactory = closestFactory;
         }
 
+        if (gc.isMoveReady(this.id)) {
+            if (targetFactory != null) {
+                // Move towards target factory
+                MapLocation factoryLoc = targetFactory.location().mapLocation();
+                int[][] distances = PathFinding.earthPathfinder.search(factoryLoc.getY(), factoryLoc.getX());
+                Direction towardsFactory = PathFinding.moveDirectionToDestination(distances, myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
+                if (gc.canMove(this.id, towardsFactory)) {
+                    gc.moveRobot(this.id, towardsFactory);
+                }
+            }
+            else {
+                // Look for nearby karbonite
+                ArrayList<MapLocation> nearbyKarbonite = senseNearbyKarbonite(myMapLoc, (int)myUnit.visionRange());
+                if (nearbyKarbonite.size() != 0) {
+                    MapLocation targetKarbonite = Utils.closest(nearbyKarbonite, myMapLoc);
+                    int[][] distances = PathFinding.earthPathfinder.search(targetKarbonite.getY(), targetKarbonite.getX());
+                    Direction towardsKarbonite = PathFinding.moveDirectionToDestination(distances, myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
+                    if (gc.canMove(this.id, towardsKarbonite)) {
+                        gc.moveRobot(this.id, towardsKarbonite);
+                    }
+                }
+                else {
+                    //Move randomly
+                    int rand = Utils.rand.nextInt(Utils.dirs.length);
+                    for (int i = 0; i < Utils.dirs.length; i++) {
+                        Direction dir = Utils.dirs[(i + rand) % Utils.dirs.length]; //Cycle through based on random offset
+                        if (gc.canMove(this.id, dir)) {
+                            //println("Moving");
+                            gc.moveRobot(this.id, dir);
+                        }
+                    }
+                }
+            }
+        }
+
         if (hasPlacedFactory() && !builtFactory) { //factory placed but not built
             if (gc.canSenseUnit(factoryId) && Utils.toBool(gc.unit(factoryId).structureIsBuilt())) {
                 builtFactory = true;
                 println("Finished building factory");
             }
         }
-        // replicate if factory not yet built
+        if (Utils.toBool(myUnit.workerHasActed())) {
+            return;
+        }
+        // replicate if factory not yet built or factory damaged
         if (targetFactory != null) {
-            for (Direction dir : Utils.dirs) {
-                if (gc.canReplicate(this.id, dir)) {
-                    println("Replicating");
-                    gc.replicate(this.id, dir);
-                    Unit newWorker = gc.senseUnitAtLocation(myMapLoc.add(dir));
-                    bots.put(newWorker.id(), new Worker(newWorker.id()));
-                    return;
+            VecUnit nearbyWorkers = gc.senseNearbyUnitsByType(myMapLoc, myUnit.visionRange(), UnitType.Worker);
+            int numNearbyFriendlyWorkers = 0;
+            for (int i = 0; i < nearbyWorkers.size(); ++i) {
+                if (nearbyWorkers.get(i).team() == myUnit.team()) {
+                    ++numNearbyFriendlyWorkers;
+                }
+            }
+            if (numNearbyFriendlyWorkers < 7) {
+                for (Direction dir : Utils.dirs) {
+                    if (gc.canReplicate(this.id, dir)) {
+                        println("Replicating");
+                        try {
+                            gc.replicate(this.id, dir);
+                            // TODO FIXME: replicate doesn't throw errors!
+                            Unit newWorker = gc.senseUnitAtLocation(myMapLoc.add(dir));
+                            if (newWorker.unitType() != UnitType.Worker) {
+                                continue;
+                            }
+                            bots.put(newWorker.id(), new Worker(newWorker.id()));
+                        }
+                        catch (Exception e) { } // replicate failed
+                    }
                 }
             }
         }
@@ -109,44 +156,19 @@ public class Worker extends Bot {
             }
         }
 
-        if (gc.isMoveReady(this.id)) {
-            if (targetFactory != null) {
-                // Move towards target factory
-                MapLocation factoryLoc = targetFactory.location().mapLocation();
-                int[][] distances = PathFinding.earthPathfinder.search(factoryLoc.getY(), factoryLoc.getX());
-                Direction towardsFactory = PathFinding.moveDirectionToDestination(distances, myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
-                if (gc.canMove(this.id, towardsFactory)) {
-                    gc.moveRobot(this.id, towardsFactory);
-                    return;
-                }
+        if (targetFactory != null) {
+            // building a factory based on the blueprint created.
+            if (gc.canBuild(this.id, factoryId)) {
+                println("Building");
+                gc.build(this.id, factoryId);
+                return;
             }
-            else {
-                // Look for nearby karbonite
-                ArrayList<MapLocation> nearbyKarbonite = senseNearbyKarbonite(myMapLoc, (int)myUnit.visionRange());
-                if (nearbyKarbonite.size() != 0) {
-                    MapLocation targetKarbonite = Utils.closest(nearbyKarbonite, myMapLoc);
-                    int[][] distances = PathFinding.earthPathfinder.search(targetKarbonite.getY(), targetKarbonite.getX());
-                    Direction towardsKarbonite = PathFinding.moveDirectionToDestination(distances, myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
-                    if (gc.canMove(this.id, towardsKarbonite)) {
-                        gc.moveRobot(this.id, towardsKarbonite);
-                        return;
-                    }
-                }
-                else {
-                    //Move randomly
-                    int rand = Utils.rand.nextInt(Utils.dirs.length);
-                    for (int i = 0; i < Utils.dirs.length; i++) {
-                        Direction dir = Utils.dirs[(i + rand) % Utils.dirs.length]; //Cycle through based on random offset
-                        if (gc.canMove(this.id, dir)) {
-                            //println("Moving");
-                            gc.moveRobot(this.id, dir);
-                            return;
-                        }
-                    }
-                }
+            if (gc.canRepair(this.id, factoryId)) {
+                println("Repairing");
+                gc.repair(this.id, factoryId);
+                return;
             }
         }
-
     }
 
     public ArrayList<MapLocation> senseNearbyKarbonite(MapLocation here, int senseRange) {
