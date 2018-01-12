@@ -8,6 +8,7 @@ import bc.Direction;
 import bc.MapLocation;
 import bc.Planet;
 import bc.PlanetMap;
+import bc.Unit;
 
 /**
  * Path Finding Algorithm for Grid-like Graph.
@@ -57,7 +58,7 @@ public class PathFinding {
         for (int r = 0; r < rows; ++r) {
             for (int c = 0; c < cols; ++c) {
                 weights[r][c] =
-                     Utils.toBool(terrainMap.isPassableTerrainAt(new MapLocation(planet, r, c)))
+                     Utils.toBool(terrainMap.isPassableTerrainAt(new MapLocation(planet, c, r)))
                      ? 1 : INFINITY;
             }
         }
@@ -193,6 +194,13 @@ public class PathFinding {
             int x = location.getX();
             int y = location.getY();
             if (0 <= x && x < cols && 0 <= y && y < rows) {
+                try {
+                    Unit unitAtLoc = Utils.gc.senseUnitAtLocation(location);
+                    if (unitAtLoc != null) {
+                        continue;
+                    }
+                }
+                catch (Exception e) { }
                 if (distances[y][x] < optimalDist) {
                     optimalDist = distances[y][x];
                     optimalDirection = dir;

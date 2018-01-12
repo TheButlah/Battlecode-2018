@@ -1,9 +1,19 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import bc.*;
+import static org.battlecode.bc18.Utils.gc;
+
+import java.util.Arrays;
+
+import org.battlecode.bc18.PathFinding;
 import org.battlecode.bc18.Utils;
 
-import static org.battlecode.bc18.Utils.gc;
+import bc.Direction;
+import bc.Location;
+import bc.MapLocation;
+import bc.Team;
+import bc.Unit;
+import bc.UnitType;
+import bc.VecUnit;
 
 public class Knight extends Bot {
 
@@ -47,7 +57,6 @@ public class Knight extends Bot {
         }
         this.target = closestUnit;
 
-
         // if we don't have a target, try to move randomly, return if can't
         if (this.target == null) {
             if (gc.isMoveReady(this.id)) {
@@ -68,9 +77,11 @@ public class Knight extends Bot {
 
         // if we can move towards the target, move
         if (gc.isMoveReady(this.id)) {
-            Direction towardsTarget = myMapLoc.directionTo(this.target.location().mapLocation());
-            if (gc.canMove(this.id, towardsTarget)) {
-                gc.moveRobot(this.id, towardsTarget);
+            MapLocation targetEnemy = this.target.location().mapLocation();
+            int[][] distances = PathFinding.earthPathfinder.search(targetEnemy.getY(), targetEnemy.getX());
+            Direction towardsEnemy = PathFinding.moveDirectionToDestination(distances, myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
+            if (gc.canMove(this.id, towardsEnemy)) {
+                gc.moveRobot(this.id, towardsEnemy);
             }
         }
 
