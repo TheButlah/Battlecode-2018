@@ -63,10 +63,11 @@ public class PathFinding {
 
     public static void main(String[] args) {
         // execution time calculation
-        PathFinding pf = new PathFinding(WEIGHT2.length, WEIGHT2[0].length);
+        int[][] testWeights = WEIGHT2;
+        PathFinding pf = new PathFinding(testWeights.length, testWeights[0].length);
         long start = System.nanoTime();
-        pf.setWeights(WEIGHT2);
-        System.out.println(pf.search(WEIGHT2.length - 1, 0, 0, WEIGHT2[0].length-1)); // search
+        pf.setWeights(testWeights);
+        System.out.println(pf.search(testWeights.length - 1, 0, 0, testWeights[0].length-1)); // search
         long end = System.nanoTime();
         System.out.println("exe time is " + (end - start) / 1000000d + " ms");
     }
