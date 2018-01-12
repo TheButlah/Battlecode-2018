@@ -18,6 +18,33 @@ public class Worker extends Robot {
         super(id);
     }
 
+    /**
+     * Replicate this worker to the first available direction.
+     * @return true if replication was successful, false otherwise
+     */
+    public boolean replicate() {
+        for (Direction dir : Direction.values()) {
+            if (replicate(dir)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Replicate this worker to the specified direction.
+     * @param dir the specified direction
+     * @return true if replication to the direction was successful, false otherwise
+     */
+    public boolean replicate(Direction dir) {
+        if (gc.canReplicate(this.id, dir)) {
+            gc.replicate(this.id, dir);
+            MyUnit.bots.put(this.id, this);
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void act() {
         // first turn, build a factory [by one unit].
