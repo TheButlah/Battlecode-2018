@@ -149,9 +149,6 @@ public class Worker extends Robot {
     //////////END OF API//////////
 
 
-
-    private Factory targetFactory;
-
     /**
      * Constructor for Worker.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
@@ -176,31 +173,23 @@ public class Worker extends Robot {
         //We already checked that we were on the map
         MapLocation myMapLoc = getMapLocation();
 
+        Integer targetFactoryId = getFactoryAssignment();
+        Factory targetFactory = targetFactoryId != null ? (Factory)MyUnit.units.get(targetFactoryId) : null;
         if (targetFactory != null && targetFactory.getHealth() < 0) {
             println("Noticed factory that wasn't dead!");
+            deassignFactory();
             targetFactory = null;
-        }
-
-        if (turn == 1 || gc.karbonite() >= 300) {
-            // for each direction, find the first available spot for a targetFactory.
-            if (!hasPlacedFactory()) {
-                for (Direction dir : dirs) {
-                    if (canBlueprint(UnitType.Factory, dir)) {
-                        targetFactory = (Factory) blueprint(UnitType.Factory, dir);
-                        return;
-                    }
-                }
-            }
         }
 
         if (turn == 1 || gc.karbonite() >= 300) {
             List<MyUnit> nearbyFactories = senseNearbyFriendlies(2, UnitType.Factory);
             if (nearbyFactories.size() == 0) {
                 // for each direction, find the first availabile spot for a factory.
-                for (Direction dir : Utils.dirs) {
-                    if (!hasPlacedFactory() && canBlueprint(UnitType.Factory, dir)) {
+                for (Direction dir : dirs) {
+                    if (canBlueprint(UnitType.Factory, dir)) {
                         println("Blueprinting: " + UnitType.Factory + " towards " + dir);
                         targetFactory = (Factory) blueprint(UnitType.Factory, dir);
+                        assignFactory(targetFactory.getID());
                     }
                 }
             }
@@ -221,6 +210,9 @@ public class Worker extends Robot {
                 }
             }
             targetFactory = closestFactory;
+            if (targetFactory != null) {
+                assignFactory(targetFactory.getID());
+            }
         }
         //targetFactory should now be set. If its still null, we lost all out factories.
 
@@ -228,29 +220,37 @@ public class Worker extends Robot {
             if (targetFactory != null) {
                 // Move towards target factory
                 MapLocation factoryLoc = targetFactory.getMapLocation();
-                int[][] distances = PathFinding.earthPathfinder.search(factoryLoc.getY(), factoryLoc.getX());
-                Direction towardsFactory = PathFinding.moveDirectionToDestination(distances, myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
-                if (isAcessible(towardsFactory)) {
+                int[][] distances = PathFinding.earthPathfinder.search(factoryLoc.getY(),
+                        factoryLoc.getX());
+                Direction towardsFactory = PathFinding.moveDirectionToDestination(distances,
+                        myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
+                if (isAccessible(towardsFactory)) {
                     move(towardsFactory);
                 }
-            } else {
+            }
+            else {
                 //No target factory, so look for nearby karbonite
-                List<MapLocation> nearbyKarbonite = senseNearbyKarbonite(myMapLoc, getVisionRange());
+                List<MapLocation> nearbyKarbonite = senseNearbyKarbonite(myMapLoc,
+                        getVisionRange());
                 if (nearbyKarbonite.size() != 0) {
                     MapLocation targetKarbonite = Utils.closest(nearbyKarbonite, myMapLoc);
-                    int[][] distances = PathFinding.earthPathfinder.search(targetKarbonite.getY(), targetKarbonite.getX());
-                    Direction towardsKarbonite = PathFinding.moveDirectionToDestination(distances, myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
-                    if (isAcessible(towardsKarbonite)) {
+                    int[][] distances = PathFinding.earthPathfinder.search(targetKarbonite.getY(),
+                            targetKarbonite.getX());
+                    Direction towardsKarbonite = PathFinding.moveDirectionToDestination(distances,
+                            myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
+                    if (isAccessible(towardsKarbonite)) {
                         move(towardsKarbonite);
                     }
-                } else {
+                }
+                else {
                     //Move randomly
                     int offset = Utils.rand.nextInt(Utils.dirs.length);
                     for (int i = 0; i < Utils.dirs.length; i++) {
                         Direction dir = Utils.dirs[(i + offset) % Utils.dirs.length]; //Cycle through based on random offset
-                        if (isAcessible(dir)) {
+                        if (isAccessible(dir)) {
                             //println("Moving");
                             move(dir);
+                            break;
                         }
                     }
                 }
@@ -327,9 +327,5 @@ public class Worker extends Robot {
             }
         }
         return nearbyKarbonite;
-    }
-
-    private boolean hasPlacedFactory() {
-        return targetFactory != null;
     }
 }

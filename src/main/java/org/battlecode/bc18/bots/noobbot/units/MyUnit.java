@@ -18,6 +18,15 @@ public abstract class MyUnit {
      * NOTE: Do not attempt to iterate through this map unless if using `Map.forEach()`.
      */
     public static final Map<Integer, MyUnit> units;
+    // TODO: Where should we put these non-API-specific globals?
+    /**
+     * A mapping of factories to numbers of workers assigned to each factory
+     */
+    public static final Map<Integer, Integer> workersPerFactory;
+    /**
+     * A mapping of workers to the factories they are assigned to
+     */
+    public static final Map<Integer, Integer> workerFactoryAssignment;
 
     /** Tells the unit to perform its action for this turn */
     public abstract void act();
@@ -307,6 +316,8 @@ public abstract class MyUnit {
         for (int i=0; i<vec.size(); i++) {
             makeUnit(vec.get(i));
         }
+        workersPerFactory = new HashMap<>();
+        workerFactoryAssignment = new HashMap<>();
     }
 
     /**
@@ -393,6 +404,20 @@ public abstract class MyUnit {
     }
 
     /**
+     * Removes a unit from the units mapping
+     * @param id
+     * @return the removed unit
+     */
+    public static MyUnit removeUnit(int id) {
+        MyUnit unit = units.get(id);
+        if (unit != null && unit.getType() == UnitType.Worker) {
+            // De-assign worker upon death
+            unit.deassignFactory();
+        }
+        return unitsModifiable.remove(id);
+    }
+
+    /**
      * Prints to stdout the contents of `obj` prefixed by the unit info.
      * @param obj The data to print out.
      */
@@ -420,13 +445,29 @@ public abstract class MyUnit {
         return oldLoc;
     }
 
-    /**
-     * Removes a unit from the units mapping
-     * @param id
-     * @return the removed unit
-     */
-    public static MyUnit removeUnit(int id) {
-        return unitsModifiable.remove(id);
+    Integer getFactoryAssignment() {
+        return workerFactoryAssignment.get(id);
+    }
+
+    void assignFactory(int factoryId) {
+        workerFactoryAssignment.put(id, factoryId);
+        if (!workersPerFactory.containsKey(factoryId)) {
+            workersPerFactory.put(factoryId, 1);
+        }
+        else {
+            workersPerFactory.put(factoryId, workersPerFactory.get(factoryId) + 1);
+        }
+    }
+
+    Integer deassignFactory() {
+        Integer factoryId = workerFactoryAssignment.remove(id);
+        if (factoryId != null) {
+            Integer count = workersPerFactory.get(factoryId);
+            if (count != null) {
+                workersPerFactory.put(factoryId, count - 1);
+            }
+        }
+        return factoryId;
     }
 
 }

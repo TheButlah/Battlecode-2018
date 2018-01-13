@@ -25,18 +25,22 @@ public class Main {
 
         while (true) {
             System.out.println("Current round: " + gc.round());
-            ArrayList<MyUnit> units = new ArrayList<>();
+            ArrayList<Integer> deadUnits = new ArrayList<>();
+            ArrayList<MyUnit> aliveUnits = new ArrayList<>();
             // TODO: need a more elegant way to detect when a unit is dead
             MyUnit.units.forEach((id, unit) -> {
                 try {
                     unit.getAsUnit();
+                    aliveUnits.add(unit);
                 }
                 catch (Exception e) {
-                    return;
+                    deadUnits.add(id);
                 }
-                units.add(unit);
             });
-            for (MyUnit unit : units) {
+            for (Integer deadUnitId : deadUnits) {
+                MyUnit.removeUnit(deadUnitId);
+            }
+            for (MyUnit unit : aliveUnits) {
                 try { //Avoid breaking the loop leading to instant loss
                     unit.act();
                 } catch (Exception e){

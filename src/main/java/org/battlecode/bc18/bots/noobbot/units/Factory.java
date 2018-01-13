@@ -49,6 +49,7 @@ public class Factory extends Structure {
 
     @Override
     public void act() {
+        System.out.println("Workers assigned to me: " + MyUnit.workersPerFactory.get(getID()));
         // Since we cant maintain the invariant for the units HashMap, manually add in units to ensure invariant.
         VecUnitID vec = getAsUnit().structureGarrison();
         for (int i=0; i<vec.size(); i++) {

@@ -21,7 +21,7 @@ public abstract class Robot extends MyUnit {
      * @param dir The direction to check.
      * @return If there are no physical objects preventing movement to that direction.
      */
-    public boolean isAcessible(Direction dir) {
+    public boolean isAccessible(Direction dir) {
         return gc.canMove(getID(), dir);
     }
 
@@ -38,7 +38,7 @@ public abstract class Robot extends MyUnit {
      * @return If there is nothing preventing movement to that direction.
      */
     public boolean canMove(Direction dir) {
-        return isAcessible(dir) && isMoveReady();
+        return isAccessible(dir) && isMoveReady();
     }
 
     /**

@@ -86,7 +86,7 @@ public class Knight extends Robot {
                 for (int i = 0; i < Utils.dirs.length; i++) {
                     Direction dir = Utils.dirs[(i + offset) % Utils.dirs.length]; //Cycle through based on random offset
                     //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAcessible()`
-                    if (isAcessible(dir)) {
+                    if (isAccessible(dir)) {
                         //println("Moving");
                         move(dir);
                         return;
@@ -103,7 +103,7 @@ public class Knight extends Robot {
             int[][] distances = PathFinding.earthPathfinder.search(targetEnemy.getY(), targetEnemy.getX());
             Direction towardsEnemy = PathFinding.moveDirectionToDestination(distances, myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
             //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAcessible()`
-            if (isAcessible(towardsEnemy)) {
+            if (isAccessible(towardsEnemy)) {
                 move(towardsEnemy);
             }
         }
