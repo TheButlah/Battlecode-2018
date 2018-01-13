@@ -445,10 +445,20 @@ public abstract class MyUnit {
         return oldLoc;
     }
 
+    /**
+     * Gets ID of the factory assigned to the {@link Worker} calling this method
+     * Pre-condition: this method should only be called by instances of the {@link Worker} class
+     * @return the factory ID
+     */
     Integer getFactoryAssignment() {
         return workerFactoryAssignment.get(id);
     }
 
+    /**
+     * Assigns the factory with the given ID to the {@link Worker} calling this method
+     * Pre-condition: this method should only be called by instances of the {@link Worker} class
+     * @param factoryId the factory ID
+     */
     void assignFactory(int factoryId) {
         workerFactoryAssignment.put(id, factoryId);
         if (!workersPerFactory.containsKey(factoryId)) {
@@ -459,6 +469,12 @@ public abstract class MyUnit {
         }
     }
 
+    /**
+     * De-assigns the factory assigned to the {@link Worker} calling this method.
+     * If there is no assigned factory, no changes are made
+     * Pre-condition: this method should only be called by instances of the {@link Worker} class
+     * @return the ID of the de-assigned factory, or null if none
+     */
     Integer deassignFactory() {
         Integer factoryId = workerFactoryAssignment.remove(id);
         if (factoryId != null) {
