@@ -25,3 +25,4 @@ out/
 examplefuncsplayer-java/*.jar
 
 working_dir
+replay*
