@@ -44,14 +44,17 @@ public class Worker extends Bot {
         MapLocation myMapLoc = myLoc.mapLocation();
 
         if (turn == 1 || gc.karbonite() >= 300) {
-            // for each direction, find the first availability spot for a factory.
-            for (Direction dir : Utils.dirs) {
-                if (!hasPlacedFactory() && gc.canBlueprint(this.id, UnitType.Factory, dir)) {
-                    println("Blueprinting");
-                    gc.blueprint(this.id, UnitType.Factory, dir);
-                    targetFactory = gc.senseUnitAtLocation(myMapLoc.add(dir));
-                    factoryId = targetFactory.id();
-                    bots.put(factoryId, new Factory(factoryId));
+            VecUnit nearbyFactories = gc.senseNearbyUnitsByType(myMapLoc, 2, UnitType.Factory);
+            if (nearbyFactories.size() == 0) {
+                // for each direction, find the first availability spot for a factory.
+                for (Direction dir : Utils.dirs) {
+                    if (!hasPlacedFactory() && gc.canBlueprint(this.id, UnitType.Factory, dir)) {
+                        println("Blueprinting");
+                        gc.blueprint(this.id, UnitType.Factory, dir);
+                        targetFactory = gc.senseUnitAtLocation(myMapLoc.add(dir));
+                        factoryId = targetFactory.id();
+                        bots.put(factoryId, new Factory(factoryId));
+                    }
                 }
             }
         }
