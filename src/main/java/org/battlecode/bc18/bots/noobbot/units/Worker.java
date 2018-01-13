@@ -34,84 +34,112 @@ public class Worker extends Robot {
     }
 
     /**
-     * Blueprints a unit of the given type in the given direction.
-     * Does not check to see if it can first.
+     * Blueprints a structure of the given type in the given direction.
+     * NOTE: Does not check to see if it can first.
      * @param type The UnitType to blueprint. Must be a structure.
      * @param dir The direction to create the blueprint.
      * @return The structure blueprinted.
      */
     public Structure blueprint(UnitType type, Direction dir) {
-        assert (type == UnitType.Factory || type == UnitType.Rocket);
         assert canBlueprint(type, dir);
-        if (gc.canBlueprint(this.id, ut, dir)) {
-            println("Blueprinting: " + ut + " toward " + dir);
-            gc.blueprint(this.id, UnitType.Factory, dir);
-            Unit unit = gc.senseUnitAtLocation(getMapLocation().add(dir));
-            return (Structure) MyUnit.makeUnit(unit);
-        }
-        return null;
+        println("Blueprinting: " + type + " towards " + dir);
+        gc.blueprint(this.id, type, dir);
+        Unit unit = gc.senseUnitAtLocation(getMapLocation().add(dir));
+        return (Structure) MyUnit.makeUnit(unit);
     }
 
     /**
-     * Builds a given blueprint, increasing its health by the worker's build amount.
-     * If raised to maximum health, the blueprint becomes a completed structure.
-     * @param buildUnitID UnitID to build
-     * @return true if building was successful, false otherwise
+     * Checks to see if this worker can build up a particular structure's blueprint.
+     * The worker and the blueprint must be adjacent to each other.
+     * The worker cannot already have performed an action this round.
+     * @param blueprint The blueprint to build up.
+     * @return Whether the worker can build up the blueprint.
      */
-    public boolean build(int buildUnitID) {
-        if (gc.canBuild(this.id, buildUnitID)) {
-            println("Building " + buildUnitID);
-            gc.build(this.id, factoryId);
-            return true;
-        }
-        return false;
+    public boolean canBuild(Structure blueprint) {
+        return gc.canBuild(this.id, blueprint.getID());
+    }
+
+    /**
+     * Builds a given structure's blueprint, increasing its health by the worker's build amount.
+     * If raised to maximum health, the blueprint becomes a completed structure.
+     * NOTE: Does not check to see if it can build first.
+     * @param blueprint The structure to build.
+     */
+    public void build(Structure blueprint) {
+        assert canBuild(blueprint);
+        println("Building: " + blueprint);
+        gc.build(this.id, blueprint.getID());
+    }
+
+    /**
+     * Checks to see if this worker can repair a particular structure.
+     * The structure must be built.
+     * The worker must be within range of the structure.
+     * The worker cannot already have performed an action this round.
+     * @param structure The structure to repair.
+     * @return Whether the worker can repair the structure.
+     */
+    public boolean canRepair(Structure structure) {
+        return gc.canRepair(this.id, structure.getID());
     }
 
     /**
      * Commands the worker to repair a structure, replenishing health to it.
      * This can only be done to structures which have been fully built.
-     * @param structureID structure id to repair
-     * @return true if repairing was successful, false otherwise
+     * NOTE: Does not check to see if it can repair first.
+     * @param structure The structure to repair
      */
-    public boolean repair(int structureID) {
-        if (gc.canRepair(this.id, structureID)) {
-            println("Repairing " + structureID);
-            gc.repair(this.id, structureID);
-            return true;
-        }
-        return false;
+    public void repair(Structure structure) {
+        assert canRepair(structure);
+        println("Repairing: " + structure);
+        gc.repair(this.id, structure.getID());
+    }
+
+    /**
+     * Checks to see if this worker can harvest karbonite in a particular direction.
+     * The worker cannot already have performed an action this round.
+     * The direction must contain karbonite.
+     * @param direction The direction in which to harvest.
+     * @return Whether the worker can harvest the karbonite.
+     */
+    public boolean canHarvest(Direction direction) {
+        return gc.canHarvest(this.id, direction);
     }
     
     /**
-     * Harvests up to the worker's harvest amount of karbonite from the given location,
-     * adding it to the team's resource pool.
-     * @param dir the given direction to harvest
-     * @return true if harvesting was successful, false otherwise
+     * Harvests up to the worker's harvest amount of karbonite from the given location.
+     * NOTE: Does not check if harvesting is permitted.
+     * @param direction The direction in which to harvest.
      */
-    public boolean harvest(Direction dir) {
-        if (gc.canHarvest(this.id, dir)) {
-            println("Harvesting");
-            gc.harvest(this.id, dir);
-            return true;
-        }
-        return false;
+    public void harvest(Direction direction) {
+        assert canHarvest(direction);
+        println("Harvesting: towards " + direction);
+        gc.harvest(this.id, direction);
+    }
+
+    /**
+     * Checks to see if this worker can replicate in a particular direction.
+     * The the worker's ability heat must be sufficiently low.
+     * The team must have sufficient karbonite in its resource pool.
+     * The square in the given direction must be empty.
+     * @param direction The direction in which to replicate.
+     * @return Whether the worker can replicate.
+     */
+    public boolean canReplicate(Direction direction) {
+        return gc.canReplicate(this.id, direction);
     }
 
     /**
      * Replicates a worker in the given direction.
-     * Subtracts the cost of the worker from the team's resource pool.
-     * @param dir the specified direction
-     * @return true if replication to the direction was successful, false otherwise
+     * NOTE: Does not check if replication is permitted.
+     * @param direction The direction in which to replicate.
+     * @return The new replicated worker.
      */
-    public boolean replicate(Direction dir) {
-        if (gc.canReplicate(this.id, dir)) {
-            println("Replicating");
-            gc.replicate(this.id, dir);
-            int newUnitID = gc.senseUnitAtLocation(getMapLocation().add(dir)).id();
-            units.put(newUnitID, new Worker(newUnitID));
-            return true;
-        }
-        return false;
+    public Worker replicate(Direction direction) {
+        println("Replicating: towards " + direction);
+        gc.replicate(this.id, direction);
+        Unit unit = gc.senseUnitAtLocation(getMapLocation().add(direction));
+        return new Worker(unit);
     }
 
     @Override
@@ -212,6 +240,6 @@ public class Worker extends Robot {
     }
 
     private boolean hasPlacedFactory() {
-        return factoryId != -1;
+        return factory != null;
     }
 }

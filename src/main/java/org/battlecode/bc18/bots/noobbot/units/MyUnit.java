@@ -85,7 +85,7 @@ public abstract class MyUnit {
 
 
     /** Mapping from id to MyUnit objects (for internal use only) */
-    protected static final HashMap<Integer, MyUnit> unitsModifiable = new HashMap<>();
+    protected static final Map<Integer, MyUnit> unitsModifiable = new HashMap<>();
     /** Unmodifiable mapping from id to MyUnit objects (safe for external use) */
     public static final Map<Integer, MyUnit> units = Collections.unmodifiableMap(unitsModifiable);
 
