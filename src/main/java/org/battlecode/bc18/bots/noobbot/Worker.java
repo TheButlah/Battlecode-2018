@@ -127,8 +127,37 @@ public class Worker extends Bot {
         }
 
         if (targetFactory != null) {
+            boolean factoryBuilt = Utils.toBool(targetFactory.structureIsBuilt());
+            // replicate if factory not yet built or factory damaged
+            if (!factoryBuilt || targetFactory.health() < 3 * targetFactory.maxHealth() / 4) {
+                VecUnit nearbyWorkers = gc.senseNearbyUnitsByType(myMapLoc, myUnit.visionRange(), UnitType.Worker);
+                int numNearbyFriendlyWorkers = 0;
+                for (int i = 0; i < nearbyWorkers.size(); ++i) {
+                    if (nearbyWorkers.get(i).team() == myUnit.team()) {
+                        ++numNearbyFriendlyWorkers;
+                    }
+                }
+                if (numNearbyFriendlyWorkers < 7) {
+                    for (Direction dir : Utils.dirs) {
+                        if (gc.canReplicate(this.id, dir)) {
+                            println("Replicating");
+                            try {
+                                gc.replicate(this.id, dir);
+                                // TODO FIXME: replicate doesn't throw errors!
+                                Unit newWorker = gc.senseUnitAtLocation(myMapLoc.add(dir));
+                                if (newWorker.unitType() != UnitType.Worker) {
+                                    continue;
+                                }
+                                bots.put(newWorker.id(), new Worker(newWorker.id()));
+                                return;
+                            }
+                            catch (Exception e) { } // replicate failed
+                        }
+                    }
+                }
+            }
             // building a factory based on the blueprint created.
-            if (!Utils.toBool(targetFactory.structureIsBuilt())) {
+            if (!factoryBuilt) {
                 if (gc.canBuild(this.id, targetFactory.id())) {
                     println("Building");
                     gc.build(this.id, targetFactory.id());
@@ -139,32 +168,6 @@ public class Worker extends Bot {
                 println("Repairing");
                 gc.repair(this.id, targetFactory.id());
                 return;
-            }
-            // replicate if factory not yet built or factory damaged
-            VecUnit nearbyWorkers = gc.senseNearbyUnitsByType(myMapLoc, myUnit.visionRange(), UnitType.Worker);
-            int numNearbyFriendlyWorkers = 0;
-            for (int i = 0; i < nearbyWorkers.size(); ++i) {
-                if (nearbyWorkers.get(i).team() == myUnit.team()) {
-                    ++numNearbyFriendlyWorkers;
-                }
-            }
-            if (numNearbyFriendlyWorkers < 7) {
-                for (Direction dir : Utils.dirs) {
-                    if (gc.canReplicate(this.id, dir)) {
-                        println("Replicating");
-                        try {
-                            gc.replicate(this.id, dir);
-                            // TODO FIXME: replicate doesn't throw errors!
-                            Unit newWorker = gc.senseUnitAtLocation(myMapLoc.add(dir));
-                            if (newWorker.unitType() != UnitType.Worker) {
-                                continue;
-                            }
-                            bots.put(newWorker.id(), new Worker(newWorker.id()));
-                            return;
-                        }
-                        catch (Exception e) { } // replicate failed
-                    }
-                }
             }
         }
 
