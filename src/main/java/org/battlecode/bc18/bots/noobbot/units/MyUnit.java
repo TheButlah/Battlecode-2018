@@ -246,9 +246,20 @@ public abstract class MyUnit {
         return getLocation().isOnMap();
     }
 
+    /** Whether the unit is in a garrison */
+    public boolean isInGarrison() {
+        return getLocation().isInGarrison();
+    }
+
     /** Gets the health of the unit */
     public int getHealth() {
-        return (int) getAsUnit().health();
+        try {
+            return (int) getAsUnit().health();
+        }
+        catch (Exception e) {
+            // If unit does not exist, then we assume health is -1
+            return -1;
+        }
     }
 
     @Override
@@ -308,7 +319,7 @@ public abstract class MyUnit {
         this.location = unit.location();
         this.maxHealth = (int) unit.maxHealth();
 
-        if (this.team != gc.team() || !this.location.isOnPlanet(gc.planet())) {
+        if (this.team != gc.team() || (!this.location.isInGarrison() && !this.location.isOnPlanet(gc.planet()))) {
             throw new RuntimeException("The unit " + unit + " doesn't belong to us!");
         }
 
@@ -409,5 +420,13 @@ public abstract class MyUnit {
         return oldLoc;
     }
 
+    /**
+     * Removes a unit from the units mapping
+     * @param id
+     * @return the removed unit
+     */
+    public static MyUnit removeUnit(int id) {
+        return unitsModifiable.remove(id);
+    }
 
 }

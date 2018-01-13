@@ -90,7 +90,7 @@ public class Worker extends Robot {
      */
     public void repair(Structure structure) {
         assert canRepair(structure);
-        println("Repairing: " + structure);
+        //println("Repairing: " + structure);
         gc.repair(getID(), structure.getID());
     }
 
@@ -112,7 +112,7 @@ public class Worker extends Robot {
      */
     public void harvest(Direction direction) {
         assert canHarvest(direction);
-        println("Harvesting: towards " + direction);
+        //println("Harvesting: towards " + direction);
         gc.harvest(getID(), direction);
     }
 
@@ -135,9 +135,12 @@ public class Worker extends Robot {
      * @return The new replicated worker.
      */
     public Worker replicate(Direction direction) {
-        println("Replicating: towards " + direction);
+        //println("Replicating: towards " + direction);
         gc.replicate(getID(), direction);
         Unit unit = gc.senseUnitAtLocation(getMapLocation().add(direction));
+        if (unit.unitType() != UnitType.Worker) {
+            return null;
+        }
         return new Worker(unit);
     }
 
@@ -266,9 +269,11 @@ public class Worker extends Robot {
                 if (nearbyWorkers.size() < 7) {
                     for (Direction dir : Utils.dirs) {
                         if (canReplicate(dir)) {
-                            println("Replicating");
+                            //println("Replicating");
                             MyUnit newWorker = replicate(dir);
-                            return;
+                            if (newWorker != null) {
+                                return;
+                            }
                         }
                     }
                 }
@@ -276,13 +281,13 @@ public class Worker extends Robot {
             // building a factory based on the blueprint created.
             if (!factoryBuilt) {
                 if (canBuild(targetFactory)) {
-                    println("Building");
+                    //println("Building");
                     build(targetFactory);
                     return;
                 }
             }
             else if (canRepair(targetFactory)) {
-                println("Repairing");
+                //println("Repairing");
                 repair(targetFactory);
                 return;
             }
@@ -291,7 +296,7 @@ public class Worker extends Robot {
         // if can see Karbonite, mine it
         for (Direction dir : Utils.dirs) {
             if (canHarvest(dir)) {
-                println("Harvesting");
+                //println("Harvesting");
                 harvest(dir);
                 return;
             }

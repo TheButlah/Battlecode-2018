@@ -73,6 +73,9 @@ public class Factory extends Structure {
             if (getAsUnit().structureGarrison().size() == 0) break;
             if (gc.canUnload(getID(), dir)) {
                 gc.unload(getID(), dir);
+                MapLocation unloadLoc = myMapLoc.add(dir);
+                Unit unloadedUnit = gc.senseUnitAtLocation(unloadLoc);
+                MyUnit.units.get(unloadedUnit.id()).setLocation(unloadLoc);
                 // no break here so it can unload multiple (I think that's allowed)
             }
         }
