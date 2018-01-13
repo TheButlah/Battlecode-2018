@@ -1,7 +1,9 @@
 package org.battlecode.bc18;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.PriorityQueue;
 
 import bc.Direction;
@@ -23,9 +25,12 @@ public class PathFinding {
     private final int rows;
     private final int cols;
     private final boolean[][] visited;
-    private final int[][] distance;
+    private int[][] distance;
     private final PriorityQueue<Node> queue;
     private int[][] weights;
+    private HashMap<String, int[][]> cache;
+    private ArrayList<String> cacheKeys;
+    private final int MAX_CACHE_SIZE = 100;
 
     public static PathFinding earthPathfinder;
 
@@ -33,7 +38,6 @@ public class PathFinding {
         this.rows = rows;
         this.cols = cols;
         visited = new boolean[rows][cols];
-        distance = new int[rows][cols];
         queue = new PriorityQueue<>(Comparator.comparingInt(o -> distance[o.r][o.c]));
     }
 
@@ -48,9 +52,12 @@ public class PathFinding {
         if (weights[0].length != cols) {
             throw new IllegalArgumentException("Incorrect number of cols provided in weights!");
         }
+        cache = new HashMap<>();
+        cacheKeys = new ArrayList<>();
     }
 
     public void setWeights(PlanetMap terrainMap) {
+        int[][] weights = this.weights;
         if (weights == null) {
             weights = new int[rows][cols];
         }
@@ -62,6 +69,7 @@ public class PathFinding {
                      ? 1 : INFINITY;
             }
         }
+        setWeights(weights);
     }
 
     public static void main(String[] args) {
@@ -78,7 +86,14 @@ public class PathFinding {
     }
 
     public int[][] search(int targetRow, int targetCol) {
+        String key = targetRow + "," + targetCol;
+        if (cache.containsKey(key)) {
+            cacheKeys.remove(key);
+            cacheKeys.add(key);
+            return cache.get(key);
+        }
         queue.clear();
+        distance = new int[rows][cols];
         for (int[] row : distance) {
             Arrays.fill(row, INFINITY);
         }
@@ -131,7 +146,12 @@ public class PathFinding {
 
             visit++;
         }
-
+        cache.put(key, distance);
+        cacheKeys.add(key);
+        if (cacheKeys.size() > MAX_CACHE_SIZE) {
+            String removedKey = cacheKeys.remove(0);
+            cache.remove(removedKey);
+        }
         return distance;
     }
 
