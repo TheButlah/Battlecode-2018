@@ -263,8 +263,9 @@ public class Worker extends Robot {
 
         if (targetFactory != null) {
             boolean factoryBuilt = targetFactory.isBuilt();
-            // replicate if factory not yet built or factory damaged
-            if (!factoryBuilt || targetFactory.getHealth() < 3 * targetFactory.getMaxHealth() / 4) {
+            boolean needsRepair = targetFactory.getHealth() < 3 * targetFactory.getMaxHealth() / 4;
+            if (!factoryBuilt || needsRepair) {
+                // replicate if factory not yet built or factory damaged
                 List<MyUnit> nearbyWorkers = senseNearbyFriendlies(UnitType.Worker);
                 if (nearbyWorkers.size() < 7) {
                     for (Direction dir : Utils.dirs) {
@@ -277,19 +278,26 @@ public class Worker extends Robot {
                         }
                     }
                 }
-            }
-            // building a factory based on the blueprint created.
-            if (!factoryBuilt) {
-                if (canBuild(targetFactory)) {
-                    //println("Building");
-                    build(targetFactory);
+                // building a factory based on the blueprint created.
+                if (!factoryBuilt) {
+                    if (canBuild(targetFactory)) {
+                        //println("Building");
+                        build(targetFactory);
+                        return;
+                    }
+                }
+                else if (canRepair(targetFactory)) {
+                    //println("Repairing");
+                    repair(targetFactory);
                     return;
                 }
             }
-            else if (canRepair(targetFactory)) {
-                //println("Repairing");
-                repair(targetFactory);
-                return;
+            else {
+                // De-assign worker from factory so he can explore the map
+                if (MyUnit.workersPerFactory.get(targetFactory.getID()) > 3) {
+                    deassignFactory();
+                    targetFactory = null;
+                }
             }
         }
 
