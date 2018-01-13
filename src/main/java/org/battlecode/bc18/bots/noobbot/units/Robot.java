@@ -6,8 +6,12 @@ import static org.battlecode.bc18.Utils.gc;
 
 public abstract class Robot extends MyUnit {
 
-    Robot(int id) {
-        super(id);
+    /**
+     * Constructor for MyUnit.
+     * @exception RuntimeException Occurs when a unit with that id already exists.
+     */
+    protected Robot(Unit unit) {
+        super(unit);
     }
 
     public boolean attack(int targetID) {

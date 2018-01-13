@@ -6,8 +6,13 @@ public class Factory extends Structure {
 
     public static final UnitType TYPE = UnitType.Factory;
 
-    Factory(int id) {
-        super(id);
+    /**
+     * Constructor for Factory.
+     * @exception RuntimeException Occurs when a unit with that id already exists.
+     */
+    Factory(Unit unit) {
+        super(unit);
+        assert unit.unitType() == UnitType.Factory;
     }
 
     @Override

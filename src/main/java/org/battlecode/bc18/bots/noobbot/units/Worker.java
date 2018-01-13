@@ -2,7 +2,6 @@ package org.battlecode.bc18.bots.noobbot.units;
 
 import bc.*;
 import org.battlecode.bc18.Utils;
-import org.battlecode.bc18.bots.noobbot.Main;
 
 import static org.battlecode.bc18.Utils.gc;
 
@@ -10,30 +9,47 @@ public class Worker extends Robot {
 
     public static final UnitType TYPE = UnitType.Worker;
     
-    private int factoryId = -1; //-1 indicates no factory has been placed
-    private boolean builtFactory = false;
-    private Unit targetFactory = null;
+    private Factory factory;
 
-    Worker(int id) {
-        super(id);
+    /**
+     * Constructor for Worker.
+     * @exception RuntimeException Occurs when a unit with that id already exists.
+     */
+    Worker(Unit unit) {
+        super(unit);
+        assert unit.unitType() == UnitType.Worker;
+    }
+
+    /**
+     * Checks to see if this worker can blueprint a particular structure in a given direction.
+     * The worker can only blueprint factories, and rockets if Rocketry has been researched.
+     * The team must have sufficient karbonite in its resource pool.
+     * The worker cannot already have performed an action this round.
+     * @param type The type of structure to blueprint.
+     * @param dir The direction to create the blueprint.
+     * @return Whether the worker can perform the blueprint.
+     */
+    public boolean canBlueprint(UnitType type, Direction dir) {
+        return gc.canBlueprint(this.id, type, dir);
     }
 
     /**
      * Blueprints a unit of the given type in the given direction.
-     * Subtract cost of that unit from the team's resource pool.
-     * @param ut UnitType to blueprint
-     * @param dir the given direction
-     * @return true if blueprinting was successful, false otherwise
+     * Does not check to see if it can first.
+     * @param type The UnitType to blueprint. Must be a structure.
+     * @param dir The direction to create the blueprint.
+     * @return The structure blueprinted.
      */
-    public boolean blueprint(UnitType ut, Direction dir) {
+    public Structure blueprint(UnitType type, Direction dir) {
+        assert (type == UnitType.Factory || type == UnitType.Rocket);
+        assert canBlueprint(type, dir);
         if (gc.canBlueprint(this.id, ut, dir)) {
             println("Blueprinting: " + ut + " toward " + dir);
             gc.blueprint(this.id, UnitType.Factory, dir);
-            factoryId = gc.senseUnitAtLocation(getMyMapLocation().add(dir)).id();
-            bots.put(factoryId, new Factory(factoryId));
-            return true;
+            Unit unit = gc.senseUnitAtLocation(getMapLocation().add(dir));
+            return (Structure) MyUnit.makeUnit(unit);
         }
-        return false;
+        return null;
     }
 
     /**
@@ -91,8 +107,8 @@ public class Worker extends Robot {
         if (gc.canReplicate(this.id, dir)) {
             println("Replicating");
             gc.replicate(this.id, dir);
-            int newUnitID = gc.senseUnitAtLocation(getMyMapLocation().add(dir)).id();
-            bots.put(newUnitID, new Worker(newUnitID));
+            int newUnitID = gc.senseUnitAtLocation(getMapLocation().add(dir)).id();
+            units.put(newUnitID, new Worker(newUnitID));
             return true;
         }
         return false;

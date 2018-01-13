@@ -8,8 +8,13 @@ public class Mage extends Robot {
 
     public static final UnitType TYPE = UnitType.Mage;
 
-    Mage(int id) {
-        super(id);
+    /**
+     * Constructor for MyUnit.
+     * @exception RuntimeException Occurs when a unit with that id already exists.
+     */
+    Mage(Unit unit) {
+        super(unit);
+        assert unit.unitType() == UnitType.Mage;
     }
 
     /**

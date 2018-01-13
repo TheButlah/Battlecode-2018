@@ -10,8 +10,13 @@ public class Knight extends Robot {
 
     public static final UnitType TYPE = UnitType.Knight;
 
-    Knight(int id) {
-        super(id);
+    /**
+     * Constructor for MyUnit.
+     * @exception RuntimeException Occurs when a unit with that id already exists.
+     */
+    Knight(Unit unit) {
+        super(unit);
+        assert unit.unitType() == UnitType.Knight;
     }
 
     /**

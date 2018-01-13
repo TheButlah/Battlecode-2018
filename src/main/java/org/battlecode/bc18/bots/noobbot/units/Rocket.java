@@ -6,8 +6,13 @@ public class Rocket extends Structure {
 
     public static final UnitType TYPE = UnitType.Rocket;
 
-    Rocket(int id) {
-        super(id);
+    /**
+     * Constructor for MyUnit.
+     * @exception RuntimeException Occurs when a unit with that id already exists.
+     */
+    Rocket(Unit unit) {
+        super(unit);
+        assert unit.unitType() == UnitType.Rocket;
     }
 
     @Override

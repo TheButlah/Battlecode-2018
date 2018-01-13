@@ -8,8 +8,13 @@ public class Ranger extends Robot {
 
     public static final UnitType TYPE = UnitType.Ranger;
 
-    Ranger(int id) {
-        super(id);
+    /**
+     * Constructor for MyUnit.
+     * @exception RuntimeException Occurs when a unit with that id already exists.
+     */
+    Ranger(Unit unit) {
+        super(unit);
+        assert unit.unitType() == UnitType.Ranger;
     }
 
     /**

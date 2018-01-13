@@ -8,8 +8,13 @@ public class Healer extends Robot {
 
     public static final UnitType TYPE = UnitType.Healer;
 
-    Healer(int id) {
-        super(id);
+    /**
+     * Constructor for Healer.
+     * @exception RuntimeException Occurs when a unit with that id already exists.
+     */
+    Healer(Unit unit) {
+        super(unit);
+        assert unit.unitType() == UnitType.Healer;
     }
 
     /**
