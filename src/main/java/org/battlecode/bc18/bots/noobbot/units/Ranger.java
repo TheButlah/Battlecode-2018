@@ -2,15 +2,15 @@ package org.battlecode.bc18.bots.noobbot.units;
 
 import bc.*;
 
-import static org.battlecode.bc18.Utils.gc;
+import static org.battlecode.bc18.bots.util.Utils.gc;
 
 public class Ranger extends Robot {
 
     public static final UnitType TYPE = UnitType.Ranger;
 
     /**
-     * Constructor for MyUnit.
-     * @exception RuntimeException Occurs when a unit with that id already exists.
+     * Constructor for Ranger.
+     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
     Ranger(Unit unit) {
         super(unit);
@@ -25,14 +25,14 @@ public class Ranger extends Robot {
      * @param loc the MapLocation to begin snipping
      * @return true if snipping was successful, false otherwise
      */
-    public boolean beginSnipe(MapLocation loc) {
+    /*public boolean beginSnipe(MapLocation loc) {
         if (gc.isBeginSnipeReady(this.id) &&
                 gc.canBeginSnipe(this.id, loc)) {
             gc.beginSnipe(this.id, loc);
             return true;
         }
         return false;
-    }
+    }*/
 
     @Override
     public void act() {

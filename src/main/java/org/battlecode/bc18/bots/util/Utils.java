@@ -1,10 +1,8 @@
-package org.battlecode.bc18;
+package org.battlecode.bc18.bots.util;
 
 import bc.Direction;
 import bc.GameController;
-import org.battlecode.bc18.bots.noobbot.units.MyUnit;
 
-import java.util.HashMap;
 import java.util.Random;
 
 public final class Utils {

@@ -7,8 +7,8 @@ public class Rocket extends Structure {
     public static final UnitType TYPE = UnitType.Rocket;
 
     /**
-     * Constructor for MyUnit.
-     * @exception RuntimeException Occurs when a unit with that id already exists.
+     * Constructor for Rocket.
+     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
     Rocket(Unit unit) {
         super(unit);

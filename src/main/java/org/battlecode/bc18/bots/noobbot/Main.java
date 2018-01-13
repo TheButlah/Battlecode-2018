@@ -1,18 +1,13 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import static org.battlecode.bc18.Utils.gc;
+import static org.battlecode.bc18.bots.util.Utils.gc;
 
 import org.battlecode.bc18.PathFinding;
-import org.battlecode.bc18.Utils;
 
-import bc.Direction;
 import bc.GameController;
 import bc.Planet;
 import bc.PlanetMap;
-import bc.Unit;
-import bc.UnitType;
-import bc.VecUnit;
-import org.battlecode.bc18.bots.noobbot.units.*;
+import org.battlecode.bc18.bots.noobbot.units.MyUnit;
 
 public class Main {
 
@@ -25,24 +20,14 @@ public class Main {
 
         while (true) {
             System.out.println("Current round: " + gc.round());
-            //System.out.println(earthPathfinder.search(0, 0, (int)earthMap.getHeight() - 1, (int)earthMap.getWidth() - 1));
-            // VecUnit is a class that you can think of as similar to ArrayList<Unit>, but immutable.
-            /*VecUnit units = gc.myUnits();
-            for (int i = 0; i < units.size(); i++) {
+            //Loop through all units. We must use `forEach()` because the underlying map is being modified.
+            MyUnit.units.forEach((id, unit) -> {
                 try { //Avoid breaking the loop leading to instant loss
-                    Unit unit = units.get(i);  //Dont try to hold a reference to this, it
-                    UnitType type = unit.unitType();
-                    int id = unit.id();
-                    MyUnit bot = Utils.bots.get(id);
-                    if (bot == null) {
-                        bot = makeBot(unit);
-                        Utils.bots.put(id, bot);
-                    }
-                    bot.act();
+                    unit.act();
                 } catch (Exception e){
                     e.printStackTrace();
                 }
-            }*/
+            });
             gc.nextTurn();
         }
     }

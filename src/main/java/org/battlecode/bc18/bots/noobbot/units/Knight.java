@@ -1,18 +1,16 @@
 package org.battlecode.bc18.bots.noobbot.units;
 
 import bc.*;
-import org.battlecode.bc18.Utils;
-import org.battlecode.bc18.bots.noobbot.Main;
 
-import static org.battlecode.bc18.Utils.gc;
+import static org.battlecode.bc18.bots.util.Utils.gc;
 
 public class Knight extends Robot {
 
     public static final UnitType TYPE = UnitType.Knight;
 
     /**
-     * Constructor for MyUnit.
-     * @exception RuntimeException Occurs when a unit with that id already exists.
+     * Constructor for Knight.
+     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
     Knight(Unit unit) {
         super(unit);
@@ -25,9 +23,9 @@ public class Knight extends Robot {
      * @return true if javelin was successful, false otherwise
      */
     public boolean javelin(int targetID) {
-        if (gc.isJavelinReady(this.id) &&
-                gc.canJavelin(this.id, targetID)) {
-            gc.javelin(this.id, targetID);
+        if (gc.isJavelinReady(getID()) &&
+                gc.canJavelin(getID(), targetID)) {
+            gc.javelin(getID(), targetID);
             return true;
         }
         return false;

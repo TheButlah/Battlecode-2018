@@ -1,24 +1,17 @@
 package org.battlecode.bc18.bots.noobbot.units;
 
 import bc.*;
-import org.battlecode.bc18.Utils;
+import org.battlecode.bc18.bots.util.Pair;
+import org.battlecode.bc18.bots.util.Utils;
 
-import static org.battlecode.bc18.Utils.gc;
+import java.util.List;
+
+import static org.battlecode.bc18.bots.util.Utils.dirs;
+import static org.battlecode.bc18.bots.util.Utils.gc;
 
 public class Worker extends Robot {
 
     public static final UnitType TYPE = UnitType.Worker;
-    
-    private Factory factory;
-
-    /**
-     * Constructor for Worker.
-     * @exception RuntimeException Occurs when a unit with that id already exists.
-     */
-    Worker(Unit unit) {
-        super(unit);
-        assert unit.unitType() == UnitType.Worker;
-    }
 
     /**
      * Checks to see if this worker can blueprint a particular structure in a given direction.
@@ -30,7 +23,7 @@ public class Worker extends Robot {
      * @return Whether the worker can perform the blueprint.
      */
     public boolean canBlueprint(UnitType type, Direction dir) {
-        return gc.canBlueprint(this.id, type, dir);
+        return gc.canBlueprint(getID(), type, dir);
     }
 
     /**
@@ -43,7 +36,7 @@ public class Worker extends Robot {
     public Structure blueprint(UnitType type, Direction dir) {
         assert canBlueprint(type, dir);
         println("Blueprinting: " + type + " towards " + dir);
-        gc.blueprint(this.id, type, dir);
+        gc.blueprint(getID(), type, dir);
         Unit unit = gc.senseUnitAtLocation(getMapLocation().add(dir));
         return (Structure) MyUnit.makeUnit(unit);
     }
@@ -56,7 +49,7 @@ public class Worker extends Robot {
      * @return Whether the worker can build up the blueprint.
      */
     public boolean canBuild(Structure blueprint) {
-        return gc.canBuild(this.id, blueprint.getID());
+        return gc.canBuild(getID(), blueprint.getID());
     }
 
     /**
@@ -68,7 +61,7 @@ public class Worker extends Robot {
     public void build(Structure blueprint) {
         assert canBuild(blueprint);
         println("Building: " + blueprint);
-        gc.build(this.id, blueprint.getID());
+        gc.build(getID(), blueprint.getID());
     }
 
     /**
@@ -80,7 +73,7 @@ public class Worker extends Robot {
      * @return Whether the worker can repair the structure.
      */
     public boolean canRepair(Structure structure) {
-        return gc.canRepair(this.id, structure.getID());
+        return gc.canRepair(getID(), structure.getID());
     }
 
     /**
@@ -92,7 +85,7 @@ public class Worker extends Robot {
     public void repair(Structure structure) {
         assert canRepair(structure);
         println("Repairing: " + structure);
-        gc.repair(this.id, structure.getID());
+        gc.repair(getID(), structure.getID());
     }
 
     /**
@@ -103,7 +96,7 @@ public class Worker extends Robot {
      * @return Whether the worker can harvest the karbonite.
      */
     public boolean canHarvest(Direction direction) {
-        return gc.canHarvest(this.id, direction);
+        return gc.canHarvest(getID(), direction);
     }
     
     /**
@@ -114,7 +107,7 @@ public class Worker extends Robot {
     public void harvest(Direction direction) {
         assert canHarvest(direction);
         println("Harvesting: towards " + direction);
-        gc.harvest(this.id, direction);
+        gc.harvest(getID(), direction);
     }
 
     /**
@@ -126,7 +119,7 @@ public class Worker extends Robot {
      * @return Whether the worker can replicate.
      */
     public boolean canReplicate(Direction direction) {
-        return gc.canReplicate(this.id, direction);
+        return gc.canReplicate(getID(), direction);
     }
 
     /**
@@ -137,9 +130,26 @@ public class Worker extends Robot {
      */
     public Worker replicate(Direction direction) {
         println("Replicating: towards " + direction);
-        gc.replicate(this.id, direction);
+        gc.replicate(getID(), direction);
         Unit unit = gc.senseUnitAtLocation(getMapLocation().add(direction));
         return new Worker(unit);
+    }
+
+
+
+    //////////END OF API//////////
+
+
+
+    private Factory factory;
+
+    /**
+     * Constructor for Worker.
+     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
+     */
+    Worker(Unit unit) {
+        super(unit);
+        assert unit.unitType() == UnitType.Worker;
     }
 
     @Override
@@ -149,85 +159,87 @@ public class Worker extends Robot {
         // else, move randomly.
         // try mining if walked over the Karbonite.
         long turn = gc.round();
-        Unit myUnit = getAsUnit();
-        Location myLoc = myUnit.location();
-        if (!myLoc.isOnMap()) {
-            println("TODO: handle worker in space");
+        if (!isOnMap()) {
+            //TODO: Handle worker in space/garrison/dead?
+            println("TODO: handle worker not on map");
             return;
         }
-        MapLocation myMapLoc = myLoc.mapLocation();
+        //We already checked that we were on the map
+        MapLocation myMapLoc = getMapLocation();
 
         if (turn == 1) {
-            // for each direction, find the first availability spot for a factory.
-            for (Direction dir : Utils.dirs) {
-                if (!hasPlacedFactory()) {
-                    if (blueprint(UnitType.Factory, dir))
+            // for each direction, find the first available spot for a factory.
+            if (!hasPlacedFactory()) {
+                for (Direction dir : dirs) {
+                    if (canBlueprint(UnitType.Factory, dir)) {
+                        factory = (Factory) blueprint(UnitType.Factory, dir);
                         return;
+                    }
                 }
             }
         }
 
         // building a factory based on the blueprint created.
-        if (targetFactory != null) {
-            if (build(factoryId))
+        if (factory != null) {
+            if (canBuild(factory)) {
+                build(factory);
                 return;
-        }
-        else {
-            VecUnit nearbyFactories = gc.senseNearbyUnitsByType(myMapLoc, myUnit.visionRange(), UnitType.Factory);
-            Unit closestFactory = null;
+            }
+            //We can't build factory so find the closest one to us for now
+            List<MyUnit> nearbyFactories = senseNearbyFriendlies(UnitType.Factory);
+            Factory closestFactory = null;
             long closestFactoryDist = Long.MAX_VALUE;
-            for (int i = 0; i < nearbyFactories.size(); ++i) {
-                Unit factory = nearbyFactories.get(i);
-                if (factory.team() == myUnit.team() && !Utils.toBool(factory.structureIsBuilt())) {
-                    long distance = factory.location().mapLocation().distanceSquaredTo(myMapLoc);
-                    if (distance < closestFactoryDist) {
-                        closestFactory = factory;
-                        closestFactoryDist = distance;
-                        break;
-                    }
+            for (MyUnit unit : nearbyFactories) {
+                Factory f = (Factory) unit;
+                if (f.isBuilt()) continue;
+                long distance = f.getMapLocation().distanceSquaredTo(myMapLoc);
+                if (distance < closestFactoryDist) {
+                    closestFactory = f;
+                    closestFactoryDist = distance;
                 }
             }
-            targetFactory = closestFactory;
-        }
-
-        if (hasPlacedFactory() && !builtFactory) { //factory placed but not built
-            if (gc.canSenseUnit(factoryId) && Utils.toBool(gc.unit(factoryId).structureIsBuilt())) {
-                builtFactory = true;
-                println("Finished building factory");
-            }
+            factory = closestFactory;
         }
         // replicate if factory not yet built
-        if (targetFactory != null) {
-            println("factory building");
-            MapLocation factoryLoc = targetFactory.location().mapLocation();
-            for (Direction dir : Utils.dirs) {
+        if (hasPlacedFactory() && !factory.isBuilt()) {
+            MapLocation factoryLoc = factory.getMapLocation();
+            int offset = Utils.rand.nextInt(dirs.length); //Pick random direction
+            for (int i=0; i < dirs.length; i++) {
+                Direction dir = dirs[(i+offset) % dirs.length];
                 //only replicate into spots adjacent to factory (since I don't feel like using pathfinding yet)
                 if (!(myMapLoc.add(dir).isAdjacentTo(factoryLoc))) continue;
-                println("found spot next to factory");
-                if (replicate(dir))
+                if (canReplicate(dir)) {
+                    replicate(dir);
                     return;
+                }
             }
         }
 
         // if can see Karbonite, mine it
-        for (Direction dir : Direction.values()) {
-            if (harvest(dir))
+        for (Direction dir : dirs) {
+            if (canHarvest(dir)) {
+                harvest(dir);
                 return;
+            }
         }
 
-        if (gc.isMoveReady(this.id)) {
-            if (targetFactory != null) {
-                Direction towardsFactory = myMapLoc.directionTo(targetFactory.location().mapLocation());
-                if (move(towardsFactory))
+        if (isMoveReady()) {
+            if (factory != null) {
+                Direction towardsFactory = myMapLoc.directionTo(factory.getMapLocation());
+                if (isAcessible(towardsFactory)) {
+                    move(towardsFactory);
                     return;
+                }
             }
             else {
                 //Move randomly
-                int rand = Utils.rand.nextInt(Utils.dirs.length);
-                for (int i = 0; i < Utils.dirs.length; i++) {
-                    Direction dir = Utils.dirs[(i + rand) % Utils.dirs.length]; //Cycle through based on random offset
-                    if (move(dir))
+                int offset = Utils.rand.nextInt(dirs.length);
+                for (int i = 0; i < dirs.length; i++) {
+                    Direction dir = dirs[(i + offset) % dirs.length]; //Cycle through based on random offset
+                    if (canMove(dir)) {
+                        move(dir);
                         return;
+                    }
                 }
             }
         }

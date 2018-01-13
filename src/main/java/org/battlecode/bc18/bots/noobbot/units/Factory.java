@@ -8,7 +8,7 @@ public class Factory extends Structure {
 
     /**
      * Constructor for Factory.
-     * @exception RuntimeException Occurs when a unit with that id already exists.
+     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
     Factory(Unit unit) {
         super(unit);

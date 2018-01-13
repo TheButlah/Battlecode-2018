@@ -2,7 +2,7 @@ package org.battlecode.bc18.bots.noobbot.units;
 
 import bc.*;
 
-import static org.battlecode.bc18.Utils.gc;
+import static org.battlecode.bc18.bots.util.Utils.gc;
 
 public class Healer extends Robot {
 
@@ -10,7 +10,7 @@ public class Healer extends Robot {
 
     /**
      * Constructor for Healer.
-     * @exception RuntimeException Occurs when a unit with that id already exists.
+     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
     Healer(Unit unit) {
         super(unit);
@@ -23,9 +23,9 @@ public class Healer extends Robot {
      * @return true if healing was successful, false otherwise
      */
     public boolean heal(int targetID) {
-        if (gc.isHealReady(this.id) &&
-                gc.canHeal(this.id, targetID)) {
-            gc.heal(this.id, targetID);
+        if (gc.isHealReady(getID()) &&
+                gc.canHeal(getID(), targetID)) {
+            gc.heal(getID(), targetID);
             return true;
         }
         return false;
@@ -38,9 +38,9 @@ public class Healer extends Robot {
      * @return true if overcharging was successful, false otherwise
      */
     public boolean overcharge(int targetID) {
-        if (gc.isOverchargeReady(this.id) &&
-                gc.canOvercharge(this.id, targetID)) {
-            gc.overcharge(this.id, targetID);
+        if (gc.isOverchargeReady(getID()) &&
+                gc.canOvercharge(getID(), targetID)) {
+            gc.overcharge(getID(), targetID);
             return true;
         }
         return false;
