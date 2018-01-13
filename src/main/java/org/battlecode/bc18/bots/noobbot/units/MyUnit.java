@@ -262,13 +262,7 @@ public abstract class MyUnit {
 
     /** Gets the health of the unit */
     public int getHealth() {
-        try {
-            return (int) getAsUnit().health();
-        }
-        catch (Exception e) {
-            // If unit does not exist, then we assume health is -1
-            return -1;
-        }
+        return (int) getAsUnit().health();
     }
 
     @Override
