@@ -42,6 +42,9 @@ public class Worker extends Bot {
             return;
         }
         MapLocation myMapLoc = myLoc.mapLocation();
+        if (targetFactory != null && targetFactory.health() < 0) {
+            targetFactory = null;
+        }
 
         if (turn == 1 || gc.karbonite() >= 300) {
             VecUnit nearbyFactories = gc.senseNearbyUnitsByType(myMapLoc, 2, UnitType.Factory);
@@ -122,8 +125,22 @@ public class Worker extends Bot {
         if (Utils.toBool(myUnit.workerHasActed())) {
             return;
         }
-        // replicate if factory not yet built or factory damaged
+
         if (targetFactory != null) {
+            // building a factory based on the blueprint created.
+            if (!Utils.toBool(targetFactory.structureIsBuilt())) {
+                if (gc.canBuild(this.id, targetFactory.id())) {
+                    println("Building");
+                    gc.build(this.id, targetFactory.id());
+                    return;
+                }
+            }
+            else if (gc.canRepair(this.id, targetFactory.id())) {
+                println("Repairing");
+                gc.repair(this.id, targetFactory.id());
+                return;
+            }
+            // replicate if factory not yet built or factory damaged
             VecUnit nearbyWorkers = gc.senseNearbyUnitsByType(myMapLoc, myUnit.visionRange(), UnitType.Worker);
             int numNearbyFriendlyWorkers = 0;
             for (int i = 0; i < nearbyWorkers.size(); ++i) {
@@ -143,6 +160,7 @@ public class Worker extends Bot {
                                 continue;
                             }
                             bots.put(newWorker.id(), new Worker(newWorker.id()));
+                            return;
                         }
                         catch (Exception e) { } // replicate failed
                     }
@@ -155,20 +173,6 @@ public class Worker extends Bot {
             if (gc.canHarvest(this.id, dir)) {
                 println("Harvesting'");
                 gc.harvest(this.id, dir);
-                return;
-            }
-        }
-
-        if (targetFactory != null) {
-            // building a factory based on the blueprint created.
-            if (gc.canBuild(this.id, factoryId)) {
-                println("Building");
-                gc.build(this.id, factoryId);
-                return;
-            }
-            if (gc.canRepair(this.id, factoryId)) {
-                println("Repairing");
-                gc.repair(this.id, factoryId);
                 return;
             }
         }
