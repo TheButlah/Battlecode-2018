@@ -1,11 +1,24 @@
 package org.battlecode.bc18.api;
 
-import bc.*;
+import static org.battlecode.bc18.bots.util.Utils.gc;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
 import org.battlecode.bc18.bots.util.Pair;
 
-import java.util.*;
-
-import static org.battlecode.bc18.bots.util.Utils.gc;
+import bc.Location;
+import bc.MapLocation;
+import bc.Team;
+import bc.Unit;
+import bc.UnitType;
+import bc.VecUnit;
+import bc.bc;
 
 /** Superclass for the different types of units able to be controlled by our player. */
 @SuppressWarnings("unused")

@@ -9,6 +9,7 @@ import org.battlecode.bc18.bots.util.Utils;
 import bc.GameController;
 import bc.Planet;
 import bc.PlanetMap;
+import bc.UnitType;
 
 public class Main {
 
@@ -16,6 +17,16 @@ public class Main {
         // Connect to the manager, starting the game
         gc = new GameController();
         AbstractUnit.setBuilder(new UnitBuilder());
+        gc.queueResearch(UnitType.Knight);
+        gc.queueResearch(UnitType.Knight);
+        gc.queueResearch(UnitType.Knight);
+        gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Worker);
+        gc.queueResearch(UnitType.Worker);
+        gc.queueResearch(UnitType.Worker);
+        gc.queueResearch(UnitType.Worker);
         if (gc.planet() == Planet.Earth) {
             PlanetMap earthMap = gc.startingMap(Planet.Earth);
             Utils.setEarthDims(earthMap);
