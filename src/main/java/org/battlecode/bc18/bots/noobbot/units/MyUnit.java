@@ -13,11 +13,33 @@ public abstract class MyUnit {
 
     /**
      * Unmodifiable mapping from id to MyUnit objects (safe for external use).
-     * Has fixed order where newest units are last.
      * Must only contain units belonging to our player, i.e. on our planet under our team.
-     * NOTE: Do not attempt to iterate through this map unless if using `Map.forEach()`.
      */
     public static final Map<Integer, MyUnit> units;
+
+    /**
+     * Unmodifiable list of alive units (safe for external use).
+     * Must only contain units belonging to our player, i.e. on our planet under our team.
+     */
+    public static final List<MyUnit> aliveUnits;
+
+    /**
+     * Unmodifiable list of dead units.
+     * Must only contain units belonging to our player, i.e. on our planet under our team.
+     */
+    public static final List<Integer> deadUnits;
+
+    /** Prepares the MyUnit objects for their logic this turn. */
+    public static void initTurn() {
+        //Reset the lists so we can repopulate them. Probably faster than re-assigning.
+        aliveUnitsModifiable.clear();
+        deadUnitsModifiable.clear();
+
+        MyUnit.units.forEach((id, unit) -> {
+            if (gc.canSenseUnit(id)) aliveUnitsModifiable.add(unit);
+            else deadUnitsModifiable.add(id);
+        });
+    }
 
     /** Tells the unit to perform its action for this turn */
     public abstract void act();
@@ -288,18 +310,28 @@ public abstract class MyUnit {
      * NOTE: Do not attempt to iterate through this map unless if using `Map.forEach()`.
      */
     private static final Map<Integer, MyUnit> unitsModifiable;
+    private static final ArrayList<MyUnit> aliveUnitsModifiable;
+    private static final ArrayList<Integer> deadUnitsModifiable;
 
     private final int id;
     private final Team team;
     private final int maxHealth;
+
     private Location location;
     private boolean isDead;
 
     //Static initializer to ensure that right from the start, MyUnit knows all of our units.
     static {
         VecUnit vec = gc.myUnits();
-        unitsModifiable = new LinkedHashMap<>((int) vec.size());
+        int numUnits = (int) vec.size();
+        unitsModifiable = new HashMap<>(numUnits);
+        aliveUnitsModifiable = new ArrayList<>(numUnits);
+        deadUnitsModifiable = new ArrayList<>(numUnits);
+
         units = Collections.unmodifiableMap(unitsModifiable);
+        aliveUnits = Collections.unmodifiableList(aliveUnitsModifiable);
+        deadUnits = Collections.unmodifiableList(deadUnitsModifiable);
+
         for (int i=0; i<vec.size(); i++) {
             makeUnit(vec.get(i));
         }
@@ -307,7 +339,7 @@ public abstract class MyUnit {
 
     /**
      * Constructor for MyUnit.
-     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
+     * @exception RuntimeException When unit already exists, has unknown type, doesn't belong to our player, or is dead.
      */
     MyUnit(Unit unit) throws RuntimeException{
         this.id = unit.id();
@@ -317,9 +349,16 @@ public abstract class MyUnit {
 
         if (this.team != gc.team() || (!this.location.isInGarrison() && !this.location.isOnPlanet(gc.planet()))) {
             throw new RuntimeException("The unit " + unit + " doesn't belong to us!");
+        } else if (gc.canSenseUnit(id)) {
+            throw new RuntimeException("The unit " + unit + " is dead!");
         }
 
-        if (unitsModifiable.put(id, this) != null) throw new RuntimeException("The unit " + unit + " already exists!");
+        MyUnit previousValue = unitsModifiable.put(id, this);
+        if (previousValue != null) {
+            unitsModifiable.put(id, previousValue); //restore the value
+            throw new RuntimeException("The unit " + unit + " already exists!");
+        }
+        aliveUnitsModifiable.add(this);
     }
 
     /**
@@ -361,9 +400,9 @@ public abstract class MyUnit {
     }
 
     /**
-     * Constructs a MyUnit object based off of a Unit and adds it to the HashMap of units.
+     * Constructs a MyUnit object based off of a Unit and adds it to the collections of units.
      * NOTE: The unit must belong to our Player, i.e. on our Planet under our Team.
-     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, or unit doesn't belong to Player.
+     * @exception RuntimeException When unit already exists, has unknown type, doesn't belong to our player, or is dead.
      */
     static MyUnit makeUnit(Unit ourUnit) {
         int id = ourUnit.id();

@@ -25,16 +25,15 @@ public class Main {
 
         while (true) {
             System.out.println("Current round: " + gc.round());
-            ArrayList<Integer> deadUnits = new ArrayList<>();
-            ArrayList<MyUnit> aliveUnits = new ArrayList<>();
-
-            MyUnit.units.forEach((id, unit) -> {
-                if (gc.canSenseUnit(id)) aliveUnits.add(unit);
-                else deadUnits.add(id);
-            });
+            //Perform beginning of turn logic
+            try{
+                MyUnit.initTurn();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             //Deal with dead units
-            for (Integer deadUnitId : deadUnits) {
+            for (Integer deadUnitId : MyUnit.deadUnits) {
                 try {
                     MyUnit.removeUnit(deadUnitId);
                 } catch (Exception e) {
@@ -43,7 +42,7 @@ public class Main {
             }
 
             //Call act() for alive units
-            for (MyUnit unit : aliveUnits) {
+            for (MyUnit unit : MyUnit.aliveUnits) {
                 try { //Avoid breaking the loop leading to instant loss
                     unit.act();
                 } catch (Exception e){
