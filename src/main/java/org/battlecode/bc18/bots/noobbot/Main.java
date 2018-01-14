@@ -32,15 +32,6 @@ public class Main {
                 e.printStackTrace();
             }
 
-            //Deal with dead units
-            for (Integer deadUnitId : MyUnit.deadUnits) {
-                try {
-                    MyUnit.removeUnit(deadUnitId);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-
             //Call act() for alive units
             for (MyUnit unit : MyUnit.aliveUnits) {
                 try { //Avoid breaking the loop leading to instant loss

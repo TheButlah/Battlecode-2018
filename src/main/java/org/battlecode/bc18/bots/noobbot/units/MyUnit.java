@@ -23,22 +23,29 @@ public abstract class MyUnit {
      */
     public static final List<MyUnit> aliveUnits;
 
-    /**
-     * Unmodifiable list of dead units.
-     * Must only contain units belonging to our player, i.e. on our planet under our team.
-     */
-    public static final List<Integer> deadUnits;
-
     /** Prepares the MyUnit objects for their logic this turn. */
     public static void initTurn() {
         //Reset the lists so we can repopulate them. Probably faster than re-assigning.
         aliveUnitsModifiable.clear();
-        deadUnitsModifiable.clear();
+        ArrayList<MyUnit> deadUnits = new ArrayList<>(16);
 
+        //Split dead from alive
         MyUnit.units.forEach((id, unit) -> {
-            if (gc.canSenseUnit(id)) aliveUnitsModifiable.add(unit);
-            else deadUnitsModifiable.add(id);
+            if (gc.canSenseUnit(id)) {
+                aliveUnitsModifiable.add(unit);
+            } else {
+                deadUnits.add(unit);
+            }
         });
+
+        //Deal with dead units
+        for (MyUnit unit : deadUnits) {
+            try {
+                unit.removeUnit();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /** Tells the unit to perform its action for this turn */
@@ -310,13 +317,11 @@ public abstract class MyUnit {
 
     /**
      * Mapping from id to MyUnit objects (for internal use only).
-     * Ordered by insertion order.
      * Must only contain units belonging to our player, i.e. on our planet under our team.
      * NOTE: Do not attempt to iterate through this map unless if using `Map.forEach()`.
      */
     private static final Map<Integer, MyUnit> unitsModifiable;
     private static final ArrayList<MyUnit> aliveUnitsModifiable;
-    private static final ArrayList<Integer> deadUnitsModifiable;
 
     private final int id;
     private final Team team;
@@ -331,11 +336,9 @@ public abstract class MyUnit {
         int numUnits = (int) vec.size();
         unitsModifiable = new HashMap<>(numUnits);
         aliveUnitsModifiable = new ArrayList<>(numUnits);
-        deadUnitsModifiable = new ArrayList<>(numUnits);
 
         units = Collections.unmodifiableMap(unitsModifiable);
         aliveUnits = Collections.unmodifiableList(aliveUnitsModifiable);
-        deadUnits = Collections.unmodifiableList(deadUnitsModifiable);
 
         for (int i=0; i<vec.size(); i++) {
             makeUnit(vec.get(i));
@@ -354,7 +357,7 @@ public abstract class MyUnit {
 
         if (this.team != gc.team() || (!this.location.isInGarrison() && !this.location.isOnPlanet(gc.planet()))) {
             throw new RuntimeException("The unit " + unit + " doesn't belong to us!");
-        } else if (gc.canSenseUnit(id)) {
+        } else if (!gc.canSenseUnit(id)) {
             throw new RuntimeException("The unit " + unit + " is dead!");
         }
 
