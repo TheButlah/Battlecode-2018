@@ -33,7 +33,8 @@ public class Main {
             }
 
             //Call act() for alive units
-            for (MyUnit unit : MyUnit.aliveUnits) {
+            for (int i = 0; i < MyUnit.aliveUnits.size(); ++i) {
+                MyUnit unit = MyUnit.aliveUnits.get(i);
                 try { //Avoid breaking the loop leading to instant loss
                     unit.act();
                 } catch (Exception e){
