@@ -17,6 +17,8 @@ public class Rocket extends Structure {
 
     @Override
     public void act() {
+        if (isDead()) return;
+
         //TODO: implement this
     }
 

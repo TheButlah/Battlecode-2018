@@ -50,7 +50,7 @@ public abstract class MyUnit {
     /** Kaboom. */
     public void selfDestruct() {
         gc.disintegrateUnit(id);
-        removeUnit(id);
+        removeUnit();
     }
 
     /**
@@ -279,6 +279,11 @@ public abstract class MyUnit {
         return (int) getAsUnit().health();
     }
 
+    /** Whether the unit is dead or not. */
+    boolean isDead() {
+        return isDead;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true; //short circuit
@@ -428,24 +433,17 @@ public abstract class MyUnit {
     }
 
     /**
-     * Removes a unit from the units mapping
-     * @param id
-     * @return the removed unit
+     * Removes this unit from the HashMap in MyUnit and the data structures subclasses.
+     * NOTE: This does not remove the unit from aliveUnits!
      */
-    public static MyUnit removeUnit(int id) {
-        MyUnit unit = units.get(id);
-        if (unit != null) {
-            if (unit.getType() == UnitType.Worker) {
-                // De-assign worker upon death
-                ((Worker)unit).deassignFactory();
-            }
-            unit.isDead = true;
+    void removeUnit() {
+        assert !gc.canSenseUnit(getID());
+        if (getType() == UnitType.Worker) {
+            // De-assign worker upon death
+            ((Worker) this).deassignFactory();
         }
-        return unitsModifiable.remove(id);
-    }
-
-    boolean isDead() {
-        return isDead;
+        isDead = true;
+        unitsModifiable.remove(getID());
     }
 
     /**

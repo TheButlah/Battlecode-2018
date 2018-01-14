@@ -48,6 +48,7 @@ public class Healer extends Robot {
 
     @Override
     public void act() {
+        if (isDead()) return;
         //TODO: Implement this
     }
 

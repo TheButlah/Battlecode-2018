@@ -199,11 +199,12 @@ public class Worker extends Robot {
 
     @Override
     public void act() {
+        if (isDead()) return;
+
         // first turn, build a targetFactory [by one unit].
         // if the targetFactory has not been built, replicate if can and help building a targetFactory.
         // else, move randomly.
         // try mining if walked over the Karbonite.
-        if (isDead()) return;
         long turn = gc.round();
         if (!isOnMap()) {
             //TODO: Handle worker in space/garrison/dead?
