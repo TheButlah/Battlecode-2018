@@ -25,6 +25,7 @@ public class Main {
 
         while (true) {
             System.out.println("Current round: " + gc.round());
+            MyUnit.initTurn();
 
             //Perform act on all the units and catch any exception to prevent instant loss
             MyUnit.units.forEach((id, unit) -> {
