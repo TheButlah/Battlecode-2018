@@ -18,15 +18,6 @@ public abstract class MyUnit {
      * NOTE: Do not attempt to iterate through this map unless if using `Map.forEach()`.
      */
     public static final Map<Integer, MyUnit> units;
-    // TODO: Where should we put these non-API-specific globals?
-    /**
-     * A mapping of factories to numbers of workers assigned to each factory
-     */
-    public static final Map<Integer, Integer> workersPerFactory;
-    /**
-     * A mapping of workers to the factories they are assigned to
-     */
-    public static final Map<Integer, Integer> workerFactoryAssignment;
 
     /** Tells the unit to perform its action for this turn */
     public abstract void act();
@@ -312,8 +303,6 @@ public abstract class MyUnit {
         for (int i=0; i<vec.size(); i++) {
             makeUnit(vec.get(i));
         }
-        workersPerFactory = new HashMap<>();
-        workerFactoryAssignment = new HashMap<>();
     }
 
     /**
@@ -409,7 +398,7 @@ public abstract class MyUnit {
         if (unit != null) {
             if (unit.getType() == UnitType.Worker) {
                 // De-assign worker upon death
-                unit.deassignFactory();
+                ((Worker)unit).deassignFactory();
             }
             unit.isDead = true;
         }
@@ -446,47 +435,6 @@ public abstract class MyUnit {
         Location oldLoc = this.location;
         this.location = bc.bcLocationNewOnMap(newLoc);
         return oldLoc;
-    }
-
-    /**
-     * Gets ID of the factory assigned to the {@link Worker} calling this method
-     * Pre-condition: this method should only be called by instances of the {@link Worker} class
-     * @return the factory ID
-     */
-    Integer getFactoryAssignment() {
-        return workerFactoryAssignment.get(id);
-    }
-
-    /**
-     * Assigns the factory with the given ID to the {@link Worker} calling this method
-     * Pre-condition: this method should only be called by instances of the {@link Worker} class
-     * @param factoryId the factory ID
-     */
-    void assignFactory(int factoryId) {
-        workerFactoryAssignment.put(id, factoryId);
-        if (!workersPerFactory.containsKey(factoryId)) {
-            workersPerFactory.put(factoryId, 1);
-        }
-        else {
-            workersPerFactory.put(factoryId, workersPerFactory.get(factoryId) + 1);
-        }
-    }
-
-    /**
-     * De-assigns the factory assigned to the {@link Worker} calling this method.
-     * If there is no assigned factory, no changes are made
-     * Pre-condition: this method should only be called by instances of the {@link Worker} class
-     * @return the ID of the de-assigned factory, or null if none
-     */
-    Integer deassignFactory() {
-        Integer factoryId = workerFactoryAssignment.remove(id);
-        if (factoryId != null) {
-            Integer count = workersPerFactory.get(factoryId);
-            if (count != null) {
-                workersPerFactory.put(factoryId, count - 1);
-            }
-        }
-        return factoryId;
     }
 
 }

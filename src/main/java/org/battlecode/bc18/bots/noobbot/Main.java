@@ -29,11 +29,10 @@ public class Main {
             ArrayList<MyUnit> aliveUnits = new ArrayList<>();
             // TODO: need a more elegant way to detect when a unit is dead
             MyUnit.units.forEach((id, unit) -> {
-                try {
-                    unit.getAsUnit();
+                if (gc.canSenseUnit(id)) {
                     aliveUnits.add(unit);
                 }
-                catch (Exception e) {
+                else {
                     deadUnits.add(id);
                 }
             });
