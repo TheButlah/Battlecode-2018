@@ -37,6 +37,7 @@ public abstract class MyUnit {
     /** Kaboom. */
     public void selfDestruct() {
         gc.disintegrateUnit(id);
+        removeUnit(id);
     }
 
     /**
@@ -301,6 +302,7 @@ public abstract class MyUnit {
     private final Team team;
     private final int maxHealth;
     private Location location;
+    private boolean isDead;
 
     //Static initializer to ensure that right from the start, MyUnit knows all of our units.
     static {
@@ -404,11 +406,18 @@ public abstract class MyUnit {
      */
     public static MyUnit removeUnit(int id) {
         MyUnit unit = units.get(id);
-        if (unit != null && unit.getType() == UnitType.Worker) {
-            // De-assign worker upon death
-            unit.deassignFactory();
+        if (unit != null) {
+            if (unit.getType() == UnitType.Worker) {
+                // De-assign worker upon death
+                unit.deassignFactory();
+            }
+            unit.isDead = true;
         }
         return unitsModifiable.remove(id);
+    }
+
+    boolean isDead() {
+        return isDead;
     }
 
     /**

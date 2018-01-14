@@ -164,6 +164,7 @@ public class Worker extends Robot {
         // if the targetFactory has not been built, replicate if can and help building a targetFactory.
         // else, move randomly.
         // try mining if walked over the Karbonite.
+        if (isDead()) return;
         long turn = gc.round();
         if (!isOnMap()) {
             //TODO: Handle worker in space/garrison/dead?
@@ -175,8 +176,8 @@ public class Worker extends Robot {
 
         Integer targetFactoryId = getFactoryAssignment();
         Factory targetFactory = targetFactoryId != null ? (Factory)MyUnit.units.get(targetFactoryId) : null;
-        if (targetFactory != null && targetFactory.getHealth() < 0) {
-            println("Noticed factory that wasn't dead!");
+        if (targetFactory != null && targetFactory.isDead()) {
+            println("Assigned to dead factory!");
             deassignFactory();
             targetFactory = null;
         }
