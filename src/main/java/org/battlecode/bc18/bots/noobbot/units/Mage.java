@@ -56,6 +56,7 @@ public class Mage extends Robot {
 
     @Override
     public void act() {
+        if (isDead()) return;
         //TODO: implement this
     }
 

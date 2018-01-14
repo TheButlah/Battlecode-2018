@@ -144,7 +144,46 @@ public class Worker extends Robot {
         return new Worker(unit);
     }
 
+    /**
+     * Gets ID of the factory assigned to the {@link Worker} calling this method
+     * Pre-condition: this method should only be called by instances of the {@link Worker} class
+     * @return the factory ID
+     */
+    Integer getFactoryAssignment() {
+        return Factory.workerFactoryAssignment.get(getID());
+    }
 
+    /**
+     * Assigns the factory with the given ID to the {@link Worker} calling this method
+     * Pre-condition: this method should only be called by instances of the {@link Worker} class
+     * @param factoryId the factory ID
+     */
+    void assignFactory(int factoryId) {
+        Factory.workerFactoryAssignment.put(getID(), factoryId);
+        if (!Factory.workersPerFactory.containsKey(factoryId)) {
+            Factory.workersPerFactory.put(factoryId, 1);
+        }
+        else {
+            Factory.workersPerFactory.put(factoryId, Factory.workersPerFactory.get(factoryId) + 1);
+        }
+    }
+
+    /**
+     * De-assigns the factory assigned to the {@link Worker} calling this method.
+     * If there is no assigned factory, no changes are made
+     * Pre-condition: this method should only be called by instances of the {@link Worker} class
+     * @return the ID of the de-assigned factory, or null if none
+     */
+    Integer deassignFactory() {
+        Integer factoryId = Factory.workerFactoryAssignment.remove(getID());
+        if (factoryId != null) {
+            Integer count = Factory.workersPerFactory.get(factoryId);
+            if (count != null) {
+                Factory.workersPerFactory.put(factoryId, count - 1);
+            }
+        }
+        return factoryId;
+    }
 
     //////////END OF API//////////
 
@@ -160,6 +199,8 @@ public class Worker extends Robot {
 
     @Override
     public void act() {
+        if (isDead()) return;
+
         // first turn, build a targetFactory [by one unit].
         // if the targetFactory has not been built, replicate if can and help building a targetFactory.
         // else, move randomly.
@@ -175,8 +216,8 @@ public class Worker extends Robot {
 
         Integer targetFactoryId = getFactoryAssignment();
         Factory targetFactory = targetFactoryId != null ? (Factory)MyUnit.units.get(targetFactoryId) : null;
-        if (targetFactory != null && targetFactory.getHealth() < 0) {
-            println("Noticed factory that wasn't dead!");
+        if (targetFactory != null && targetFactory.isDead()) {
+            println("Assigned to dead factory!");
             deassignFactory();
             targetFactory = null;
         }
@@ -294,7 +335,7 @@ public class Worker extends Robot {
             }
             else {
                 // De-assign worker from factory so he can explore the map
-                if (MyUnit.workersPerFactory.get(targetFactory.getID()) > 3) {
+                if (Factory.workersPerFactory.get(targetFactory.getID()) > 3) {
                     deassignFactory();
                     targetFactory = null;
                 }

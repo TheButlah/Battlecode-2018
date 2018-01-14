@@ -50,6 +50,8 @@ public class Knight extends Robot {
 
     @Override
     public void act() {
+        if (isDead()) return;
+
         // check if enemy unit in sight
         // if so, move towards it or attack it
         // else, move randomly

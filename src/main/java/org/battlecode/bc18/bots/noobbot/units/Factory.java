@@ -1,15 +1,30 @@
 package org.battlecode.bc18.bots.noobbot.units;
 
-import bc.*;
-import org.battlecode.bc18.bots.util.Utils;
-
 import static org.battlecode.bc18.bots.util.Utils.gc;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.battlecode.bc18.bots.util.Utils;
+
+import bc.Direction;
+import bc.MapLocation;
+import bc.Unit;
+import bc.UnitType;
+import bc.VecUnitID;
 
 public class Factory extends Structure {
 
     public static final UnitType TYPE = UnitType.Factory;
+    /**
+     * A mapping of factories to numbers of workers assigned to each factory
+     */
+    public static final Map<Integer, Integer> workersPerFactory = new HashMap<>();
+    /**
+     * A mapping of workers to the factories they are assigned to
+     */
+    public static final Map<Integer, Integer> workerFactoryAssignment = new HashMap<>();
 
     /**
      * Whether the factory can produce a robot.
@@ -49,7 +64,8 @@ public class Factory extends Structure {
 
     @Override
     public void act() {
-        System.out.println("Workers assigned to me: " + MyUnit.workersPerFactory.get(getID()));
+        if (isDead()) return;
+        System.out.println("Workers assigned to me: " + workersPerFactory.get(getID()));
         // Since we cant maintain the invariant for the units HashMap, manually add in units to ensure invariant.
         VecUnitID vec = getAsUnit().structureGarrison();
         for (int i=0; i<vec.size(); i++) {

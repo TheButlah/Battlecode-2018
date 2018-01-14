@@ -25,14 +25,19 @@ public class Main {
 
         while (true) {
             System.out.println("Current round: " + gc.round());
-            MyUnit.initTurn();
+            //Perform beginning of turn logic
+            try{
+                MyUnit.initTurn();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-            //Perform act on all the units and catch any exception to prevent instant loss
-            MyUnit.units.forEach((id, unit) -> {
-                try {
+            //Call act() for alive units
+            for (int i = 0; i < MyUnit.aliveUnits.size(); ++i) {
+                MyUnit unit = MyUnit.aliveUnits.get(i);
+                try { //Avoid breaking the loop leading to instant loss
                     unit.act();
-                }
-                catch (Exception e) {
+                } catch (Exception e){
                     e.printStackTrace();
                 }
             });

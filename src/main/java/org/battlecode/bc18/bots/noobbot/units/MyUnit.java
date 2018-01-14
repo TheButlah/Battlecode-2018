@@ -16,20 +16,40 @@ public abstract class MyUnit {
 
     /**
      * Unmodifiable mapping from id to MyUnit objects (safe for external use).
-     * Has fixed order where newest units are last.
      * Must only contain units belonging to our player, i.e. on our planet under our team.
-     * NOTE: Do not attempt to iterate through this map unless if using `Map.forEach()`.
      */
     public static final Map<Integer, MyUnit> units;
-    // TODO: Where should we put these non-API-specific globals?
+
     /**
-     * A mapping of factories to numbers of workers assigned to each factory
+     * Unmodifiable list of alive units (safe for external use).
+     * Must only contain units belonging to our player, i.e. on our planet under our team.
      */
-    public static final Map<Integer, Integer> workersPerFactory;
-    /**
-     * A mapping of workers to the factories they are assigned to
-     */
-    public static final Map<Integer, Integer> workerFactoryAssignment;
+    public static final List<MyUnit> aliveUnits;
+
+    /** Prepares the MyUnit objects for their logic this turn. */
+    public static void initTurn() {
+        //Reset the lists so we can repopulate them. Probably faster than re-assigning.
+        aliveUnitsModifiable.clear();
+        ArrayList<MyUnit> deadUnits = new ArrayList<>(16);
+
+        //Split dead from alive
+        MyUnit.units.forEach((id, unit) -> {
+            if (gc.canSenseUnit(id)) {
+                aliveUnitsModifiable.add(unit);
+            } else {
+                deadUnits.add(unit);
+            }
+        });
+
+        //Deal with dead units
+        for (MyUnit unit : deadUnits) {
+            try {
+                unit.removeUnit();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     /** Tells the unit to perform its action for this turn */
     public abstract void act();
@@ -52,8 +72,7 @@ public abstract class MyUnit {
     /** Kaboom. */
     public void selfDestruct() {
         gc.disintegrateUnit(id);
-        informOfDeath(false);
-        //TODO: Can we figure out a way to allow this to be `true`?
+        removeUnit();
     }
 
     /**
@@ -283,8 +302,8 @@ public abstract class MyUnit {
         return (int) getAsUnit().health();
     }
 
-    /** Whether the unit is dead.*/
-    public boolean isDead() {
+    /** Whether the unit is dead or not. */
+    boolean isDead() {
         return isDead;
     }
 
@@ -314,34 +333,37 @@ public abstract class MyUnit {
 
     /**
      * Mapping from id to MyUnit objects (for internal use only).
-     * Ordered by insertion order.
      * Must only contain units belonging to our player, i.e. on our planet under our team.
      * NOTE: Do not attempt to iterate through this map unless if using `Map.forEach()`.
      */
     private static final Map<Integer, MyUnit> unitsModifiable;
+    private static final ArrayList<MyUnit> aliveUnitsModifiable;
 
     private final int id;
     private final Team team;
     private final int maxHealth;
 
     private Location location;
-    private boolean isDead = false;
+    private boolean isDead;
 
     //Static initializer to ensure that right from the start, MyUnit knows all of our units.
     static {
         VecUnit vec = gc.myUnits();
-        unitsModifiable = new LinkedHashMap<>((int) vec.size());
+        int numUnits = (int) vec.size();
+        unitsModifiable = new HashMap<>(numUnits);
+        aliveUnitsModifiable = new ArrayList<>(numUnits);
+
         units = Collections.unmodifiableMap(unitsModifiable);
+        aliveUnits = Collections.unmodifiableList(aliveUnitsModifiable);
+
         for (int i=0; i<vec.size(); i++) {
             makeUnit(vec.get(i));
         }
-        workersPerFactory = new HashMap<>();
-        workerFactoryAssignment = new HashMap<>();
     }
 
     /**
      * Constructor for MyUnit.
-     * @exception RuntimeException Whenever units are unknown, already exist, don't belong to our player, or are dead.
+     * @exception RuntimeException When unit already exists, has unknown type, doesn't belong to our player, or is dead.
      */
     MyUnit(Unit unit) throws RuntimeException{
         this.id = unit.id();
@@ -351,9 +373,16 @@ public abstract class MyUnit {
 
         if (this.team != gc.team() || (!this.location.isInGarrison() && !this.location.isOnPlanet(gc.planet()))) {
             throw new RuntimeException("The unit " + unit + " doesn't belong to us!");
+        } else if (!gc.canSenseUnit(id)) {
+            throw new RuntimeException("The unit " + unit + " is dead!");
         }
 
-        if (unitsModifiable.put(id, this) != null) throw new RuntimeException("The unit " + unit + " already exists!");
+        MyUnit previousValue = unitsModifiable.put(id, this);
+        if (previousValue != null) {
+            unitsModifiable.put(id, previousValue); //restore the value
+            throw new RuntimeException("The unit " + unit + " already exists!");
+        }
+        aliveUnitsModifiable.add(this);
     }
 
     /**
@@ -395,9 +424,9 @@ public abstract class MyUnit {
     }
 
     /**
-     * Constructs a MyUnit object based off of a Unit and adds it to the HashMap of units.
+     * Constructs a MyUnit object based off of a Unit and adds it to the collections of units.
      * NOTE: The unit must belong to our Player, i.e. on our Planet under our Team.
-     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, or unit doesn't belong to Player.
+     * @exception RuntimeException When unit already exists, has unknown type, doesn't belong to our player, or is dead.
      */
     static MyUnit makeUnit(Unit ourUnit) {
         int id = ourUnit.id();
@@ -423,15 +452,17 @@ public abstract class MyUnit {
     }
 
     /**
-     * Lets this unit know that it died.
-     * NOTE: This function should only be called when the unit is actually dead. Do not call for alive units!
-     * NOTE: When iterating over `MyUnit.units`, make sure `updateMap` is false to prevent errors.
-     * @param updateMap Whether or not to also update the HashMap of units.
+     * Removes this unit from the HashMap in MyUnit and the data structures subclasses.
+     * NOTE: This does not remove the unit from aliveUnits!
      */
-    void informOfDeath(boolean updateMap) {
-        assert !gc.canSenseUnit(id); //Make sure that we never call setDead when the unit is actually alive
+    void removeUnit() {
+        assert !gc.canSenseUnit(getID());
+        if (getType() == UnitType.Worker) {
+            // De-assign worker upon death
+            ((Worker) this).deassignFactory();
+        }
         isDead = true;
-        if (updateMap) unitsModifiable.remove(id);
+        unitsModifiable.remove(getID());
     }
 
     /**
@@ -460,47 +491,6 @@ public abstract class MyUnit {
         Location oldLoc = this.location;
         this.location = bc.bcLocationNewOnMap(newLoc);
         return oldLoc;
-    }
-
-    /**
-     * Gets ID of the factory assigned to the {@link Worker} calling this method
-     * Pre-condition: this method should only be called by instances of the {@link Worker} class
-     * @return the factory ID
-     */
-    Integer getFactoryAssignment() {
-        return workerFactoryAssignment.get(id);
-    }
-
-    /**
-     * Assigns the factory with the given ID to the {@link Worker} calling this method
-     * Pre-condition: this method should only be called by instances of the {@link Worker} class
-     * @param factoryId the factory ID
-     */
-    void assignFactory(int factoryId) {
-        workerFactoryAssignment.put(id, factoryId);
-        if (!workersPerFactory.containsKey(factoryId)) {
-            workersPerFactory.put(factoryId, 1);
-        }
-        else {
-            workersPerFactory.put(factoryId, workersPerFactory.get(factoryId) + 1);
-        }
-    }
-
-    /**
-     * De-assigns the factory assigned to the {@link Worker} calling this method.
-     * If there is no assigned factory, no changes are made
-     * Pre-condition: this method should only be called by instances of the {@link Worker} class
-     * @return the ID of the de-assigned factory, or null if none
-     */
-    Integer deassignFactory() {
-        Integer factoryId = workerFactoryAssignment.remove(id);
-        if (factoryId != null) {
-            Integer count = workersPerFactory.get(factoryId);
-            if (count != null) {
-                workersPerFactory.put(factoryId, count - 1);
-            }
-        }
-        return factoryId;
     }
 
 }
