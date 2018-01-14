@@ -1,4 +1,4 @@
-package org.battlecode.bc18.bots.noobbot.units;
+package org.battlecode.bc18.api;
 
 import bc.*;
 import org.battlecode.bc18.PathFinding;
@@ -10,13 +10,13 @@ import java.util.List;
 import static org.battlecode.bc18.bots.util.Utils.dirs;
 import static org.battlecode.bc18.bots.util.Utils.gc;
 
-public class Worker extends Robot {
+public class AbstractWorker extends AbstractRobot {
 
     public static final UnitType TYPE = UnitType.Worker;
 
     @Override
     public UnitType getType() {
-        return Worker.TYPE;
+        return AbstractWorker.TYPE;
     }
 
     /**
@@ -39,12 +39,12 @@ public class Worker extends Robot {
      * @param dir The direction to create the blueprint.
      * @return The structure blueprinted.
      */
-    public Structure blueprint(UnitType type, Direction dir) {
+    public AbstractStructure blueprint(UnitType type, Direction dir) {
         assert canBlueprint(type, dir);
         println("Blueprinting: " + type + " towards " + dir);
         gc.blueprint(getID(), type, dir);
         Unit unit = gc.senseUnitAtLocation(getMapLocation().add(dir));
-        return (Structure) MyUnit.makeUnit(unit);
+        return (AbstractStructure) AbstractUnit.makeUnit(unit);
     }
 
     /**
@@ -54,7 +54,7 @@ public class Worker extends Robot {
      * @param blueprint The blueprint to build up.
      * @return Whether the worker can build up the blueprint.
      */
-    public boolean canBuild(Structure blueprint) {
+    public boolean canBuild(AbstractStructure blueprint) {
         return gc.canBuild(getID(), blueprint.getID());
     }
 
@@ -64,7 +64,7 @@ public class Worker extends Robot {
      * NOTE: Does not check to see if it can build first.
      * @param blueprint The structure to build.
      */
-    public void build(Structure blueprint) {
+    public void build(AbstractStructure blueprint) {
         assert canBuild(blueprint);
         println("Building: " + blueprint);
         gc.build(getID(), blueprint.getID());
@@ -78,7 +78,7 @@ public class Worker extends Robot {
      * @param structure The structure to repair.
      * @return Whether the worker can repair the structure.
      */
-    public boolean canRepair(Structure structure) {
+    public boolean canRepair(AbstractStructure structure) {
         return gc.canRepair(getID(), structure.getID());
     }
 
@@ -88,7 +88,7 @@ public class Worker extends Robot {
      * NOTE: Does not check to see if it can repair first.
      * @param structure The structure to repair
      */
-    public void repair(Structure structure) {
+    public void repair(AbstractStructure structure) {
         assert canRepair(structure);
         //println("Repairing: " + structure);
         gc.repair(getID(), structure.getID());
@@ -134,52 +134,52 @@ public class Worker extends Robot {
      * @param direction The direction in which to replicate.
      * @return The new replicated worker.
      */
-    public Worker replicate(Direction direction) {
+    public AbstractWorker replicate(Direction direction) {
         //println("Replicating: towards " + direction);
         gc.replicate(getID(), direction);
         Unit unit = gc.senseUnitAtLocation(getMapLocation().add(direction));
         if (unit.unitType() != UnitType.Worker) {
             return null;
         }
-        return new Worker(unit);
+        return new AbstractWorker(unit);
     }
 
     /**
-     * Gets ID of the factory assigned to the {@link Worker} calling this method
-     * Pre-condition: this method should only be called by instances of the {@link Worker} class
+     * Gets ID of the factory assigned to the {@link AbstractWorker} calling this method
+     * Pre-condition: this method should only be called by instances of the {@link AbstractWorker} class
      * @return the factory ID
      */
     Integer getFactoryAssignment() {
-        return Factory.workerFactoryAssignment.get(getID());
+        return AbstractFactory.workerFactoryAssignment.get(getID());
     }
 
     /**
-     * Assigns the factory with the given ID to the {@link Worker} calling this method
-     * Pre-condition: this method should only be called by instances of the {@link Worker} class
+     * Assigns the factory with the given ID to the {@link AbstractWorker} calling this method
+     * Pre-condition: this method should only be called by instances of the {@link AbstractWorker} class
      * @param factoryId the factory ID
      */
     void assignFactory(int factoryId) {
-        Factory.workerFactoryAssignment.put(getID(), factoryId);
-        if (!Factory.workersPerFactory.containsKey(factoryId)) {
-            Factory.workersPerFactory.put(factoryId, 1);
+        AbstractFactory.workerFactoryAssignment.put(getID(), factoryId);
+        if (!AbstractFactory.workersPerFactory.containsKey(factoryId)) {
+            AbstractFactory.workersPerFactory.put(factoryId, 1);
         }
         else {
-            Factory.workersPerFactory.put(factoryId, Factory.workersPerFactory.get(factoryId) + 1);
+            AbstractFactory.workersPerFactory.put(factoryId, AbstractFactory.workersPerFactory.get(factoryId) + 1);
         }
     }
 
     /**
-     * De-assigns the factory assigned to the {@link Worker} calling this method.
+     * De-assigns the factory assigned to the {@link AbstractWorker} calling this method.
      * If there is no assigned factory, no changes are made
-     * Pre-condition: this method should only be called by instances of the {@link Worker} class
+     * Pre-condition: this method should only be called by instances of the {@link AbstractWorker} class
      * @return the ID of the de-assigned factory, or null if none
      */
     Integer deassignFactory() {
-        Integer factoryId = Factory.workerFactoryAssignment.remove(getID());
+        Integer factoryId = AbstractFactory.workerFactoryAssignment.remove(getID());
         if (factoryId != null) {
-            Integer count = Factory.workersPerFactory.get(factoryId);
+            Integer count = AbstractFactory.workersPerFactory.get(factoryId);
             if (count != null) {
-                Factory.workersPerFactory.put(factoryId, count - 1);
+                AbstractFactory.workersPerFactory.put(factoryId, count - 1);
             }
         }
         return factoryId;
@@ -189,10 +189,10 @@ public class Worker extends Robot {
 
 
     /**
-     * Constructor for Worker.
+     * Constructor for AbstractWorker.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
-    Worker(Unit unit) {
+    AbstractWorker(Unit unit) {
         super(unit);
         assert unit.unitType() == UnitType.Worker;
     }
@@ -215,7 +215,7 @@ public class Worker extends Robot {
         MapLocation myMapLoc = getMapLocation();
 
         Integer targetFactoryId = getFactoryAssignment();
-        Factory targetFactory = targetFactoryId != null ? (Factory)MyUnit.units.get(targetFactoryId) : null;
+        AbstractFactory targetFactory = targetFactoryId != null ? (AbstractFactory) AbstractUnit.units.get(targetFactoryId) : null;
         if (targetFactory != null && targetFactory.isDead()) {
             println("Assigned to dead factory!");
             deassignFactory();
@@ -223,13 +223,13 @@ public class Worker extends Robot {
         }
 
         if (turn == 1 || gc.karbonite() >= 300) {
-            List<MyUnit> nearbyFactories = senseNearbyFriendlies(2, UnitType.Factory);
+            List<AbstractUnit> nearbyFactories = senseNearbyFriendlies(2, UnitType.Factory);
             if (nearbyFactories.size() == 0) {
                 // for each direction, find the first availabile spot for a factory.
                 for (Direction dir : dirs) {
                     if (canBlueprint(UnitType.Factory, dir)) {
                         println("Blueprinting: " + UnitType.Factory + " towards " + dir);
-                        targetFactory = (Factory) blueprint(UnitType.Factory, dir);
+                        targetFactory = (AbstractFactory) blueprint(UnitType.Factory, dir);
                         assignFactory(targetFactory.getID());
                     }
                 }
@@ -237,11 +237,11 @@ public class Worker extends Robot {
         }
 
         if (targetFactory == null) {
-            List<MyUnit> nearbyFactories = senseNearbyFriendlies(UnitType.Factory);
-            Factory closestFactory = null;
+            List<AbstractUnit> nearbyFactories = senseNearbyFriendlies(UnitType.Factory);
+            AbstractFactory closestFactory = null;
             long closestFactoryDist = Long.MAX_VALUE;
-            for (MyUnit unit : nearbyFactories) {
-                Factory factory = (Factory) unit;
+            for (AbstractUnit unit : nearbyFactories) {
+                AbstractFactory factory = (AbstractFactory) unit;
                 if (!factory.isBuilt() || factory.getHealth() < factory.getMaxHealth() * 3 / 4) {
                     long distance = factory.getMapLocation().distanceSquaredTo(myMapLoc);
                     if (distance < closestFactoryDist) {
@@ -307,12 +307,12 @@ public class Worker extends Robot {
             boolean needsRepair = targetFactory.getHealth() < 3 * targetFactory.getMaxHealth() / 4;
             if (!factoryBuilt || needsRepair) {
                 // replicate if factory not yet built or factory damaged
-                List<MyUnit> nearbyWorkers = senseNearbyFriendlies(UnitType.Worker);
+                List<AbstractUnit> nearbyWorkers = senseNearbyFriendlies(UnitType.Worker);
                 if (nearbyWorkers.size() < 7) {
                     for (Direction dir : Utils.dirs) {
                         if (canReplicate(dir)) {
                             //println("Replicating");
-                            MyUnit newWorker = replicate(dir);
+                            AbstractUnit newWorker = replicate(dir);
                             if (newWorker != null) {
                                 return;
                             }
@@ -335,7 +335,7 @@ public class Worker extends Robot {
             }
             else {
                 // De-assign worker from factory so he can explore the map
-                if (Factory.workersPerFactory.get(targetFactory.getID()) > 3) {
+                if (AbstractFactory.workersPerFactory.get(targetFactory.getID()) > 3) {
                     deassignFactory();
                     targetFactory = null;
                 }

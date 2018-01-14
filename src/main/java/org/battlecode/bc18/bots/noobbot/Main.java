@@ -2,10 +2,8 @@ package org.battlecode.bc18.bots.noobbot;
 
 import static org.battlecode.bc18.bots.util.Utils.gc;
 
-import java.util.ArrayList;
-
 import org.battlecode.bc18.PathFinding;
-import org.battlecode.bc18.bots.noobbot.units.MyUnit;
+import org.battlecode.bc18.api.AbstractUnit;
 import org.battlecode.bc18.bots.util.Utils;
 
 import bc.GameController;
@@ -27,14 +25,14 @@ public class Main {
             System.out.println("Current round: " + gc.round());
             //Perform beginning of turn logic
             try{
-                MyUnit.initTurn();
+                AbstractUnit.initTurn();
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             //Call act() for alive units
-            for (int i = 0; i < MyUnit.aliveUnits.size(); ++i) {
-                MyUnit unit = MyUnit.aliveUnits.get(i);
+            for (int i = 0; i < AbstractUnit.aliveUnits.size(); ++i) {
+                AbstractUnit unit = AbstractUnit.aliveUnits.get(i);
                 try { //Avoid breaking the loop leading to instant loss
                     unit.act();
                 } catch (Exception e){

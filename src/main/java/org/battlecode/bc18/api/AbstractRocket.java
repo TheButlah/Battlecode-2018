@@ -1,16 +1,16 @@
-package org.battlecode.bc18.bots.noobbot.units;
+package org.battlecode.bc18.api;
 
 import bc.*;
 
-public class Rocket extends Structure {
+public class AbstractRocket extends AbstractStructure {
 
     public static final UnitType TYPE = UnitType.Rocket;
 
     /**
-     * Constructor for Rocket.
+     * Constructor for AbstractRocket.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
-    Rocket(Unit unit) {
+    AbstractRocket(Unit unit) {
         super(unit);
         assert unit.unitType() == UnitType.Rocket;
     }
@@ -24,6 +24,6 @@ public class Rocket extends Structure {
 
     @Override
     public UnitType getType() {
-        return Rocket.TYPE;
+        return AbstractRocket.TYPE;
     }
 }

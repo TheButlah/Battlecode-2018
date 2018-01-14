@@ -1,9 +1,9 @@
-package org.battlecode.bc18.bots.noobbot.units;
+package org.battlecode.bc18.api;
 
 import bc.Unit;
 import org.battlecode.bc18.bots.util.Utils;
 
-public abstract class Structure extends MyUnit {
+public abstract class AbstractStructure extends AbstractUnit {
 
     /** Whether the structure is fully built or not. */
     public boolean isBuilt() {
@@ -14,10 +14,10 @@ public abstract class Structure extends MyUnit {
     //////////END OF API//////////
 
     /**
-     * Constructor for Structure.
+     * Constructor for AbstractStructure.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
-    protected Structure(Unit unit) {
+    protected AbstractStructure(Unit unit) {
         super(unit);
     }
 

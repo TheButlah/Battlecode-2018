@@ -1,4 +1,4 @@
-package org.battlecode.bc18.bots.noobbot.units;
+package org.battlecode.bc18.api;
 
 import bc.*;
 import org.battlecode.bc18.bots.util.Pair;
@@ -9,28 +9,28 @@ import static org.battlecode.bc18.bots.util.Utils.gc;
 
 /** Superclass for the different types of units able to be controlled by our player. */
 @SuppressWarnings("unused")
-public abstract class MyUnit {
+public abstract class AbstractUnit {
 
     /**
-     * Unmodifiable mapping from id to MyUnit objects (safe for external use).
+     * Unmodifiable mapping from id to AbstractUnit objects (safe for external use).
      * Must only contain units belonging to our player, i.e. on our planet under our team.
      */
-    public static final Map<Integer, MyUnit> units;
+    public static final Map<Integer, AbstractUnit> units;
 
     /**
      * Unmodifiable list of alive units (safe for external use).
      * Must only contain units belonging to our player, i.e. on our planet under our team.
      */
-    public static final List<MyUnit> aliveUnits;
+    public static final List<AbstractUnit> aliveUnits;
 
-    /** Prepares the MyUnit objects for their logic this turn. */
+    /** Prepares the AbstractUnit objects for their logic this turn. */
     public static void initTurn() {
         //Reset the lists so we can repopulate them. Probably faster than re-assigning.
         aliveUnitsModifiable.clear();
-        ArrayList<MyUnit> deadUnits = new ArrayList<>(16);
+        ArrayList<AbstractUnit> deadUnits = new ArrayList<>(16);
 
         //Split dead from alive
-        MyUnit.units.forEach((id, unit) -> {
+        AbstractUnit.units.forEach((id, unit) -> {
             if (gc.canSenseUnit(id)) {
                 aliveUnitsModifiable.add(unit);
             } else {
@@ -39,7 +39,7 @@ public abstract class MyUnit {
         });
 
         //Deal with dead units
-        for (MyUnit unit : deadUnits) {
+        for (AbstractUnit unit : deadUnits) {
             try {
                 unit.removeUnit();
             } catch (Exception e) {
@@ -68,7 +68,7 @@ public abstract class MyUnit {
      * @param type The type of unit to sense. If null, sense all units.
      * @return A Pair of lists. First list is friendlies, second is enemies.
      */
-    public Pair<List<MyUnit>, List<Unit>> senseNearbyUnits(int radius, UnitType type) {
+    public Pair<List<AbstractUnit>, List<Unit>> senseNearbyUnits(int radius, UnitType type) {
         assert isOnMap();
         assert radius <= getVisionRange();
 
@@ -76,7 +76,7 @@ public abstract class MyUnit {
             gc.senseNearbyUnits(getMapLocation(), radius) :
             gc.senseNearbyUnitsByType(getMapLocation(), radius, type);
 
-        ArrayList<MyUnit> myUnits = new ArrayList<>((int) vec.size());
+        ArrayList<AbstractUnit> myUnits = new ArrayList<>((int) vec.size());
         ArrayList<Unit> enemyUnits = new ArrayList<>((int) vec.size());
         for (int i=0; i<vec.size(); i++) {
             Unit unit = vec.get(i);
@@ -93,7 +93,7 @@ public abstract class MyUnit {
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @return A Pair of lists. First list is friendlies, second is enemies.
      */
-    public Pair<List<MyUnit>, List<Unit>> senseNearbyUnits(int radius) {
+    public Pair<List<AbstractUnit>, List<Unit>> senseNearbyUnits(int radius) {
         return senseNearbyUnits(radius, null);
     }
 
@@ -104,7 +104,7 @@ public abstract class MyUnit {
      * @param type The type of unit to sense. If null, sense all units.
      * @return A Pair of lists. First list is friendlies, second is enemies.
      */
-    public Pair<List<MyUnit>, List<Unit>> senseNearbyUnits(UnitType type) {
+    public Pair<List<AbstractUnit>, List<Unit>> senseNearbyUnits(UnitType type) {
         return senseNearbyUnits(getVisionRange(), type);
     }
 
@@ -114,7 +114,7 @@ public abstract class MyUnit {
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @return A Pair of lists. First list is friendlies, second is enemies.
      */
-    public Pair<List<MyUnit>, List<Unit>> senseNearbyUnits() {
+    public Pair<List<AbstractUnit>, List<Unit>> senseNearbyUnits() {
         return senseNearbyUnits(getVisionRange(), null);
     }
 
@@ -182,7 +182,7 @@ public abstract class MyUnit {
      * @param type The type of unit to sense. If null, sense all units.
      * @return A list of friendly units.
      */
-    public List<MyUnit> senseNearbyFriendlies(int radius, UnitType type) {
+    public List<AbstractUnit> senseNearbyFriendlies(int radius, UnitType type) {
         assert isOnMap();
         assert radius <= getVisionRange();
 
@@ -190,7 +190,7 @@ public abstract class MyUnit {
             gc.senseNearbyUnits(getMapLocation(), radius) :
             gc.senseNearbyUnitsByType(getMapLocation(), radius, type);
 
-        ArrayList<MyUnit> myUnits = new ArrayList<>((int) vec.size());
+        ArrayList<AbstractUnit> myUnits = new ArrayList<>((int) vec.size());
         for (int i=0; i<vec.size(); i++) {
             Unit unit = vec.get(i);
             if (unit.team() == gc.team()) myUnits.add(getUnit(unit));
@@ -205,7 +205,7 @@ public abstract class MyUnit {
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @return A list of friendly units.
      */
-    public List<MyUnit> senseNearbyFriendlies(int radius) {
+    public List<AbstractUnit> senseNearbyFriendlies(int radius) {
         return senseNearbyFriendlies(radius, null);
     }
 
@@ -216,7 +216,7 @@ public abstract class MyUnit {
      * @param type The type of unit to sense. If null, sense all units.
      * @return A list of friendly units.
      */
-    public List<MyUnit> senseNearbyFriendlies(UnitType type) {
+    public List<AbstractUnit> senseNearbyFriendlies(UnitType type) {
         return senseNearbyFriendlies(getVisionRange(), type);
     }
 
@@ -226,7 +226,7 @@ public abstract class MyUnit {
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @return A list of friendly units.
      */
-    public List<MyUnit> senseNearbyFriendlies() {
+    public List<AbstractUnit> senseNearbyFriendlies() {
         return senseNearbyFriendlies(getVisionRange(), null);
     }
 
@@ -294,8 +294,8 @@ public abstract class MyUnit {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true; //short circuit
-        if (!(obj instanceof MyUnit)) return false;
-        MyUnit other = (MyUnit) obj;
+        if (!(obj instanceof AbstractUnit)) return false;
+        AbstractUnit other = (AbstractUnit) obj;
         return this.id == other.id;
     }
 
@@ -316,12 +316,12 @@ public abstract class MyUnit {
 
 
     /**
-     * Mapping from id to MyUnit objects (for internal use only).
+     * Mapping from id to AbstractUnit objects (for internal use only).
      * Must only contain units belonging to our player, i.e. on our planet under our team.
      * NOTE: Do not attempt to iterate through this map unless if using `Map.forEach()`.
      */
-    private static final Map<Integer, MyUnit> unitsModifiable;
-    private static final ArrayList<MyUnit> aliveUnitsModifiable;
+    private static final Map<Integer, AbstractUnit> unitsModifiable;
+    private static final ArrayList<AbstractUnit> aliveUnitsModifiable;
 
     private final int id;
     private final Team team;
@@ -330,7 +330,7 @@ public abstract class MyUnit {
     private Location location;
     private boolean isDead;
 
-    //Static initializer to ensure that right from the start, MyUnit knows all of our units.
+    //Static initializer to ensure that right from the start, AbstractUnit knows all of our units.
     static {
         VecUnit vec = gc.myUnits();
         int numUnits = (int) vec.size();
@@ -346,10 +346,10 @@ public abstract class MyUnit {
     }
 
     /**
-     * Constructor for MyUnit.
+     * Constructor for AbstractUnit.
      * @exception RuntimeException When unit already exists, has unknown type, doesn't belong to our player, or is dead.
      */
-    MyUnit(Unit unit) throws RuntimeException{
+    AbstractUnit(Unit unit) throws RuntimeException{
         this.id = unit.id();
         this.team = unit.team();
         this.location = unit.location();
@@ -361,7 +361,7 @@ public abstract class MyUnit {
             throw new RuntimeException("The unit " + unit + " is dead!");
         }
 
-        MyUnit previousValue = unitsModifiable.put(id, this);
+        AbstractUnit previousValue = unitsModifiable.put(id, this);
         if (previousValue != null) {
             unitsModifiable.put(id, previousValue); //restore the value
             throw new RuntimeException("The unit " + unit + " already exists!");
@@ -370,11 +370,11 @@ public abstract class MyUnit {
     }
 
     /**
-     * Gets the MyUnit object that corresponds to a Unit object.
+     * Gets the AbstractUnit object that corresponds to a Unit object.
      * @param unit The Unit object. It should belong to our player.
-     * @return The associated MyUnit object.
+     * @return The associated AbstractUnit object.
      */
-    static MyUnit getUnit(Unit unit) {
+    static AbstractUnit getUnit(Unit unit) {
         //`computeIfAbsent` is used to add any unidentified units to the list
         return unitsModifiable.computeIfAbsent(
             unit.id(),
@@ -383,12 +383,12 @@ public abstract class MyUnit {
     }
 
     /**
-     * Gets the MyUnit objects that correspond to a VecUnit object.
+     * Gets the AbstractUnit objects that correspond to a VecUnit object.
      * @param units The VecUnit object. All contained units should belong to our player.
-     * @return The associated list of MyUnit objects.
+     * @return The associated list of AbstractUnit objects.
      */
-    static List<MyUnit> getUnits(VecUnit units) {
-        ArrayList<MyUnit> result = new ArrayList<>((int) units.size());
+    static List<AbstractUnit> getUnits(VecUnit units) {
+        ArrayList<AbstractUnit> result = new ArrayList<>((int) units.size());
         for (int i=0; i<units.size(); i++) {
             Unit unit = units.get(i);
             result.add(getUnit(unit));
@@ -397,53 +397,53 @@ public abstract class MyUnit {
     }
 
     /**
-     * Gets the MyUnit objects that correspond to a Collection.
+     * Gets the AbstractUnit objects that correspond to a Collection.
      * @param units The Collection of units. All contained units should belong to our player.
-     * @return The associated list of MyUnit objects.
+     * @return The associated list of AbstractUnit objects.
      */
-    static List<MyUnit> getUnits(Collection<Unit> units) {
-        ArrayList<MyUnit> result = new ArrayList<>(units.size());
+    static List<AbstractUnit> getUnits(Collection<Unit> units) {
+        ArrayList<AbstractUnit> result = new ArrayList<>(units.size());
         for (Unit unit : units) result.add(getUnit(unit));
         return result;
     }
 
     /**
-     * Constructs a MyUnit object based off of a Unit and adds it to the collections of units.
+     * Constructs a AbstractUnit object based off of a Unit and adds it to the collections of units.
      * NOTE: The unit must belong to our Player, i.e. on our Planet under our Team.
      * @exception RuntimeException When unit already exists, has unknown type, doesn't belong to our player, or is dead.
      */
-    static MyUnit makeUnit(Unit ourUnit) {
+    static AbstractUnit makeUnit(Unit ourUnit) {
         int id = ourUnit.id();
         UnitType type = ourUnit.unitType();
         switch(type) {
             case Worker:
-                return new Worker(ourUnit);
+                return new AbstractWorker(ourUnit);
             case Knight:
-                return new Knight(ourUnit);
+                return new AbstractKnight(ourUnit);
             case Ranger:
-                return new Ranger(ourUnit);
+                return new AbstractRanger(ourUnit);
             case Mage:
-                return new Mage(ourUnit);
+                return new AbstractMage(ourUnit);
             case Healer:
-                return new Healer(ourUnit);
+                return new AbstractHealer(ourUnit);
             case Factory:
-                return new Factory(ourUnit);
+                return new AbstractFactory(ourUnit);
             case Rocket:
-                return new Rocket(ourUnit);
+                return new AbstractRocket(ourUnit);
             default:
                 throw new RuntimeException("Unrecognized UnitType: " + type); //Should never happen
         }
     }
 
     /**
-     * Removes this unit from the HashMap in MyUnit and the data structures subclasses.
+     * Removes this unit from the HashMap in AbstractUnit and the data structures subclasses.
      * NOTE: This does not remove the unit from aliveUnits!
      */
     void removeUnit() {
         assert !gc.canSenseUnit(getID());
         if (getType() == UnitType.Worker) {
             // De-assign worker upon death
-            ((Worker) this).deassignFactory();
+            ((AbstractWorker) this).deassignFactory();
         }
         isDead = true;
         unitsModifiable.remove(getID());

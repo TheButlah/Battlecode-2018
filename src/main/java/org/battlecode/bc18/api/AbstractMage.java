@@ -1,18 +1,18 @@
-package org.battlecode.bc18.bots.noobbot.units;
+package org.battlecode.bc18.api;
 
 import bc.*;
 
 import static org.battlecode.bc18.bots.util.Utils.gc;
 
-public class Mage extends Robot {
+public class AbstractMage extends AbstractRobot {
 
     public static final UnitType TYPE = UnitType.Mage;
 
     /**
-     * Constructor for Mage.
+     * Constructor for AbstractMage.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
-    Mage(Unit unit) {
+    AbstractMage(Unit unit) {
         super(unit);
         assert unit.unitType() == UnitType.Mage;
     }
@@ -62,6 +62,6 @@ public class Mage extends Robot {
 
     @Override
     public UnitType getType() {
-        return Mage.TYPE;
+        return AbstractMage.TYPE;
     }
 }

@@ -1,4 +1,4 @@
-package org.battlecode.bc18.bots.noobbot.units;
+package org.battlecode.bc18.api;
 
 import bc.*;
 import org.battlecode.bc18.PathFinding;
@@ -8,13 +8,13 @@ import java.util.List;
 
 import static org.battlecode.bc18.bots.util.Utils.gc;
 
-public class Knight extends Robot {
+public class AbstractKnight extends AbstractRobot {
 
     public static final UnitType TYPE = UnitType.Knight;
 
     @Override
     public UnitType getType() {
-        return Knight.TYPE;
+        return AbstractKnight.TYPE;
     }
 
     /**
@@ -40,10 +40,10 @@ public class Knight extends Robot {
     private Unit target = null; //Although this doesn't update, it will allow us to go to last seen spot.
 
     /**
-     * Constructor for Knight.
+     * Constructor for AbstractKnight.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
-    Knight(Unit unit) {
+    AbstractKnight(Unit unit) {
         super(unit);
         assert unit.unitType() == UnitType.Knight;
     }

@@ -1,16 +1,16 @@
-package org.battlecode.bc18.bots.noobbot.units;
+package org.battlecode.bc18.api;
 
 import bc.*;
 
 import static org.battlecode.bc18.bots.util.Utils.gc;
 
-public abstract class Robot extends MyUnit {
+public abstract class AbstractRobot extends AbstractUnit {
 
     /**
-     * Constructor for Robot.
+     * Constructor for AbstractRobot.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
-    Robot(Unit unit) {
+    AbstractRobot(Unit unit) {
         super(unit);
     }
 

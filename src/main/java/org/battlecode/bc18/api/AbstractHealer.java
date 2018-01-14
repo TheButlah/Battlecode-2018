@@ -1,18 +1,18 @@
-package org.battlecode.bc18.bots.noobbot.units;
+package org.battlecode.bc18.api;
 
 import bc.*;
 
 import static org.battlecode.bc18.bots.util.Utils.gc;
 
-public class Healer extends Robot {
+public class AbstractHealer extends AbstractRobot {
 
     public static final UnitType TYPE = UnitType.Healer;
 
     /**
-     * Constructor for Healer.
+     * Constructor for AbstractHealer.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
-    Healer(Unit unit) {
+    AbstractHealer(Unit unit) {
         super(unit);
         assert unit.unitType() == UnitType.Healer;
     }
@@ -54,6 +54,6 @@ public class Healer extends Robot {
 
     @Override
     public UnitType getType() {
-        return Healer.TYPE;
+        return AbstractHealer.TYPE;
     }
 }
