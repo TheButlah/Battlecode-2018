@@ -7,7 +7,10 @@ import java.util.*;
 
 import static org.battlecode.bc18.bots.util.Utils.gc;
 
-/** Superclass for the different types of units able to be controlled by our player. */
+/**
+ * Superclass for the different types of units able to be controlled by our player.
+ * NOTE: Unless otherwise noted, all functions that check if a unit can act assume that the MyUnit is not dead.
+ */
 @SuppressWarnings("unused")
 public abstract class MyUnit {
 
@@ -34,9 +37,23 @@ public abstract class MyUnit {
     /** Gets the type of unit */
     public abstract UnitType getType(); //This would be static but you cant have static abstract class
 
+    /** Runs initialization code for the start of the turn. */
+    public static void initTurn() {
+        //Remove the killed units from the list
+        unitsModifiable.entrySet().removeIf((entry) -> {
+            int id = entry.getKey();
+            MyUnit unit = entry.getValue();
+            boolean died = !gc.canSenseUnit(id);
+            if (died) unit.informOfDeath(false);
+            return died;
+        });
+    }
+
     /** Kaboom. */
     public void selfDestruct() {
         gc.disintegrateUnit(id);
+        informOfDeath(false);
+        //TODO: Can we figure out a way to allow this to be `true`?
     }
 
     /**
@@ -247,6 +264,7 @@ public abstract class MyUnit {
 
     /** Gets the unit's current location. */
     public Location getLocation() {
+        assert location.equals(getAsUnit().location());
         return location;
     }
 
@@ -263,6 +281,11 @@ public abstract class MyUnit {
     /** Gets the health of the unit */
     public int getHealth() {
         return (int) getAsUnit().health();
+    }
+
+    /** Whether the unit is dead.*/
+    public boolean isDead() {
+        return isDead;
     }
 
     @Override
@@ -300,7 +323,9 @@ public abstract class MyUnit {
     private final int id;
     private final Team team;
     private final int maxHealth;
+
     private Location location;
+    private boolean isDead = false;
 
     //Static initializer to ensure that right from the start, MyUnit knows all of our units.
     static {
@@ -316,7 +341,7 @@ public abstract class MyUnit {
 
     /**
      * Constructor for MyUnit.
-     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
+     * @exception RuntimeException Whenever units are unknown, already exist, don't belong to our player, or are dead.
      */
     MyUnit(Unit unit) throws RuntimeException{
         this.id = unit.id();
@@ -398,17 +423,15 @@ public abstract class MyUnit {
     }
 
     /**
-     * Removes a unit from the units mapping
-     * @param id
-     * @return the removed unit
+     * Lets this unit know that it died.
+     * NOTE: This function should only be called when the unit is actually dead. Do not call for alive units!
+     * NOTE: When iterating over `MyUnit.units`, make sure `updateMap` is false to prevent errors.
+     * @param updateMap Whether or not to also update the HashMap of units.
      */
-    public static MyUnit removeUnit(int id) {
-        MyUnit unit = units.get(id);
-        if (unit != null && unit.getType() == UnitType.Worker) {
-            // De-assign worker upon death
-            unit.deassignFactory();
-        }
-        return unitsModifiable.remove(id);
+    void informOfDeath(boolean updateMap) {
+        assert !gc.canSenseUnit(id); //Make sure that we never call setDead when the unit is actually alive
+        isDead = true;
+        if (updateMap) unitsModifiable.remove(id);
     }
 
     /**
