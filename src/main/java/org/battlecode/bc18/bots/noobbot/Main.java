@@ -15,6 +15,7 @@ public class Main {
     public static void main(String[] args) {
         // Connect to the manager, starting the game
         gc = new GameController();
+        AbstractUnit.setBuilder(new UnitBuilder());
         if (gc.planet() == Planet.Earth) {
             PlanetMap earthMap = gc.startingMap(Planet.Earth);
             Utils.setEarthDims(earthMap);
@@ -26,18 +27,9 @@ public class Main {
             //Perform beginning of turn logic
             try{
                 AbstractUnit.initTurn();
+                AbstractUnit.doTurn();
             } catch (Exception e) {
                 e.printStackTrace();
-            }
-
-            //Call act() for alive units
-            for (int i = 0; i < AbstractUnit.aliveUnits.size(); ++i) {
-                AbstractUnit unit = AbstractUnit.aliveUnits.get(i);
-                try { //Avoid breaking the loop leading to instant loss
-                    unit.act();
-                } catch (Exception e){
-                    e.printStackTrace();
-                }
             }
             gc.nextTurn();
         }

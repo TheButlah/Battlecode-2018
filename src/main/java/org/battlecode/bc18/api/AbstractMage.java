@@ -4,17 +4,13 @@ import bc.*;
 
 import static org.battlecode.bc18.bots.util.Utils.gc;
 
-public class AbstractMage extends AbstractRobot {
+public abstract class AbstractMage extends AbstractRobot {
 
     public static final UnitType TYPE = UnitType.Mage;
 
-    /**
-     * Constructor for AbstractMage.
-     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
-     */
-    AbstractMage(Unit unit) {
-        super(unit);
-        assert unit.unitType() == UnitType.Mage;
+    @Override
+    public UnitType getType() {
+        return AbstractMage.TYPE;
     }
 
     /**
@@ -54,14 +50,16 @@ public class AbstractMage extends AbstractRobot {
         gc.blink(getID(), loc);
     }
 
-    @Override
-    public void act() {
-        if (isDead()) return;
-        //TODO: implement this
-    }
 
-    @Override
-    public UnitType getType() {
-        return AbstractMage.TYPE;
+
+    //////////END OF API//////////
+
+    /**
+     * Constructor for AbstractMage.
+     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
+     */
+    protected AbstractMage(Unit unit) {
+        super(unit);
+        assert unit.unitType() == UnitType.Mage;
     }
 }

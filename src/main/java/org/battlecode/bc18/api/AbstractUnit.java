@@ -12,16 +12,15 @@ import static org.battlecode.bc18.bots.util.Utils.gc;
 public abstract class AbstractUnit {
 
     /**
-     * Unmodifiable mapping from id to AbstractUnit objects (safe for external use).
-     * Must only contain units belonging to our player, i.e. on our planet under our team.
-     */
-    public static final Map<Integer, AbstractUnit> units;
-
-    /**
      * Unmodifiable list of alive units (safe for external use).
      * Must only contain units belonging to our player, i.e. on our planet under our team.
      */
     public static final List<AbstractUnit> aliveUnits;
+
+    /** Sets the UnitBuilder that will be used to make units. Should be run at very start. */
+    public static void setBuilder(UnitBuilder builder) {
+        AbstractUnit.builder = builder;
+    }
 
     /** Prepares the AbstractUnit objects for their logic this turn. */
     public static void initTurn() {
@@ -42,6 +41,19 @@ public abstract class AbstractUnit {
         for (AbstractUnit unit : deadUnits) {
             try {
                 unit.removeUnit();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /** Goes through all our player's units and has them act. Requires `initTurn()` to run first. */
+    public static void doTurn() {
+        //This must not be a foreach but instead a traditional loop to avoid ConcurrentModificationException
+        for (int i = 0; i < AbstractUnit.aliveUnits.size(); ++i) {
+            AbstractUnit unit = AbstractUnit.aliveUnits.get(i);
+            try { //Avoid breaking the loop leading to instant loss
+                unit.act();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -230,6 +242,68 @@ public abstract class AbstractUnit {
         return senseNearbyFriendlies(getVisionRange(), null);
     }
 
+    /**
+     * Gets the AbstractUnit object that corresponds to a Unit object.
+     * @param unit The Unit object. It should belong to our player and not be dead.
+     * @return The associated AbstractUnit object.
+     */
+    public static AbstractUnit getUnit(Unit unit) {
+        //`computeIfAbsent` is used to add any unidentified units to the list
+        return units.computeIfAbsent(
+            unit.id(),
+            (k) -> makeUnit(unit)
+        );
+    }
+
+    /**
+     * Gets the AbstractUnit object that corresponds to a unit id.
+     * @param id The unit id. It should belong to our player and not be dead.
+     * @return The associated AbstractUnit object.
+     */
+    public static AbstractUnit getUnit(int id) {
+        //`computeIfAbsent` is used to add any unidentified units to the list
+        return units.computeIfAbsent(id, AbstractUnit::makeUnit);
+    }
+
+    /**
+     * Gets the AbstractUnit objects that correspond to a VecUnit object.
+     * @param units The VecUnit object. All contained units should belong to our player and not be dead.
+     * @return The associated list of AbstractUnit objects.
+     */
+    public static List<? extends AbstractUnit> getUnits(VecUnit units) {
+        List<AbstractUnit> result = new ArrayList<>((int) units.size());
+        for (int i=0; i<units.size(); i++) {
+            Unit unit = units.get(i);
+            result.add(getUnit(unit));
+        }
+        return result;
+    }
+
+    /**
+     * Gets the AbstractUnit objects that correspond to a VecUnitID object.
+     * @param units The VecUnitID object. All contained units should belong to our player and not be dead.
+     * @return The associated list of AbstractUnit objects.
+     */
+    public static List<? extends AbstractUnit> getUnits(VecUnitID units) {
+        List<AbstractUnit> result = new ArrayList<>((int) units.size());
+        for (int i=0; i<units.size(); i++) {
+            int id = units.get(i);
+            result.add(getUnit(id));
+        }
+        return result;
+    }
+
+    /**
+     * Gets the AbstractUnit objects that correspond to a Collection of units.
+     * @param units The Collection of units. All contained units should belong to our player and not be dead.
+     * @return The associated list of AbstractUnit objects.
+     */
+    public static List<AbstractUnit> getUnits(Collection<Unit> units) {
+        List<AbstractUnit> result = new ArrayList<>(units.size());
+        for (Unit unit : units) result.add(getUnit(unit));
+        return result;
+    }
+
     /** Gets the unit as a Unit object */
     public Unit getAsUnit() {
         return gc.unit(id);
@@ -287,7 +361,7 @@ public abstract class AbstractUnit {
     }
 
     /** Whether the unit is dead or not. */
-    boolean isDead() {
+    public boolean isDead() {
         return isDead;
     }
 
@@ -309,6 +383,14 @@ public abstract class AbstractUnit {
         return "[" + getType() + ":" + this.id + "]";
     }
 
+    /**
+     * Prints to stdout the contents of `obj` prefixed by the unit info.
+     * @param obj The data to print out.
+     */
+    protected void println(Object obj) {
+        System.out.println(this + " " + obj);
+    }
+
 
 
     //////////END OF API//////////
@@ -320,7 +402,7 @@ public abstract class AbstractUnit {
      * Must only contain units belonging to our player, i.e. on our planet under our team.
      * NOTE: Do not attempt to iterate through this map unless if using `Map.forEach()`.
      */
-    private static final Map<Integer, AbstractUnit> unitsModifiable;
+    private static final Map<Integer, AbstractUnit> units;
     private static final ArrayList<AbstractUnit> aliveUnitsModifiable;
 
     private final int id;
@@ -329,15 +411,15 @@ public abstract class AbstractUnit {
 
     private Location location;
     private boolean isDead;
+    private static UnitBuilder builder;
 
     //Static initializer to ensure that right from the start, AbstractUnit knows all of our units.
     static {
         VecUnit vec = gc.myUnits();
         int numUnits = (int) vec.size();
-        unitsModifiable = new HashMap<>(numUnits);
+        units = new HashMap<>(numUnits);
         aliveUnitsModifiable = new ArrayList<>(numUnits);
 
-        units = Collections.unmodifiableMap(unitsModifiable);
         aliveUnits = Collections.unmodifiableList(aliveUnitsModifiable);
 
         for (int i=0; i<vec.size(); i++) {
@@ -361,78 +443,39 @@ public abstract class AbstractUnit {
             throw new RuntimeException("The unit " + unit + " is dead!");
         }
 
-        AbstractUnit previousValue = unitsModifiable.put(id, this);
+        AbstractUnit previousValue = units.put(id, this);
         if (previousValue != null) {
-            unitsModifiable.put(id, previousValue); //restore the value
+            units.put(id, previousValue); //restore the value
             throw new RuntimeException("The unit " + unit + " already exists!");
         }
         aliveUnitsModifiable.add(this);
     }
 
-    /**
-     * Gets the AbstractUnit object that corresponds to a Unit object.
-     * @param unit The Unit object. It should belong to our player.
-     * @return The associated AbstractUnit object.
-     */
-    static AbstractUnit getUnit(Unit unit) {
-        //`computeIfAbsent` is used to add any unidentified units to the list
-        return unitsModifiable.computeIfAbsent(
-            unit.id(),
-            (k) -> makeUnit(unit)
-        );
-    }
+
 
     /**
-     * Gets the AbstractUnit objects that correspond to a VecUnit object.
-     * @param units The VecUnit object. All contained units should belong to our player.
-     * @return The associated list of AbstractUnit objects.
-     */
-    static List<AbstractUnit> getUnits(VecUnit units) {
-        ArrayList<AbstractUnit> result = new ArrayList<>((int) units.size());
-        for (int i=0; i<units.size(); i++) {
-            Unit unit = units.get(i);
-            result.add(getUnit(unit));
-        }
-        return result;
-    }
-
-    /**
-     * Gets the AbstractUnit objects that correspond to a Collection.
-     * @param units The Collection of units. All contained units should belong to our player.
-     * @return The associated list of AbstractUnit objects.
-     */
-    static List<AbstractUnit> getUnits(Collection<Unit> units) {
-        ArrayList<AbstractUnit> result = new ArrayList<>(units.size());
-        for (Unit unit : units) result.add(getUnit(unit));
-        return result;
-    }
-
-    /**
-     * Constructs a AbstractUnit object based off of a Unit and adds it to the collections of units.
-     * NOTE: The unit must belong to our Player, i.e. on our Planet under our Team.
-     * @exception RuntimeException When unit already exists, has unknown type, doesn't belong to our player, or is dead.
+     * Constructs an AbstractUnit object based off of a Unit and adds it to the collections of units.
+     * The unit must belong to our Player, i.e. on our Planet under our Team.
+     * The unit must be alive.
+     * The unit must not already have been created.
+     * @param ourUnit The Unit object to make the AbstractUnit object from.
+     * @exception RuntimeException When the unit has an unknown type.
      */
     static AbstractUnit makeUnit(Unit ourUnit) {
-        int id = ourUnit.id();
-        UnitType type = ourUnit.unitType();
-        switch(type) {
-            case Worker:
-                return new AbstractWorker(ourUnit);
-            case Knight:
-                return new AbstractKnight(ourUnit);
-            case Ranger:
-                return new AbstractRanger(ourUnit);
-            case Mage:
-                return new AbstractMage(ourUnit);
-            case Healer:
-                return new AbstractHealer(ourUnit);
-            case Factory:
-                return new AbstractFactory(ourUnit);
-            case Rocket:
-                return new AbstractRocket(ourUnit);
-            default:
-                throw new RuntimeException("Unrecognized UnitType: " + type); //Should never happen
-        }
+        return builder.newUnit(ourUnit);
+    }
+
+    /**
+     * Constructs an AbstractUnit object based off of a unit's id and adds it to the collections of units.
+     * The unit must belong to our Player, i.e. on our Planet under our Team.
+     * The unit must be alive.
+     * The unit must not already have been created.
+     * @param ourUnit The id of the unit to make the AbstractUnit object from.
+     * @exception RuntimeException When the unit has an unknown type.
+     */
+    static AbstractUnit makeUnit(int ourUnit) {
+        assert gc.canSenseUnit(ourUnit);
+        return makeUnit(gc.unit(ourUnit));
     }
 
     /**
@@ -446,15 +489,7 @@ public abstract class AbstractUnit {
             ((AbstractWorker) this).deassignFactory();
         }
         isDead = true;
-        unitsModifiable.remove(getID());
-    }
-
-    /**
-     * Prints to stdout the contents of `obj` prefixed by the unit info.
-     * @param obj The data to print out.
-     */
-    void println(Object obj) {
-        System.out.println(this + " " + obj);
+        units.remove(getID());
     }
 
     /**

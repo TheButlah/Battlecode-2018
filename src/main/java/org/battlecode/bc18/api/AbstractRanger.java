@@ -2,17 +2,13 @@ package org.battlecode.bc18.api;
 
 import bc.*;
 
-public class AbstractRanger extends AbstractRobot {
+public abstract class AbstractRanger extends AbstractRobot {
 
     public static final UnitType TYPE = UnitType.Ranger;
 
-    /**
-     * Constructor for AbstractRanger.
-     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
-     */
-    AbstractRanger(Unit unit) {
-        super(unit);
-        assert unit.unitType() == UnitType.Ranger;
+    @Override
+    public UnitType getType() {
+        return AbstractRanger.TYPE;
     }
 
     /**
@@ -32,14 +28,16 @@ public class AbstractRanger extends AbstractRobot {
         return false;
     }*/
 
-    @Override
-    public void act() {
-        if (isDead()) return;
-        //TODO: implement this
-    }
 
-    @Override
-    public UnitType getType() {
-        return AbstractRanger.TYPE;
+
+    //////////END OF API//////////
+
+    /**
+     * Constructor for AbstractRanger.
+     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
+     */
+    protected AbstractRanger(Unit unit) {
+        super(unit);
+        assert unit.unitType() == UnitType.Ranger;
     }
 }
