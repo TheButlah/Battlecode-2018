@@ -3,6 +3,10 @@
 *.iml
 *.iws
 
+*.classpath
+*.settings
+*.project
+
 #Gradle
 .gradle
 build/
