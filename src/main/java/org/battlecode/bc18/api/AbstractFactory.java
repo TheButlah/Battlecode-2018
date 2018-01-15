@@ -18,15 +18,6 @@ public abstract class AbstractFactory extends AbstractStructure {
     }
 
     /**
-     * A mapping of factories to numbers of workers assigned to each factory
-     */
-    public static final Map<Integer, Integer> workersPerFactory = new HashMap<>();
-    /**
-     * A mapping of workers to the factories they are assigned to
-     */
-    public static final Map<Integer, Integer> workerFactoryAssignment = new HashMap<>();
-
-    /**
      * Whether the factory can produce a robot.
      * Must not currently be producing a robot, and must have sufficient resources.
      * @param type The type of robot to check.
