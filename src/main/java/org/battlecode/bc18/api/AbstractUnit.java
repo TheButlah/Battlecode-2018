@@ -323,10 +323,7 @@ public abstract class AbstractUnit {
         return (int) getAsUnit().visionRange();
     }
 
-    /** Gets the attack range of the unit */
-    public int getAttackRange() {
-        return (int) getAsUnit().attackRange();
-    }
+
     /**
      * Gets the unit's current location on the map.
      * NOTE: Does not check to ensure that the unit is on the map first.
