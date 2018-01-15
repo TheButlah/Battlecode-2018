@@ -355,25 +355,34 @@ public abstract class AbstractUnit {
 
 
     /**
-     * Gets the locations that contain karbonite within some distance of a location
-     * @param here The location around which to search
-     * @param senseRange The distance to look (in units squared)
-     * @return ArrayList of MapLocations which contain karbonite
+     * Gets the locations that contain karbonite within some radius.
+     * NOTE: Requires that this unit is on the map first, and that radius <= getVisionRange().
+     * @param radius The distance to look (in units squared).
+     * @return ArrayList of Pairs of MapLocations and amounts of karbonite.
      */
-    public ArrayList<MapLocation> senseNearbyKarbonite(MapLocation here, int senseRange) {
-        ArrayList<MapLocation> nearbyKarbonite = new ArrayList<>();
-        VecMapLocation locs = gc.allLocationsWithin(here, senseRange);
-        MapLocation loc;
+    public ArrayList<Pair<MapLocation, Integer>> senseNearbyKarbonite(int radius) {
+        assert radius <= getVisionRange();
+        assert isOnMap();
+        ArrayList<Pair<MapLocation, Integer>> nearbyKarbonite = new ArrayList<>();
+        VecMapLocation locs = gc.allLocationsWithin(getMapLocation(), radius);
+
         for(int i = 0; i < locs.size(); i++) {
-            try {
-                loc = locs.get(i);
-                if (gc.karboniteAt(loc) > 0) {
-                    nearbyKarbonite.add(loc);
-                }
+            MapLocation loc = locs.get(i);
+            int amount = (int) gc.karboniteAt(loc);
+            if (amount > 0) {
+                nearbyKarbonite.add(new Pair<>(loc, amount));
             }
-            catch (Exception e) { }
         }
         return nearbyKarbonite;
+    }
+
+    /**
+     * Gets the locations that contain karbonite within a radius.
+     * NOTE: Requires that this unit is on the map first.
+     * @return ArrayList of Pairs of MapLocations and amounts of karbonite.
+     */
+    public ArrayList<Pair<MapLocation, Integer>> senseNearbyKarbonite() {
+        return senseNearbyKarbonite(getVisionRange());
     }
 
     /** Whether the unit is dead or not. */

@@ -139,15 +139,15 @@ public abstract class AbstractWorker extends AbstractRobot {
         return (AbstractWorker) makeUnit(unit);
     }
 
-    /**
-     * @return Whether the worker has already acted (harvested, blueprinted,
-     * built, or repaired) this round.
-     */
+    /** Whether worker has acted (harvested, blueprinted, built, or repaired) this round. */
     public boolean hasActed() {
         return Utils.toBool(getAsUnit().workerHasActed());
     }
 
+
+
     //////////END OF API//////////
+
 
 
     /**

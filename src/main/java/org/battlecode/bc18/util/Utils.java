@@ -43,12 +43,26 @@ public final class Utils {
 
     public static MapLocation closest(List<MapLocation> locations, MapLocation here) {
         MapLocation closest = null;
-        long closestDist = Integer.MAX_VALUE;
+        int closestDist = Integer.MAX_VALUE;
         for (MapLocation loc : locations) {
-            long dist = loc.distanceSquaredTo(here);
+            int dist = (int) loc.distanceSquaredTo(here);
             if (dist < closestDist) {
                 closestDist = dist;
                 closest = loc;
+            }
+        }
+        return closest;
+    }
+
+    public static Pair<MapLocation, Integer> closestPair(List<Pair<MapLocation, Integer>> locations, MapLocation here) {
+        Pair<MapLocation, Integer> closest = null;
+        int closestDist = Integer.MAX_VALUE;
+        for (Pair<MapLocation, Integer> pair : locations) {
+            MapLocation loc = pair.getFirst();
+            int dist = (int) loc.distanceSquaredTo(here);
+            if (dist < closestDist) {
+                closestDist = dist;
+                closest = pair;
             }
         }
         return closest;

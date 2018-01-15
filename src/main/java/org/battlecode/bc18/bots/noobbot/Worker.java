@@ -3,6 +3,7 @@ package org.battlecode.bc18.bots.noobbot;
 import bc.*;
 import org.battlecode.bc18.PathFinding;
 import org.battlecode.bc18.api.*;
+import org.battlecode.bc18.util.Pair;
 import org.battlecode.bc18.util.Utils;
 
 import java.util.ArrayList;
@@ -100,22 +101,24 @@ public class Worker extends AbstractWorker {
                 if (isAccessible(towardsFactory)) {
                     move(towardsFactory);
                 }
-            }
-            else {
+            } else {
                 //No target factory, so look for nearby karbonite
-                List<MapLocation> nearbyKarbonite = senseNearbyKarbonite(myMapLoc,
-                        getVisionRange());
-                if (nearbyKarbonite.size() != 0) {
-                    MapLocation targetKarbonite = Utils.closest(nearbyKarbonite, myMapLoc);
-                    int[][] distances = PathFinding.earthPathfinder.search(targetKarbonite.getY(),
-                            targetKarbonite.getX());
-                    Direction towardsKarbonite = PathFinding.moveDirectionToDestination(distances,
-                            myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
+                List<Pair<MapLocation, Integer>> deposits = senseNearbyKarbonite();
+                if (deposits.size() != 0) {
+                    Pair<MapLocation, Integer> targetDeposit = Utils.closestPair(deposits, myMapLoc);
+                    MapLocation targetLoc = targetDeposit.getFirst();
+                    int[][] distances = PathFinding.earthPathfinder.search(
+                        targetLoc.getY(),
+                        targetLoc.getX());
+                    Direction towardsKarbonite = PathFinding.moveDirectionToDestination(
+                        distances,
+                        myMapLoc.getY(),
+                        myMapLoc.getX(),
+                        myMapLoc.getPlanet());
                     if (isAccessible(towardsKarbonite)) {
                         move(towardsKarbonite);
                     }
-                }
-                else {
+                } else {
                     //Move randomly
                     int offset = Utils.rand.nextInt(Utils.dirs.length);
                     for (int i = 0; i < Utils.dirs.length; i++) {
@@ -187,32 +190,6 @@ public class Worker extends AbstractWorker {
     @Override
     protected void onDeath() {
 
-    }
-
-    public ArrayList<MapLocation> senseNearbyKarbonite(MapLocation here, int senseRange) {
-        int x = here.getX();
-        int y = here.getY();
-        Planet planet = here.getPlanet();
-        ArrayList<MapLocation> nearbyKarbonite = new ArrayList<>();
-        senseRange = (int)Math.sqrt(senseRange);
-        for (int r = y - senseRange; r <= y + senseRange; ++r) {
-            if (r < 0 || r > Utils.earthHeight) {
-                continue;
-            }
-            for (int c = x - senseRange; c <= x + senseRange; ++c) {
-                if (c < 0 || c > Utils.earthWidth) {
-                    continue;
-                }
-                try {
-                    MapLocation loc = new MapLocation(planet, c, r);
-                    if (gc.karboniteAt(loc) > 0) {
-                        nearbyKarbonite.add(loc);
-                    }
-                }
-                catch (Exception e) { }
-            }
-        }
-        return nearbyKarbonite;
     }
 
     /**
