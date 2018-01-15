@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.battlecode.bc18.bots.util.Pair;
 
@@ -18,6 +17,7 @@ import bc.Team;
 import bc.Unit;
 import bc.UnitType;
 import bc.VecUnit;
+import bc.VecUnitID;
 import bc.bc;
 
 /** Superclass for the different types of units able to be controlled by our player. */
