@@ -38,8 +38,7 @@ public class Worker extends AbstractWorker {
         //We already checked that we were on the map
         MapLocation myMapLoc = getMapLocation();
 
-        Integer targetFactoryId = getFactoryAssignment();
-        AbstractFactory targetFactory = targetFactoryId != null ? (AbstractFactory) getUnit(targetFactoryId) : null;
+        Factory targetFactory = getFactoryAssignment();
         if (targetFactory != null && targetFactory.isDead()) {
             println("Assigned to dead factory!");
             deassignFactory();
@@ -57,8 +56,8 @@ public class Worker extends AbstractWorker {
                 if (canBlueprint(UnitType.Factory, dir)
                         && !Utils.isAnyAdjacent(nearbyFactoriesLoc, myMapLoc.add(dir))) {
                     println("Blueprinting: " + UnitType.Factory + " towards " + dir);
-                    targetFactory = (AbstractFactory) blueprint(UnitType.Factory, dir);
-                    assignFactory(targetFactory.getID());
+                    targetFactory = (Factory) blueprint(UnitType.Factory, dir);
+                    assignFactory(targetFactory);
                     break;
                 }
             }
@@ -71,10 +70,10 @@ public class Worker extends AbstractWorker {
 
         if (targetFactory == null) {
             List<AbstractUnit> nearbyFactories = senseNearbyFriendlies(UnitType.Factory);
-            AbstractFactory closestFactory = null;
+            Factory closestFactory = null;
             long closestFactoryDist = Long.MAX_VALUE;
             for (AbstractUnit unit : nearbyFactories) {
-                AbstractFactory factory = (AbstractFactory) unit;
+                Factory factory = (Factory) unit;
                 if (!factory.isBuilt() || factory.getHealth() < factory.getMaxHealth() * 3 / 4) {
                     long distance = factory.getMapLocation().distanceSquaredTo(myMapLoc);
                     if (distance < closestFactoryDist) {
@@ -85,7 +84,7 @@ public class Worker extends AbstractWorker {
             }
             targetFactory = closestFactory;
             if (targetFactory != null) {
-                assignFactory(targetFactory.getID());
+                assignFactory(targetFactory);
             }
         }
         //targetFactory should now be set. If its still null, we lost all out factories.
@@ -189,15 +188,15 @@ public class Worker extends AbstractWorker {
 
     @Override
     protected void onDeath() {
-
+        deassignFactory();
     }
 
     /**
-     * Gets ID of the factory assigned to the {@link Worker} calling this method
+     * Gets the {@link Factory} assigned to the {@link Worker} calling this method
      * Pre-condition: this method should only be called by instances of the {@link Worker} class
-     * @return the factory ID
+     * @return the factory
      */
-    Integer getFactoryAssignment() {
+    Factory getFactoryAssignment() {
         return Factory.workerFactoryAssignment.get(getID());
     }
 
@@ -206,13 +205,13 @@ public class Worker extends AbstractWorker {
      * Pre-condition: this method should only be called by instances of the {@link Worker} class
      * @param factoryId the factory ID
      */
-    void assignFactory(int factoryId) {
-        Factory.workerFactoryAssignment.put(getID(), factoryId);
-        if (!Factory.workersPerFactory.containsKey(factoryId)) {
-            Factory.workersPerFactory.put(factoryId, 1);
+    void assignFactory(Factory factory) {
+        Factory.workerFactoryAssignment.put(getID(), factory);
+        if (!Factory.workersPerFactory.containsKey(factory.getID())) {
+            Factory.workersPerFactory.put(factory.getID(), 1);
         }
         else {
-            Factory.workersPerFactory.put(factoryId, Factory.workersPerFactory.get(factoryId) + 1);
+            Factory.workersPerFactory.put(factory.getID(), Factory.workersPerFactory.get(factory.getID()) + 1);
         }
     }
 
@@ -220,16 +219,16 @@ public class Worker extends AbstractWorker {
      * De-assigns the factory assigned to the {@link Worker} calling this method.
      * If there is no assigned factory, no changes are made
      * Pre-condition: this method should only be called by instances of the {@link Worker} class
-     * @return the ID of the de-assigned factory, or null if none
+     * @return the the de-assigned factory, or null if none
      */
-    Integer deassignFactory() {
-        Integer factoryId = Factory.workerFactoryAssignment.remove(getID());
-        if (factoryId != null) {
-            Integer count = Factory.workersPerFactory.get(factoryId);
+    Factory deassignFactory() {
+        Factory factory = Factory.workerFactoryAssignment.remove(getID());
+        if (factory != null) {
+            Integer count = Factory.workersPerFactory.get(factory.getID());
             if (count != null) {
-                Factory.workersPerFactory.put(factoryId, count - 1);
+                Factory.workersPerFactory.put(factory.getID(), count - 1);
             }
         }
-        return factoryId;
+        return factory;
     }
 }
