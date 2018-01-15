@@ -1,12 +1,8 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import bc.MapLocation;
 import bc.Unit;
 import bc.UnitType;
 import org.battlecode.bc18.api.AbstractMage;
-import org.battlecode.bc18.api.AbstractRobot;
-
-import static org.battlecode.bc18.bots.util.Utils.gc;
 
 public class Mage extends AbstractMage {
 
@@ -22,7 +18,11 @@ public class Mage extends AbstractMage {
 
     @Override
     public void act() {
-        if (isDead()) return;
         //TODO: implement this
+    }
+
+    @Override
+    protected void onDeath() {
+
     }
 }

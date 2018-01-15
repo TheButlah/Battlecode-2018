@@ -1,12 +1,8 @@
 package org.battlecode.bc18.api;
 
 import bc.*;
-import org.battlecode.bc18.PathFinding;
-import org.battlecode.bc18.bots.util.Utils;
 
-import java.util.List;
-
-import static org.battlecode.bc18.bots.util.Utils.gc;
+import static org.battlecode.bc18.util.Utils.gc;
 
 public abstract class AbstractKnight extends AbstractRobot {
 
@@ -34,7 +30,6 @@ public abstract class AbstractKnight extends AbstractRobot {
 
 
     //////////END OF API//////////
-
 
 
 

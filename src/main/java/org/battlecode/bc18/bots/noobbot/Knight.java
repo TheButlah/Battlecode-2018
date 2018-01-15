@@ -6,12 +6,11 @@ import bc.Unit;
 import bc.UnitType;
 import org.battlecode.bc18.PathFinding;
 import org.battlecode.bc18.api.AbstractKnight;
-import org.battlecode.bc18.api.AbstractRobot;
-import org.battlecode.bc18.bots.util.Utils;
+import org.battlecode.bc18.util.Utils;
 
 import java.util.List;
 
-import static org.battlecode.bc18.bots.util.Utils.gc;
+import static org.battlecode.bc18.util.Utils.gc;
 
 public class Knight extends AbstractKnight {
 
@@ -28,8 +27,6 @@ public class Knight extends AbstractKnight {
 
     @Override
     public void act() {
-        if (isDead()) return;
-
         // check if enemy unit in sight
         // if so, move towards it or attack it
         // else, move randomly
@@ -94,6 +91,11 @@ public class Knight extends AbstractKnight {
                 gc.attack(getID(), this.target.id());
             }
         }
+    }
+
+    @Override
+    protected void onDeath() {
+
     }
 
     private boolean hasTarget() {

@@ -1,18 +1,12 @@
 package org.battlecode.bc18.api;
 
-import static org.battlecode.bc18.bots.util.Utils.gc;
+import static org.battlecode.bc18.util.Utils.gc;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.battlecode.bc18.bots.util.Utils;
-
-import bc.Direction;
-import bc.MapLocation;
 import bc.Unit;
 import bc.UnitType;
-import bc.VecUnitID;
 
 public abstract class AbstractFactory extends AbstractStructure {
 

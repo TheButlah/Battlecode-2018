@@ -1,11 +1,7 @@
 package org.battlecode.bc18.bots.noobbot;
 
 import bc.Unit;
-import bc.UnitType;
 import org.battlecode.bc18.api.AbstractHealer;
-import org.battlecode.bc18.api.AbstractRobot;
-
-import static org.battlecode.bc18.bots.util.Utils.gc;
 
 public class Healer extends AbstractHealer {
 
@@ -19,7 +15,11 @@ public class Healer extends AbstractHealer {
 
     @Override
     public void act() {
-        if (isDead()) return;
         //TODO: Implement this
+    }
+
+    @Override
+    protected void onDeath() {
+
     }
 }

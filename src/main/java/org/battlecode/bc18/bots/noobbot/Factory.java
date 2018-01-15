@@ -3,7 +3,7 @@ package org.battlecode.bc18.bots.noobbot;
 import bc.*;
 import org.battlecode.bc18.api.AbstractFactory;
 import org.battlecode.bc18.api.AbstractUnit;
-import org.battlecode.bc18.bots.util.Utils;
+import org.battlecode.bc18.util.Utils;
 
 import java.util.List;
 
@@ -19,7 +19,6 @@ public class Factory extends AbstractFactory {
 
     @Override
     public void act() {
-        if (isDead()) return;
         System.out.println("Workers assigned to me: " + workersPerFactory.get(getID()));
         // Since we cant maintain the invariant for the units HashMap, manually add in units to ensure invariant.
         VecUnitID vec = getAsUnit().structureGarrison();
@@ -31,8 +30,7 @@ public class Factory extends AbstractFactory {
 
         if (!hasNearbyWorker && canProduceRobot(UnitType.Worker)) {
             produceRobot(UnitType.Worker);
-        }
-        else if (canProduceRobot(UnitType.Knight)) {
+        } else if (canProduceRobot(UnitType.Knight)) {
             produceRobot(UnitType.Knight);
         }
         // Unload units
@@ -40,5 +38,10 @@ public class Factory extends AbstractFactory {
             if (canUnload(dir)) unload(dir);
             //No break here because I think you can unload multiple units?
         }
+    }
+
+    @Override
+    protected void onDeath() {
+        //TODO: Do this
     }
 }

@@ -1,4 +1,4 @@
-package org.battlecode.bc18.bots.util;
+package org.battlecode.bc18.util;
 
 /**
  * An immutable 2-tuple.

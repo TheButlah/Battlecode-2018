@@ -1,14 +1,11 @@
 package org.battlecode.bc18.api;
 
 import bc.*;
-import org.battlecode.bc18.PathFinding;
-import org.battlecode.bc18.bots.util.Utils;
+import org.battlecode.bc18.util.Utils;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import static org.battlecode.bc18.bots.util.Utils.dirs;
-import static org.battlecode.bc18.bots.util.Utils.gc;
+import static org.battlecode.bc18.util.Utils.gc;
 
 public abstract class AbstractWorker extends AbstractRobot {
 
@@ -142,47 +139,6 @@ public abstract class AbstractWorker extends AbstractRobot {
             return null;
         }
         return (AbstractWorker) makeUnit(unit);
-    }
-
-    /**
-     * Gets ID of the factory assigned to the {@link AbstractWorker} calling this method
-     * Pre-condition: this method should only be called by instances of the {@link AbstractWorker} class
-     * @return the factory ID
-     */
-    Integer getFactoryAssignment() {
-        return AbstractFactory.workerFactoryAssignment.get(getID());
-    }
-
-    /**
-     * Assigns the factory with the given ID to the {@link AbstractWorker} calling this method
-     * Pre-condition: this method should only be called by instances of the {@link AbstractWorker} class
-     * @param factoryId the factory ID
-     */
-    void assignFactory(int factoryId) {
-        AbstractFactory.workerFactoryAssignment.put(getID(), factoryId);
-        if (!AbstractFactory.workersPerFactory.containsKey(factoryId)) {
-            AbstractFactory.workersPerFactory.put(factoryId, 1);
-        }
-        else {
-            AbstractFactory.workersPerFactory.put(factoryId, AbstractFactory.workersPerFactory.get(factoryId) + 1);
-        }
-    }
-
-    /**
-     * De-assigns the factory assigned to the {@link AbstractWorker} calling this method.
-     * If there is no assigned factory, no changes are made
-     * Pre-condition: this method should only be called by instances of the {@link AbstractWorker} class
-     * @return the ID of the de-assigned factory, or null if none
-     */
-    Integer deassignFactory() {
-        Integer factoryId = AbstractFactory.workerFactoryAssignment.remove(getID());
-        if (factoryId != null) {
-            Integer count = AbstractFactory.workersPerFactory.get(factoryId);
-            if (count != null) {
-                AbstractFactory.workersPerFactory.put(factoryId, count - 1);
-            }
-        }
-        return factoryId;
     }
 
     //////////END OF API//////////

@@ -12,7 +12,7 @@ import bc.Planet;
 import bc.PlanetMap;
 import bc.Unit;
 
-import org.battlecode.bc18.bots.util.Utils;
+import org.battlecode.bc18.util.Utils;
 
 
 /**

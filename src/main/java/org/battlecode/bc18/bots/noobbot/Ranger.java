@@ -19,7 +19,11 @@ public class Ranger extends AbstractRanger {
 
     @Override
     public void act() {
-        if (isDead()) return;
         //TODO: implement this
+    }
+
+    @Override
+    protected void onDeath() {
+
     }
 }

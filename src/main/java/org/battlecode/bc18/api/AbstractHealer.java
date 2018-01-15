@@ -2,7 +2,7 @@ package org.battlecode.bc18.api;
 
 import bc.*;
 
-import static org.battlecode.bc18.bots.util.Utils.gc;
+import static org.battlecode.bc18.util.Utils.gc;
 
 public abstract class AbstractHealer extends AbstractRobot {
 

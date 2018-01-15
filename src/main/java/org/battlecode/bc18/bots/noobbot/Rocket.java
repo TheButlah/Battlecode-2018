@@ -18,8 +18,11 @@ public class Rocket extends AbstractRocket {
 
     @Override
     public void act() {
-        if (isDead()) return;
-
         //TODO: implement this
+    }
+
+    @Override
+    protected void onDeath() {
+
     }
 }

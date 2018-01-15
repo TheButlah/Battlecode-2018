@@ -1,4 +1,4 @@
-package org.battlecode.bc18.bots.util;
+package org.battlecode.bc18.util;
 
 import bc.Direction;
 import bc.GameController;

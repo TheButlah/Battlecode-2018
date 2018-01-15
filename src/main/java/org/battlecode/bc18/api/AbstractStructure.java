@@ -3,11 +3,11 @@ package org.battlecode.bc18.api;
 import bc.Direction;
 import bc.MapLocation;
 import bc.Unit;
-import org.battlecode.bc18.bots.util.Utils;
+import org.battlecode.bc18.util.Utils;
 
 import java.util.List;
 
-import static org.battlecode.bc18.bots.util.Utils.gc;
+import static org.battlecode.bc18.util.Utils.gc;
 
 public abstract class AbstractStructure extends AbstractUnit {
 

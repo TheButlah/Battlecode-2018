@@ -3,13 +3,13 @@ package org.battlecode.bc18.bots.noobbot;
 import bc.*;
 import org.battlecode.bc18.PathFinding;
 import org.battlecode.bc18.api.*;
-import org.battlecode.bc18.bots.util.Utils;
+import org.battlecode.bc18.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.battlecode.bc18.bots.util.Utils.dirs;
-import static org.battlecode.bc18.bots.util.Utils.gc;
+import static org.battlecode.bc18.util.Utils.dirs;
+import static org.battlecode.bc18.util.Utils.gc;
 
 public class Worker extends AbstractWorker {
 
@@ -24,8 +24,6 @@ public class Worker extends AbstractWorker {
 
     @Override
     public void act() {
-        if (isDead()) return;
-
         // first turn, build a targetFactory [by one unit].
         // if the targetFactory has not been built, replicate if can and help building a targetFactory.
         // else, move randomly.
@@ -175,6 +173,11 @@ public class Worker extends AbstractWorker {
                 return;
             }
         }
+    }
+
+    @Override
+    protected void onDeath() {
+
     }
 
     public ArrayList<MapLocation> senseNearbyKarbonite(MapLocation here, int senseRange) {

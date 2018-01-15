@@ -1,58 +1,39 @@
 package org.battlecode.bc18.api;
 
 import bc.*;
-import org.battlecode.bc18.bots.util.Pair;
+import org.battlecode.bc18.util.Pair;
 
 import java.util.*;
 
-import static org.battlecode.bc18.bots.util.Utils.gc;
+import static org.battlecode.bc18.util.Utils.gc;
 
 /** Superclass for the different types of units able to be controlled by our player. */
 @SuppressWarnings("unused")
 public abstract class AbstractUnit {
 
-    /**
-     * Unmodifiable list of alive units (safe for external use).
-     * Must only contain units belonging to our player, i.e. on our planet under our team.
-     */
-    public static final List<AbstractUnit> aliveUnits;
-
     /** Sets the UnitBuilder that will be used to make units. Should be run at very start. */
-    public static void setBuilder(UnitBuilder builder) {
+    public static void init(UnitBuilder builder) {
         AbstractUnit.builder = builder;
+        VecUnit vec = gc.myUnits();
+        int numUnits = (int) vec.size();
+        for (int i=0; i<numUnits; i++) {
+            makeUnit(vec.get(i));
+        }
     }
 
     /** Prepares the AbstractUnit objects for their logic this turn. */
     public static void initTurn() {
-        //Reset the lists so we can repopulate them. Probably faster than re-assigning.
-        aliveUnitsModifiable.clear();
-        ArrayList<AbstractUnit> deadUnits = new ArrayList<>(16);
-
-        //Split dead from alive
-        AbstractUnit.units.forEach((id, unit) -> {
-            if (gc.canSenseUnit(id)) {
-                aliveUnitsModifiable.add(unit);
-            } else {
-                deadUnits.add(unit);
-            }
-        });
-
-        //Deal with dead units
-        for (AbstractUnit unit : deadUnits) {
-            try {
-                unit.removeUnit();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        //Clean out all dead units from unitList. This is
+        unitList.removeIf(AbstractUnit::isDead);
     }
 
     /** Goes through all our player's units and has them act. Requires `initTurn()` to run first. */
     public static void doTurn() {
-        //This must not be a foreach but instead a traditional loop to avoid ConcurrentModificationException
-        for (int i = 0; i < AbstractUnit.aliveUnits.size(); ++i) {
-            AbstractUnit unit = AbstractUnit.aliveUnits.get(i);
+        //Use ListIterator so that we can modify the list while we loop
+        for (ListIterator<AbstractUnit> it = unitList.listIterator(); it.hasNext();) {
+            AbstractUnit unit = it.next();
             try { //Avoid breaking the loop leading to instant loss
+                if (unit.isDead()) continue; //Don't act on dead units
                 unit.act();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -60,7 +41,10 @@ public abstract class AbstractUnit {
         }
     }
 
-    /** Tells the unit to perform its action for this turn */
+    /**
+     * Called when it is time for the unit to perform its action.
+     * NOTE: Only called for alive units.
+     */
     public abstract void act();
 
     /** Gets the type of unit */
@@ -69,7 +53,7 @@ public abstract class AbstractUnit {
     /** Kaboom. */
     public void selfDestruct() {
         gc.disintegrateUnit(id);
-        removeUnit();
+        informOfDeath();
     }
 
     /**
@@ -391,6 +375,9 @@ public abstract class AbstractUnit {
         System.out.println(this + " " + obj);
     }
 
+    /** Called whenever this unit dies. Use this to update any referenced you made to the unit. */
+    protected abstract void onDeath();
+
 
 
     //////////END OF API//////////
@@ -399,11 +386,11 @@ public abstract class AbstractUnit {
 
     /**
      * Mapping from id to AbstractUnit objects (for internal use only).
-     * Must only contain units belonging to our player, i.e. on our planet under our team.
-     * NOTE: Do not attempt to iterate through this map unless if using `Map.forEach()`.
+     * Must only contain alive units belonging to our player, i.e. on our planet under our team.
+     * NOTE: Do not attempt to iterate through this map unless you're sure you won't modify it.
      */
-    private static final Map<Integer, AbstractUnit> units;
-    private static final ArrayList<AbstractUnit> aliveUnitsModifiable;
+    private static final Map<Integer, AbstractUnit> units = new HashMap<>();
+    private static final List<AbstractUnit> unitList = new LinkedList<>();
 
     private final int id;
     private final Team team;
@@ -412,20 +399,6 @@ public abstract class AbstractUnit {
     private Location location;
     private boolean isDead;
     private static UnitBuilder builder;
-
-    //Static initializer to ensure that right from the start, AbstractUnit knows all of our units.
-    static {
-        VecUnit vec = gc.myUnits();
-        int numUnits = (int) vec.size();
-        units = new HashMap<>(numUnits);
-        aliveUnitsModifiable = new ArrayList<>(numUnits);
-
-        aliveUnits = Collections.unmodifiableList(aliveUnitsModifiable);
-
-        for (int i=0; i<vec.size(); i++) {
-            makeUnit(vec.get(i));
-        }
-    }
 
     /**
      * Constructor for AbstractUnit.
@@ -443,15 +416,14 @@ public abstract class AbstractUnit {
             throw new RuntimeException("The unit " + unit + " is dead!");
         }
 
+        //Put the unit into `units` HashMap
         AbstractUnit previousValue = units.put(id, this);
         if (previousValue != null) {
             units.put(id, previousValue); //restore the value
             throw new RuntimeException("The unit " + unit + " already exists!");
         }
-        aliveUnitsModifiable.add(this);
+        unitList.add(this);
     }
-
-
 
     /**
      * Constructs an AbstractUnit object based off of a Unit and adds it to the collections of units.
@@ -479,15 +451,12 @@ public abstract class AbstractUnit {
     }
 
     /**
-     * Removes this unit from the HashMap in AbstractUnit and the data structures subclasses.
-     * NOTE: This does not remove the unit from aliveUnits!
+     * Updates `isDead`, removes this unit from `units`, and calls `onDeath()`.
+     * NOTE: Does not remove the unit from unitList.
+     * NOTE: The unit must actually be dead.
      */
-    void removeUnit() {
-        assert !gc.canSenseUnit(getID());
-        if (getType() == UnitType.Worker) {
-            // De-assign worker upon death
-            ((AbstractWorker) this).deassignFactory();
-        }
+    void informOfDeath() {
+        assert !gc.canSenseUnit(getID()); //Test to see if its dead
         isDead = true;
         units.remove(getID());
     }
