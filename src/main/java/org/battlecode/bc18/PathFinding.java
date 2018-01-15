@@ -83,7 +83,7 @@ public class PathFinding {
         pf.setWeights(testWeights);
         int[][] distances = pf.search(testWeights.length - 1, 0);
         System.out.println(Arrays.deepToString(distances)); // search
-        System.out.println(PathFinding.moveDirectionToDestination(distances, 0, testWeights[0].length - 1, Planet.Earth));
+        System.out.println(PathFinding.moveDirectionToDestination(distances, new MapLocation(Planet.Earth, testWeights[0].length - 1, 0)));
         long end = System.nanoTime();
         System.out.println("exe time is " + (end - start) / 1000000d + " ms");
     }
@@ -206,10 +206,9 @@ public class PathFinding {
         earthPathfinder.setWeights(earthMap);
     }
 
-    public static Direction moveDirectionToDestination(int[][] distances, int startRow, int startCol, Planet planet) {
+    public static Direction moveDirectionToDestination(int[][] distances, MapLocation start) {
         Direction optimalDirection = Direction.Center;
         int optimalDist = INFINITY;
-        MapLocation start = new MapLocation(planet, startCol, startRow);
         int rows = distances.length;
         int cols = distances[0].length;
         for (Direction dir : Direction.values()) {
@@ -218,8 +217,9 @@ public class PathFinding {
             int y = location.getY();
             if (0 <= x && x < cols && 0 <= y && y < rows) {
                 try {
-                    Unit unitAtLoc = Utils.gc.senseUnitAtLocation(location);
-                    if (unitAtLoc != null) {
+                    // Allow movement to starting location (i.e. no movement)
+                    // Disallow movement to any occupied coordinate
+                    if (!location.equals(start) && Utils.gc.senseUnitAtLocation(location) != null) {
                         continue;
                     }
                 }

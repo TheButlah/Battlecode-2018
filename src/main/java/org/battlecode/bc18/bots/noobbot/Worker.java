@@ -128,9 +128,8 @@ public class Worker extends AWorker {
                 MapLocation structureLoc = targetStructure.getMapLocation();
                 int[][] distances = PathFinding.earthPathfinder.search(structureLoc.getY(),
                         structureLoc.getX());
-                Direction towardsStructure = PathFinding.moveDirectionToDestination(distances,
-                        myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
-                if (isAccessible(towardsStructure)) {
+                Direction towardsStructure = PathFinding.moveDirectionToDestination(distances, myMapLoc);
+                if (towardsStructure != Direction.Center && isAccessible(towardsStructure)) {
                     move(towardsStructure);
                 }
             } else {
@@ -142,12 +141,8 @@ public class Worker extends AWorker {
                     int[][] distances = PathFinding.earthPathfinder.search(
                         targetLoc.getY(),
                         targetLoc.getX());
-                    Direction towardsKarbonite = PathFinding.moveDirectionToDestination(
-                        distances,
-                        myMapLoc.getY(),
-                        myMapLoc.getX(),
-                        myMapLoc.getPlanet());
-                    if (isAccessible(towardsKarbonite)) {
+                    Direction towardsKarbonite = PathFinding.moveDirectionToDestination(distances, myMapLoc);
+                    if (towardsKarbonite != Direction.Center && isAccessible(towardsKarbonite)) {
                         move(towardsKarbonite);
                     }
                 } else {

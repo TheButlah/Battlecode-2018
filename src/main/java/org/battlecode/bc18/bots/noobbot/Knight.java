@@ -76,9 +76,9 @@ public class Knight extends AKnight {
         if (isMoveReady()) {
             MapLocation targetEnemy = this.target.location().mapLocation();
             int[][] distances = PathFinding.earthPathfinder.search(targetEnemy.getY(), targetEnemy.getX());
-            Direction towardsEnemy = PathFinding.moveDirectionToDestination(distances, myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
+            Direction towardsEnemy = PathFinding.moveDirectionToDestination(distances, myMapLoc);
             //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
-            if (isAccessible(towardsEnemy)) {
+            if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
                 move(towardsEnemy);
             }
         }
