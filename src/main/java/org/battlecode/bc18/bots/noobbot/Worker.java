@@ -46,17 +46,26 @@ public class Worker extends AbstractWorker {
         }
 
         if (turn == 1 || gc.karbonite() >= 300) {
-            List<AbstractUnit> nearbyFactories = senseNearbyFriendlies(2, UnitType.Factory);
-            if (nearbyFactories.size() == 0) {
-                // for each direction, find the first availabile spot for a factory.
-                for (Direction dir : dirs) {
-                    if (canBlueprint(UnitType.Factory, dir)) {
-                        println("Blueprinting: " + UnitType.Factory + " towards " + dir);
-                        targetFactory = (AbstractFactory) blueprint(UnitType.Factory, dir);
-                        assignFactory(targetFactory.getID());
-                    }
+            List<AbstractUnit> nearbyFactories = senseNearbyFriendlies(3, UnitType.Factory);
+            ArrayList<MapLocation> nearbyFactoriesLoc = new ArrayList<>();
+            for (AbstractUnit factory : nearbyFactories) {
+                nearbyFactoriesLoc.add(factory.getMapLocation());
+            }
+            // for each direction, find the first availabile spot for a factory.
+            for (Direction dir : dirs) {
+                if (canBlueprint(UnitType.Factory, dir)
+                        && !Utils.isAnyAdjacent(nearbyFactoriesLoc, myMapLoc.add(dir))) {
+                    println("Blueprinting: " + UnitType.Factory + " towards " + dir);
+                    targetFactory = (AbstractFactory) blueprint(UnitType.Factory, dir);
+                    assignFactory(targetFactory.getID());
+                    break;
                 }
             }
+        }
+
+        if (!hasActed() && turn >= 200 && gc.karbonite() >= 200) {
+            List<AbstractUnit> nearbyFactories = senseNearbyFriendlies(2, UnitType.Factory);
+            // TODO: blueprint rockets
         }
 
         if (targetFactory == null) {
@@ -158,7 +167,7 @@ public class Worker extends AbstractWorker {
             }
             else {
                 // De-assign worker from factory so he can explore the map
-                if (AbstractFactory.workersPerFactory.get(targetFactory.getID()) > 3) {
+                if (Factory.workersPerFactory.get(targetFactory.getID()) > 3) {
                     deassignFactory();
                     targetFactory = null;
                 }
@@ -212,7 +221,7 @@ public class Worker extends AbstractWorker {
      * @return the factory ID
      */
     Integer getFactoryAssignment() {
-        return AbstractFactory.workerFactoryAssignment.get(getID());
+        return Factory.workerFactoryAssignment.get(getID());
     }
 
     /**
@@ -221,12 +230,12 @@ public class Worker extends AbstractWorker {
      * @param factoryId the factory ID
      */
     void assignFactory(int factoryId) {
-        AbstractFactory.workerFactoryAssignment.put(getID(), factoryId);
-        if (!AbstractFactory.workersPerFactory.containsKey(factoryId)) {
-            AbstractFactory.workersPerFactory.put(factoryId, 1);
+        Factory.workerFactoryAssignment.put(getID(), factoryId);
+        if (!Factory.workersPerFactory.containsKey(factoryId)) {
+            Factory.workersPerFactory.put(factoryId, 1);
         }
         else {
-            AbstractFactory.workersPerFactory.put(factoryId, AbstractFactory.workersPerFactory.get(factoryId) + 1);
+            Factory.workersPerFactory.put(factoryId, Factory.workersPerFactory.get(factoryId) + 1);
         }
     }
 
@@ -237,11 +246,11 @@ public class Worker extends AbstractWorker {
      * @return the ID of the de-assigned factory, or null if none
      */
     Integer deassignFactory() {
-        Integer factoryId = AbstractFactory.workerFactoryAssignment.remove(getID());
+        Integer factoryId = Factory.workerFactoryAssignment.remove(getID());
         if (factoryId != null) {
-            Integer count = AbstractFactory.workersPerFactory.get(factoryId);
+            Integer count = Factory.workersPerFactory.get(factoryId);
             if (count != null) {
-                AbstractFactory.workersPerFactory.put(factoryId, count - 1);
+                Factory.workersPerFactory.put(factoryId, count - 1);
             }
         }
         return factoryId;

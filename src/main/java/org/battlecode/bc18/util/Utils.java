@@ -54,4 +54,13 @@ public final class Utils {
         return closest;
     }
 
+    public static boolean isAnyAdjacent(List<MapLocation> locations, MapLocation target) {
+        for (MapLocation loc : locations) {
+            if (loc.isAdjacentTo(target)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
