@@ -56,7 +56,7 @@ public class Worker extends AbstractWorker {
             for (Direction dir : dirs) {
                 if (canBlueprint(UnitType.Factory, dir)
                         && !Utils.isAnyAdjacent(nearbyFactoriesLoc, myMapLoc.add(dir))) {
-                    println("Blueprinting: " + UnitType.Factory + " towards " + dir);
+                    //println("Blueprinting: " + UnitType.Factory + " towards " + dir);
                     targetFactory = (Factory) blueprint(UnitType.Factory, dir);
                     assignFactory(targetFactory);
                     break;

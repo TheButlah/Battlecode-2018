@@ -34,8 +34,6 @@ public abstract class AbstractFactory extends AbstractStructure {
      */
     public AbstractRobot produceRobot(UnitType type) {
         assert canProduceRobot(type);
-        System.out.println("Producing: Units currently in garrison: ");
-        getGarrison().forEach(System.out::println);
         gc.produceRobot(getID(), type);
         System.out.println("Garrison after production: ");
         getGarrison().forEach(System.out::print);
