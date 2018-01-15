@@ -13,10 +13,10 @@ import java.util.List;
 import static org.battlecode.bc18.util.Utils.dirs;
 import static org.battlecode.bc18.util.Utils.gc;
 
-public class Worker extends AbstractWorker {
+public class Worker extends AWorker {
 
     /**
-     * Constructor for AbstractWorker.
+     * Constructor for Worker.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
     protected Worker(Unit unit) {

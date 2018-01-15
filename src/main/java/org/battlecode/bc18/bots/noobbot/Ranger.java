@@ -2,12 +2,12 @@ package org.battlecode.bc18.bots.noobbot;
 
 import bc.Unit;
 import bc.UnitType;
-import org.battlecode.bc18.api.AbstractRanger;
+import org.battlecode.bc18.api.ARanger;
 
-public class Ranger extends AbstractRanger {
+public class Ranger extends ARanger {
 
     /**
-     * Constructor for AbstractRanger.
+     * Constructor for Ranger.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
     protected Ranger(Unit unit) {

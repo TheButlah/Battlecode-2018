@@ -1,16 +1,17 @@
 package org.battlecode.bc18.api;
 
-import bc.*;
+import bc.MapLocation;
+import bc.Unit;
+import bc.UnitType;
 
 import static org.battlecode.bc18.util.Utils.gc;
 
-public abstract class AbstractMage extends ARobot {
-
-    public static final UnitType TYPE = UnitType.Mage;
+public interface MyMage extends MyRobot, MyAttacker {
+    UnitType TYPE = UnitType.Mage;
 
     @Override
-    public UnitType getType() {
-        return AbstractMage.TYPE;
+    default UnitType getType() {
+        return TYPE;
     }
 
     /**
@@ -19,17 +20,13 @@ public abstract class AbstractMage extends ARobot {
      * @param loc The location to check.
      * @return If there are no physical objects preventing movement to that direction.
      */
-    public boolean isAcessibleBlink(MapLocation loc) {
-        return gc.canBlink(getID(), loc);
-    }
+    boolean isAcessibleBlink(MapLocation loc);
 
     /**
      * Whether blink ability is ready.
      * NOTE: Checks both heat and unlock status.
      */
-    public boolean isBlinkReady() {
-        return isAbilityUnlocked() && gc.isBlinkReady(getID());
-    }
+    boolean isBlinkReady();
 
     /**
      * Checks to see if a location is able to be blinked to.
@@ -37,32 +34,13 @@ public abstract class AbstractMage extends ARobot {
      * @param loc The location to check.
      * @return Whether the mage can blink.
      */
-    public boolean canBlink(MapLocation loc) {
-        return isAcessibleBlink(loc) && isBlinkReady();
-    }
+    boolean canBlink(MapLocation loc);
 
     /**
      * Blinks the mage to the given location.
      * NOTE: Does not check to see if it can blink first.
      * @param loc The MapLocation to blink to.
      */
-    public void blink(MapLocation loc) {
-        assert canBlink(loc);
-        gc.blink(getID(), loc);
-    }
+    void blink(MapLocation loc);
 
-
-
-    //////////END OF API//////////
-
-
-
-    /**
-     * Constructor for AbstractMage.
-     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
-     */
-    protected AbstractMage(Unit unit) {
-        super(unit);
-        assert unit.unitType() == UnitType.Mage;
-    }
 }

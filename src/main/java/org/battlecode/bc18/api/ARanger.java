@@ -1,14 +1,19 @@
 package org.battlecode.bc18.api;
 
 import bc.*;
+import static org.battlecode.bc18.util.Utils.gc;
 
-public abstract class AbstractRanger extends ARobot {
-
-    public static final UnitType TYPE = UnitType.Ranger;
+public abstract class ARanger extends ARobot implements MyRanger {
 
     @Override
-    public UnitType getType() {
-        return AbstractRanger.TYPE;
+    public int getCannotAttackRange() {
+        return cannotAttackRange;
+    }
+
+    @Override
+    public int getAttackRange() {
+        return (int) getAsUnit().attackRange();
+        //TODO: Use gc.researchInfo() to do this instead
     }
 
     /**
@@ -32,12 +37,17 @@ public abstract class AbstractRanger extends ARobot {
 
     //////////END OF API//////////
 
+
+
+    private final int cannotAttackRange;
+
     /**
-     * Constructor for AbstractRanger.
+     * Constructor for ARanger.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
-    protected AbstractRanger(Unit unit) {
+    protected ARanger(Unit unit) {
         super(unit);
         assert unit.unitType() == UnitType.Ranger;
+        cannotAttackRange = (int) getAsUnit().rangerCannotAttackRange();
     }
 }

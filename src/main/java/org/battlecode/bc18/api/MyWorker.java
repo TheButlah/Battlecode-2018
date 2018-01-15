@@ -1,17 +1,14 @@
 package org.battlecode.bc18.api;
 
-import bc.*;
-import org.battlecode.bc18.util.Utils;
+import bc.Direction;
+import bc.UnitType;
 
-import static org.battlecode.bc18.util.Utils.gc;
-
-public abstract class AbstractWorker extends ARobot {
-
-    public static final UnitType TYPE = UnitType.Worker;
+public interface MyWorker extends MyRobot {
+    UnitType TYPE = UnitType.Worker;
 
     @Override
-    public UnitType getType() {
-        return AbstractWorker.TYPE;
+    default UnitType getType() {
+        return TYPE;
     }
 
     /**
@@ -23,9 +20,7 @@ public abstract class AbstractWorker extends ARobot {
      * @param dir The direction to create the blueprint.
      * @return Whether the worker can perform the blueprint.
      */
-    public boolean canBlueprint(UnitType type, Direction dir) {
-        return gc.canBlueprint(getID(), type, dir);
-    }
+    boolean canBlueprint(UnitType type, Direction dir);
 
     /**
      * Blueprints a structure of the given type in the given direction.
@@ -34,12 +29,7 @@ public abstract class AbstractWorker extends ARobot {
      * @param dir The direction to create the blueprint.
      * @return The structure blueprinted.
      */
-    public MyStructure blueprint(UnitType type, Direction dir) {
-        assert canBlueprint(type, dir);
-        gc.blueprint(getID(), type, dir);
-        Unit unit = gc.senseUnitAtLocation(getMapLocation().add(dir));
-        return (MyStructure) AUnit.makeUnit(unit);
-    }
+    MyStructure blueprint(UnitType type, Direction dir);
 
     /**
      * Checks to see if this worker can build up a particular structure's blueprint.
@@ -48,9 +38,7 @@ public abstract class AbstractWorker extends ARobot {
      * @param blueprint The blueprint to build up.
      * @return Whether the worker can build up the blueprint.
      */
-    public boolean canBuild(MyStructure blueprint) {
-        return gc.canBuild(getID(), blueprint.getID());
-    }
+    boolean canBuild(MyStructure blueprint);
 
     /**
      * Builds a given structure's blueprint, increasing its health by the worker's build amount.
@@ -58,10 +46,7 @@ public abstract class AbstractWorker extends ARobot {
      * NOTE: Does not check to see if it can build first.
      * @param blueprint The structure to build.
      */
-    public void build(MyStructure blueprint) {
-        assert canBuild(blueprint);
-        gc.build(getID(), blueprint.getID());
-    }
+    void build(MyStructure blueprint);
 
     /**
      * Checks to see if this worker can repair a particular structure.
@@ -71,9 +56,7 @@ public abstract class AbstractWorker extends ARobot {
      * @param structure The structure to repair.
      * @return Whether the worker can repair the structure.
      */
-    public boolean canRepair(MyStructure structure) {
-        return gc.canRepair(getID(), structure.getID());
-    }
+    boolean canRepair(MyStructure structure);
 
     /**
      * Commands the worker to repair a structure, replenishing health to it.
@@ -81,10 +64,7 @@ public abstract class AbstractWorker extends ARobot {
      * NOTE: Does not check to see if it can repair first.
      * @param structure The structure to repair
      */
-    public void repair(MyStructure structure) {
-        assert canRepair(structure);
-        gc.repair(getID(), structure.getID());
-    }
+    void repair(MyStructure structure);
 
     /**
      * Checks to see if this worker can harvest karbonite in a particular direction.
@@ -93,19 +73,14 @@ public abstract class AbstractWorker extends ARobot {
      * @param direction The direction in which to harvest.
      * @return Whether the worker can harvest the karbonite.
      */
-    public boolean canHarvest(Direction direction) {
-        return gc.canHarvest(getID(), direction);
-    }
-    
+    boolean canHarvest(Direction direction);
+
     /**
      * Harvests up to the worker's harvest amount of karbonite from the given location.
      * NOTE: Does not check if harvesting is permitted.
      * @param direction The direction in which to harvest.
      */
-    public void harvest(Direction direction) {
-        assert canHarvest(direction);
-        gc.harvest(getID(), direction);
-    }
+    void harvest(Direction direction);
 
     /**
      * Checks to see if this worker can replicate in a particular direction.
@@ -115,9 +90,7 @@ public abstract class AbstractWorker extends ARobot {
      * @param direction The direction in which to replicate.
      * @return Whether the worker can replicate.
      */
-    public boolean canReplicate(Direction direction) {
-        return gc.canReplicate(getID(), direction);
-    }
+    boolean canReplicate(Direction direction);
 
     /**
      * Replicates a worker in the given direction.
@@ -125,35 +98,8 @@ public abstract class AbstractWorker extends ARobot {
      * @param direction The direction in which to replicate.
      * @return The new replicated worker.
      */
-    public AbstractWorker replicate(Direction direction) {
-        gc.replicate(getID(), direction);
-        Unit unit = gc.senseUnitAtLocation(getMapLocation().add(direction));
-        if (unit.unitType() != UnitType.Worker) {
-            return null;
-        }
-        return (AbstractWorker) makeUnit(unit);
-    }
+    MyWorker replicate(Direction direction);
 
     /** Whether worker has acted (harvested, blueprinted, built, or repaired) this round. */
-    public boolean hasActed() {
-        return Utils.toBool(getAsUnit().workerHasActed());
-    }
-
-
-
-    //////////END OF API//////////
-
-
-
-    private boolean hasActed = false;
-
-    /**
-     * Constructor for AbstractWorker.
-     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
-     */
-    protected AbstractWorker(Unit unit) {
-        super(unit);
-        assert unit.unitType() == UnitType.Worker;
-    }
-
+    boolean hasActed();
 }

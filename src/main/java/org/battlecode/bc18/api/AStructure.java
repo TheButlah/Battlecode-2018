@@ -44,7 +44,7 @@ public abstract class AStructure extends AUnit implements MyStructure {
     //////////END OF API//////////
 
     /**
-     * Constructor for MyStructure.
+     * Constructor for AStructure.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
     AStructure(Unit unit) {

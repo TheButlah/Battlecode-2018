@@ -2,24 +2,17 @@ package org.battlecode.bc18.api;
 
 import bc.*;
 
-public abstract class AbstractRocket extends AStructure {
-
-    public static final UnitType TYPE = UnitType.Rocket;
-
-    @Override
-    public UnitType getType() {
-        return AbstractRocket.TYPE;
-    }
+public abstract class ARocket extends AStructure implements MyRocket {
 
 
 
     //////////END OF API//////////
 
     /**
-     * Constructor for AbstractRocket.
+     * Constructor for ARocket.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
-    protected AbstractRocket(Unit unit) {
+    protected ARocket(Unit unit) {
         super(unit);
         assert unit.unitType() == UnitType.Rocket;
     }

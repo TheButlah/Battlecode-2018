@@ -4,44 +4,32 @@ import bc.*;
 
 import static org.battlecode.bc18.util.Utils.gc;
 
-public abstract class AbstractKnight extends ARobot {
-
-    public static final UnitType TYPE = UnitType.Knight;
+public abstract class AKnight extends ARobot implements MyKnight {
 
     @Override
-    public UnitType getType() {
-        return AbstractKnight.TYPE;
-    }
-
-    /**
-     * Whether the javelin is ready to use.
-     * NOTE: Checks both heat and unlock status.
-     */
     public boolean isJavelinReady() {
         return isAbilityUnlocked() && gc.isJavelinReady(getID());
     }
 
-    /** Whether the target is within javelin range */
+    @Override
     public boolean isWithinJavelinRange(Unit target) {
         return gc.canJavelin(getID(), target.id());
     }
 
-    /**
-     * Whether we can javelin the target.
-     * Checks heat, distance, and unlock status.
-     */
+    @Override
     public boolean canJavelin(Unit target) {
         return isJavelinReady() && isWithinJavelinRange(target);
     }
 
-    /**
-     * Javelins the target, dealing the knight's standard damage.
-     * NOTE: Does not check to see if we can first.
-     * @param target The target unit.
-     */
+    @Override
     public void javelin(Unit target) {
         assert canJavelin(target);
         gc.javelin(getID(), target.id());
+    }
+
+    @Override
+    public int getAttackRange() {
+        return attackRange;
     }
 
 
@@ -50,12 +38,15 @@ public abstract class AbstractKnight extends ARobot {
 
 
 
+    private final int attackRange;
+
     /**
-     * Constructor for AbstractKnight.
+     * Constructor for AKnight.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
-    protected AbstractKnight(Unit unit) {
+    protected AKnight(Unit unit) {
         super(unit);
         assert unit.unitType() == UnitType.Knight;
+        this.attackRange = (int) getAsUnit().attackRange();
     }
 }

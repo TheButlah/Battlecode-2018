@@ -2,12 +2,12 @@ package org.battlecode.bc18.bots.noobbot;
 
 import bc.Direction;
 import bc.Unit;
-import org.battlecode.bc18.api.AbstractHealer;
+import org.battlecode.bc18.api.AHealer;
 import org.battlecode.bc18.api.MyRobot;
 import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Utils;
 
-public class Healer extends AbstractHealer {
+public class Healer extends AHealer {
 
     /**
      * Constructor for Healer.

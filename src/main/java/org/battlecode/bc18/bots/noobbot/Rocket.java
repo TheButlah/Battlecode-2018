@@ -2,12 +2,12 @@ package org.battlecode.bc18.bots.noobbot;
 
 import bc.Unit;
 import bc.UnitType;
-import org.battlecode.bc18.api.AbstractRocket;
+import org.battlecode.bc18.api.ARocket;
 
-public class Rocket extends AbstractRocket {
+public class Rocket extends ARocket {
 
     /**
-     * Constructor for AbstractRocket.
+     * Constructor for Rocket.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
     protected Rocket(Unit unit) {

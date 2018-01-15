@@ -5,30 +5,14 @@ import static org.battlecode.bc18.util.Utils.gc;
 import bc.Unit;
 import bc.UnitType;
 
-public abstract class AbstractFactory extends AStructure {
-
-    public static final UnitType TYPE = UnitType.Factory;
+public abstract class AFactory extends AStructure implements MyFactory {
 
     @Override
-    public UnitType getType() {
-        return AbstractFactory.TYPE;
-    }
-
-    /**
-     * Whether the factory can produce a robot.
-     * Must not currently be producing a robot, and must have sufficient resources.
-     * @param type The type of robot to check.
-     */
     public boolean canProduceRobot(UnitType type) {
         return gc.canProduceRobot(getID(), type);
     }
 
-    /**
-     * Starts producing the robot of the given type.
-     * NOTE: Does not check to see if it can produce it first.
-     * @param type The UnitType of the robot to produce. Must be a robot.
-     * @return The robot produced. Currently will always be null until fixed
-     */
+    @Override
     public MyRobot produceRobot(UnitType type) {
         assert canProduceRobot(type);
         gc.produceRobot(getID(), type);
@@ -45,10 +29,10 @@ public abstract class AbstractFactory extends AStructure {
 
 
     /**
-     * Constructor for AbstractFactory.
+     * Constructor for AFactory.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
-    protected AbstractFactory(Unit unit) {
+    protected AFactory(Unit unit) {
         super(unit);
         assert unit.unitType() == UnitType.Factory;
     }

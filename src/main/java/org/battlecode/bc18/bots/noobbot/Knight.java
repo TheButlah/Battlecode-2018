@@ -5,19 +5,17 @@ import bc.MapLocation;
 import bc.Unit;
 import bc.UnitType;
 import org.battlecode.bc18.PathFinding;
-import org.battlecode.bc18.api.AbstractKnight;
+import org.battlecode.bc18.api.AKnight;
 import org.battlecode.bc18.util.Utils;
 
 import java.util.List;
 
-import static org.battlecode.bc18.util.Utils.gc;
-
-public class Knight extends AbstractKnight {
+public class Knight extends AKnight {
 
     private Unit target = null; //Although this doesn't update, it will allow us to go to last seen spot.
 
     /**
-     * Constructor for AbstractKnight.
+     * Constructor for Knight.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
     Knight(Unit unit) {
@@ -85,9 +83,11 @@ public class Knight extends AbstractKnight {
             }
         }
 
-        // if we can attack the target, attack
-        if (isAttackReady(getID()) && gc.canAttack(getID(), this.target.id())) {
-            gc.attack(getID(), this.target.id());
+        // if we can attack the target, attack, with javelin as backup
+        if (canAttack(target)) {
+            attack(target);
+        } else if (canJavelin(target)){
+            javelin(target);
         }
     }
 

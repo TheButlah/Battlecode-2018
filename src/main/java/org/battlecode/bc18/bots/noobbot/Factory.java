@@ -1,7 +1,7 @@
 package org.battlecode.bc18.bots.noobbot;
 
 import bc.*;
-import org.battlecode.bc18.api.AbstractFactory;
+import org.battlecode.bc18.api.AFactory;
 import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Utils;
 
@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class Factory extends AbstractFactory {
+public class Factory extends AFactory {
 
     /**
      * A mapping of factories to numbers of workers assigned to each factory
