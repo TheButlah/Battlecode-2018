@@ -150,6 +150,8 @@ public abstract class AbstractWorker extends AbstractRobot {
 
 
 
+    private boolean hasActed = false;
+
     /**
      * Constructor for AbstractWorker.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
