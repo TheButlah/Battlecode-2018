@@ -34,7 +34,7 @@ public abstract class AbstractFactory extends AbstractStructure {
      */
     public AbstractRobot produceRobot(UnitType type) {
         assert canProduceRobot(type);
-        println("Producing: " + type);
+        //println("Producing: " + type);
         gc.produceRobot(getID(), type);
         /*Unit unit = gc.unit(getMapLocation());
         return (AbstractStructure) AbstractUnit.makeUnit(unit);*/

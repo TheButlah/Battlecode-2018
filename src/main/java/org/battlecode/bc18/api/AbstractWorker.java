@@ -36,7 +36,7 @@ public abstract class AbstractWorker extends AbstractRobot {
      */
     public AbstractStructure blueprint(UnitType type, Direction dir) {
         assert canBlueprint(type, dir);
-        println("Blueprinting: " + type + " towards " + dir);
+        //println("Blueprinting: " + type + " towards " + dir);
         gc.blueprint(getID(), type, dir);
         Unit unit = gc.senseUnitAtLocation(getMapLocation().add(dir));
         return (AbstractStructure) AbstractUnit.makeUnit(unit);
@@ -61,7 +61,7 @@ public abstract class AbstractWorker extends AbstractRobot {
      */
     public void build(AbstractStructure blueprint) {
         assert canBuild(blueprint);
-        println("Building: " + blueprint);
+        //println("Building: " + blueprint);
         gc.build(getID(), blueprint.getID());
     }
 

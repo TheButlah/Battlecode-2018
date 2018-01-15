@@ -30,7 +30,7 @@ public class Factory extends AbstractFactory {
 
     @Override
     public void act() {
-        System.out.println("Workers assigned to me: " + workersPerFactory.get(getID()));
+        //System.out.println("Workers assigned to me: " + workersPerFactory.get(getID()));
         // Since we cant maintain the invariant for the units HashMap, manually add in units to ensure invariant.
         VecUnitID vec = getAsUnit().structureGarrison();
         getUnits(vec); //Add the

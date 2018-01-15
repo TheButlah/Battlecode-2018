@@ -47,7 +47,9 @@ public abstract class AbstractUnit {
             AbstractUnit unit = unitList.get(i);
             try { //Avoid breaking the loop leading to instant loss
                 if (unit.isDead()) continue; //Don't act on dead units
+                //long startTime = System.currentTimeMillis();
                 unit.act();
+                //System.out.println("Took: " + (System.currentTimeMillis() - startTime));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -377,6 +379,23 @@ public abstract class AbstractUnit {
 
         for(int i = 0; i < locs.size(); i++) {
             MapLocation loc = locs.get(i);
+            //if (!gc.canSenseLocation(loc)) {
+            //    System.out.println("My location: " + getAsUnit().location());
+            //    System.out.println("My location: " + getAsUnit().location().mapLocation());
+            //    System.out.println("Vision range: " + getAsUnit().visionRange());
+            //    System.out.println("Got: " + loc + " but it is distance " + getMapLocation().distanceSquaredTo(loc));
+            //    System.out.println("Real distance: " + getAsUnit().location().mapLocation().distanceSquaredTo(loc));
+            //    println("My team: " + gc.team());
+            //    System.exit(0);
+            //}
+            // TODO: temporary(?) fix: it's possible for allLocationsWithin(loc, visionRange) to return
+            // a location that we cannot sense. One potential case when this occurs is when we move
+            // during a round. The visible locations are only updated by the game engine at the
+            // beginning of a round, so we need this additional check. However, as of the moment,
+            // this function is only called before the unit moves, so this cannot be the case.
+            if (!gc.canSenseLocation(loc)) {
+                continue;
+            }
             int amount = (int) gc.karboniteAt(loc);
             if (amount > 0) {
                 nearbyKarbonite.add(new Pair<>(loc, amount));
