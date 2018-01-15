@@ -18,11 +18,11 @@ public abstract class AbstractStructure extends AUnit {
     }
 
     /** Gets the garrison of this Structure. */
-    public List<AbstractRobot> getGarrison() {
+    public List<MyRobot> getGarrison() {
 
         @SuppressWarnings("unchecked")
         //TODO: Can we determine whether this will cast will give an Exception?
-        List<AbstractRobot> result = (List<AbstractRobot>) getUnits(getAsUnit().structureGarrison());
+        List<MyRobot> result = (List<MyRobot>) getUnits(getAsUnit().structureGarrison());
         return result;
     }
 
@@ -41,11 +41,11 @@ public abstract class AbstractStructure extends AUnit {
      * @param direction The direction to unload to.
      * @return The robot that was unloaded.
      */
-    public AbstractRobot unload(Direction direction) {
+    public MyRobot unload(Direction direction) {
         assert canUnload(direction);
         gc.unload(getID(), direction);
         MapLocation unloadLoc = getMapLocation().add(direction);
-        AbstractRobot unloadedUnit = (AbstractRobot) getUnit(gc.senseUnitAtLocation(unloadLoc));
+        ARobot unloadedUnit = (ARobot) getUnit(gc.senseUnitAtLocation(unloadLoc));
         unloadedUnit.setLocation(unloadLoc); //Ensure that the internal state matches reality
         return unloadedUnit;
     }

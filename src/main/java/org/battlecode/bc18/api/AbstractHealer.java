@@ -4,7 +4,7 @@ import bc.*;
 
 import static org.battlecode.bc18.util.Utils.gc;
 
-public abstract class AbstractHealer extends AbstractRobot {
+public abstract class AbstractHealer extends ARobot {
 
     public static final UnitType TYPE = UnitType.Healer;
 
@@ -20,7 +20,7 @@ public abstract class AbstractHealer extends AbstractRobot {
     }
 
     /** Whether the target is within healing range. */
-    public boolean isWithinHealRange(AbstractRobot target) {
+    public boolean isWithinHealRange(MyRobot target) {
         return gc.canHeal(getID(), target.getID());
     }
 
@@ -30,7 +30,7 @@ public abstract class AbstractHealer extends AbstractRobot {
     }
 
     /** Whether we can heal the target */
-    public boolean canHeal(AbstractRobot target) {
+    public boolean canHeal(MyRobot target) {
         return isHealReady() && isWithinHealRange(target);
     }
 
@@ -39,7 +39,7 @@ public abstract class AbstractHealer extends AbstractRobot {
      * NOTE: Does not check if it can first.
      * @param target The robot to heal.
      */
-    public void heal(AbstractRobot target) {
+    public void heal(MyRobot target) {
         assert canHeal(target);
         gc.heal(getID(), target.getID());
     }
@@ -53,7 +53,7 @@ public abstract class AbstractHealer extends AbstractRobot {
     }
 
     /** Whether the target unit is within overcharge range. */
-    public boolean isWithinOverchargeRange(AbstractRobot target) {
+    public boolean isWithinOverchargeRange(MyRobot target) {
         return gc.canOvercharge(getID(), target.getID());
     }
 
@@ -61,7 +61,7 @@ public abstract class AbstractHealer extends AbstractRobot {
      * Whether the unit can overcharge the target.
      * Checks heat, distance, and unlock status.
      */
-    public boolean canOvercharge(AbstractRobot target) {
+    public boolean canOvercharge(MyRobot target) {
         assert isAbilityUnlocked();
         return isOverchargeReady() && isWithinOverchargeRange(target);
     }
@@ -70,7 +70,7 @@ public abstract class AbstractHealer extends AbstractRobot {
      * Overcharges the target, resetting its cooldowns.
      * Note: Does not check to see if it can first.
      */
-    public void overcharge(AbstractRobot target) {
+    public void overcharge(MyRobot target) {
         assert canOvercharge(target);
         gc.overcharge(getID(), target.getID());
     }

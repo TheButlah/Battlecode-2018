@@ -5,41 +5,24 @@ import org.battlecode.bc18.util.Utils;
 
 import static org.battlecode.bc18.util.Utils.gc;
 
-public abstract class AbstractRobot extends AUnit {
+public abstract class ARobot extends AUnit implements MyRobot {
 
-    /**
-     * Checks to see if a direction is accessible, meaning there is nothing blocking physical access.
-     * Takes into account only the map terrain, positions of other robots, and the edge of the game map.
-     * NOTE: Does not take into account movement heat. Use `canMove()` or `isMoveReady()` for that.
-     * @param dir The direction to check.
-     * @return If there are no physical objects preventing movement to that direction.
-     */
+    @Override
     public boolean isAccessible(Direction dir) {
         return gc.canMove(getID(), dir);
     }
 
-    /** Whether the robot is ready to move. */
+    @Override
     public boolean isMoveReady() {
         return gc.isMoveReady(getID());
     }
 
-    /**
-     * Checks to see if a direction is able to be moved to.
-     * This means there is nothing blocking physical access and the movement is off cooldown.
-     * Takes into account the map terrain, positions of other robots, edge of the game map, and movement heat.
-     * @param dir The direction to check.
-     * @return If there is nothing preventing movement to that direction.
-     */
+    @Override
     public boolean canMove(Direction dir) {
         return isAccessible(dir) && isMoveReady();
     }
 
-    /**
-     * Moves the robot in a direction.
-     * NOTE: Does not check to see if it can move first.
-     * @param dir The direction to move in.
-     * @return The new location on the map that the robot moved to.
-     */
+    @Override
     public MapLocation move(Direction dir) {
         assert canMove(dir);
         gc.moveRobot(getID(), dir);
@@ -49,23 +32,23 @@ public abstract class AbstractRobot extends AUnit {
     }
 
 
-    /** Gets the current active ability heat for this robot. */
+    @Override
     public int getAbilityHeat() {
         return (int) getAsUnit().abilityHeat();
     }
 
-    /** Gets the cooldown of this robot's active ability, i.e. how much heat it produces. */
+    @Override
     public int getAbilityCooldown() {
         if (abilityCooldown == -1) abilityCooldown = (int) getAsUnit().abilityCooldown();
         return abilityCooldown;
     }
 
-    /** Whether this unit has its active ability unlocked .*/
+    @Override
     public boolean isAbilityUnlocked() {
         return Utils.toBool(getAsUnit().isAbilityUnlocked());
     }
 
-    /** Gets the range of this unit's active ability */
+    @Override
     public int getAbililtyRange() {
         if (abilityRange == -1) {
             long tmp = getAsUnit().abilityRange();
@@ -86,10 +69,10 @@ public abstract class AbstractRobot extends AUnit {
     private int abilityRange = -1;
 
     /**
-     * Constructor for AbstractRobot.
+     * Constructor for ARobot.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
-    AbstractRobot(Unit unit) {
+    ARobot(Unit unit) {
         super(unit);
     }
 }

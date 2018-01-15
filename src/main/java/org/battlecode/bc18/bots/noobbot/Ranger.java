@@ -3,7 +3,6 @@ package org.battlecode.bc18.bots.noobbot;
 import bc.Unit;
 import bc.UnitType;
 import org.battlecode.bc18.api.AbstractRanger;
-import org.battlecode.bc18.api.AbstractRobot;
 
 public class Ranger extends AbstractRanger {
 

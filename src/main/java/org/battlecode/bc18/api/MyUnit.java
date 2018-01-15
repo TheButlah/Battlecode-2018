@@ -1,6 +1,9 @@
 package org.battlecode.bc18.api;
 
-import bc.*;
+import bc.Location;
+import bc.MapLocation;
+import bc.Team;
+import bc.UnitType;
 import org.battlecode.bc18.util.Pair;
 
 import java.util.ArrayList;

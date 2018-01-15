@@ -2,9 +2,6 @@ package org.battlecode.bc18.api;
 
 import static org.battlecode.bc18.util.Utils.gc;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import bc.Unit;
 import bc.UnitType;
 
@@ -32,7 +29,7 @@ public abstract class AbstractFactory extends AbstractStructure {
      * @param type The UnitType of the robot to produce. Must be a robot.
      * @return The robot produced. Currently will always be null until fixed
      */
-    public AbstractRobot produceRobot(UnitType type) {
+    public MyRobot produceRobot(UnitType type) {
         assert canProduceRobot(type);
         gc.produceRobot(getID(), type);
         System.out.println("Garrison after production: ");

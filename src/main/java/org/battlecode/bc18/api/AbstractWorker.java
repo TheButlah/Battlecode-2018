@@ -5,7 +5,7 @@ import org.battlecode.bc18.util.Utils;
 
 import static org.battlecode.bc18.util.Utils.gc;
 
-public abstract class AbstractWorker extends AbstractRobot {
+public abstract class AbstractWorker extends ARobot {
 
     public static final UnitType TYPE = UnitType.Worker;
 

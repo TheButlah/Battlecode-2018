@@ -4,7 +4,7 @@ import bc.*;
 
 import static org.battlecode.bc18.util.Utils.gc;
 
-public abstract class AbstractMage extends AbstractRobot {
+public abstract class AbstractMage extends ARobot {
 
     public static final UnitType TYPE = UnitType.Mage;
 

@@ -2,7 +2,7 @@ package org.battlecode.bc18.api;
 
 import bc.*;
 
-public abstract class AbstractRanger extends AbstractRobot {
+public abstract class AbstractRanger extends ARobot {
 
     public static final UnitType TYPE = UnitType.Ranger;
 

@@ -3,7 +3,7 @@ package org.battlecode.bc18.bots.noobbot;
 import bc.Direction;
 import bc.Unit;
 import org.battlecode.bc18.api.AbstractHealer;
-import org.battlecode.bc18.api.AbstractRobot;
+import org.battlecode.bc18.api.MyRobot;
 import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Utils;
 
@@ -22,13 +22,13 @@ public class Healer extends AbstractHealer {
         // heals weakest ally in heal range, if possible. Else, moves randomly.
 
         // gets the weakest ally within heal range
-        AbstractRobot target = null;
+        MyRobot target = null;
         int healthLeft = Integer.MAX_VALUE;
         for (MyUnit u : senseNearbyFriendlies(getHealRange())) {
-            if (!(u instanceof AbstractRobot)) continue;
+            if (!(u instanceof MyRobot)) continue;
             int health = u.getHealth();
             if (health < u.getMaxHealth() && health < healthLeft) {
-                target = (AbstractRobot) u;
+                target = (MyRobot) u;
                 healthLeft = health;
             }
         }
