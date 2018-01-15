@@ -86,7 +86,7 @@ public class Knight extends AbstractKnight {
         }
 
         // if we can attack the target, attack
-        if (isAttackReady(getID()) && gc.canAttack(getID(), this.target.id())) {
+        if (gc.isAttackReady(getID()) && gc.canAttack(getID(), this.target.id())) {
             gc.attack(getID(), this.target.id());
         }
     }

@@ -1,20 +1,36 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import bc.*;
+import static org.battlecode.bc18.util.Utils.dirs;
+import static org.battlecode.bc18.util.Utils.gc;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.battlecode.bc18.PathFinding;
-import org.battlecode.bc18.api.*;
+import org.battlecode.bc18.api.AbstractWorker;
+import org.battlecode.bc18.api.MyStructure;
 import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Pair;
 import org.battlecode.bc18.util.Utils;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.battlecode.bc18.util.Utils.dirs;
-import static org.battlecode.bc18.util.Utils.gc;
+import bc.Direction;
+import bc.MapLocation;
+import bc.Unit;
+import bc.UnitType;
 
 public class Worker extends AbstractWorker {
 
+
+    /**
+     * A mapping of structures to numbers of workers assigned to each structure
+     */
+    public static final Map<Integer, Integer> workersPerStructure = new HashMap<>();
+    /**
+     * A mapping of workers to the structures they are assigned to
+     */
+    public static final Map<Integer, MyStructure> workerStructureAssignment = new HashMap<>();
     /**
      * Constructor for AbstractWorker.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
@@ -39,11 +55,11 @@ public class Worker extends AbstractWorker {
         //We already checked that we were on the map
         MapLocation myMapLoc = getMapLocation();
 
-        Factory targetFactory = getFactoryAssignment();
-        if (targetFactory != null && targetFactory.isDead()) {
+        MyStructure targetStructure = getStructureAssignment();
+        if (targetStructure != null && targetStructure.isDead()) {
             println("Assigned to dead factory!");
-            deassignFactory();
-            targetFactory = null;
+            deassignStructure();
+            targetStructure = null;
         }
 
         if (turn == 1 || gc.karbonite() >= 300) {
@@ -56,53 +72,67 @@ public class Worker extends AbstractWorker {
             for (Direction dir : dirs) {
                 if (canBlueprint(UnitType.Factory, dir)
                         && !Utils.isAnyAdjacent(nearbyFactoriesLoc, myMapLoc.add(dir))) {
-                    //println("Blueprinting: " + UnitType.Factory + " towards " + dir);
-                    targetFactory = (Factory) blueprint(UnitType.Factory, dir);
-                    assignFactory(targetFactory);
+                    targetStructure = (Factory) blueprint(UnitType.Factory, dir);
+                    assignStructure(targetStructure);
                     break;
                 }
             }
         }
 
-        if (!hasActed() && turn >= 200 && gc.karbonite() >= 200) {
-            List<MyUnit> nearbyFactories = senseNearbyFriendlies(2, UnitType.Factory);
-            // TODO: blueprint rockets
+        if (!hasActed() && turn >= 200 && gc.karbonite() >= 200) { // TODO: balance number of factories and rockets
+            List<MyUnit> nearbyFactories = senseNearbyFriendlies(3, UnitType.Factory);
+            List<MyUnit> nearbyRockets = senseNearbyFriendlies(3, UnitType.Rocket);
+            ArrayList<MapLocation> nearbyStructuresLoc = new ArrayList<>();
+            for (MyUnit factory : nearbyFactories) {
+                nearbyStructuresLoc.add(factory.getMapLocation());
+            }
+            for (MyUnit rocket : nearbyRockets) {
+                nearbyStructuresLoc.add(rocket.getMapLocation());
+            }
+            for (Direction dir : dirs) {
+                if (canBlueprint(UnitType.Factory, dir)
+                        && !Utils.isAnyAdjacent(nearbyStructuresLoc, myMapLoc.add(dir))) {
+                    targetStructure = (Rocket) blueprint(UnitType.Rocket, dir);
+                    assignStructure(targetStructure);
+                    break;
+                }
+            }
         }
 
-        if (targetFactory == null) {
-            List<MyUnit> nearbyFactories = senseNearbyFriendlies(UnitType.Factory);
-            Factory closestFactory = null;
-            long closestFactoryDist = Long.MAX_VALUE;
-            for (MyUnit unit : nearbyFactories) {
-                Factory factory = (Factory) unit;
-                if (!factory.isBuilt() || factory.getHealth() < factory.getMaxHealth() * 3 / 4) {
-                    long distance = factory.getMapLocation().distanceSquaredTo(myMapLoc);
-                    if (distance < closestFactoryDist) {
-                        closestFactory = factory;
-                        closestFactoryDist = distance;
+        if (targetStructure == null) {
+            List<MyUnit> nearbyStructures = senseNearbyFriendlies(UnitType.Factory);
+            nearbyStructures.addAll(senseNearbyFriendlies(UnitType.Rocket));
+            MyStructure closestStructure = null;
+            long closestStructureDist = Long.MAX_VALUE;
+            for (MyUnit unit : nearbyStructures) {
+                MyStructure structure = (MyStructure) unit;
+                if (!structure.isBuilt() || structure.getHealth() < structure.getMaxHealth() * 3 / 4) {
+                    long distance = structure.getMapLocation().distanceSquaredTo(myMapLoc);
+                    if (distance < closestStructureDist) {
+                        closestStructure = structure;
+                        closestStructureDist = distance;
                     }
                 }
             }
-            targetFactory = closestFactory;
-            if (targetFactory != null) {
-                assignFactory(targetFactory);
+            targetStructure = closestStructure;
+            if (targetStructure != null) {
+                assignStructure(targetStructure);
             }
         }
-        //targetFactory should now be set. If its still null, we lost all out factories.
 
         if (isMoveReady()) {
-            if (targetFactory != null) {
-                // Move towards target factory
-                MapLocation factoryLoc = targetFactory.getMapLocation();
-                int[][] distances = PathFinding.earthPathfinder.search(factoryLoc.getY(),
-                        factoryLoc.getX());
-                Direction towardsFactory = PathFinding.moveDirectionToDestination(distances,
+            if (targetStructure != null) {
+                // Move towards target structure
+                MapLocation structureLoc = targetStructure.getMapLocation();
+                int[][] distances = PathFinding.earthPathfinder.search(structureLoc.getY(),
+                        structureLoc.getX());
+                Direction towardsStructure = PathFinding.moveDirectionToDestination(distances,
                         myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
-                if (isAccessible(towardsFactory)) {
-                    move(towardsFactory);
+                if (isAccessible(towardsStructure)) {
+                    move(towardsStructure);
                 }
             } else {
-                //No target factory, so look for nearby karbonite
+                //No target structure, so look for nearby karbonite
                 List<Pair<MapLocation, Integer>> deposits = senseNearbyKarbonite();
                 if (deposits.size() != 0) {
                     Pair<MapLocation, Integer> targetDeposit = Utils.closestPair(deposits, myMapLoc);
@@ -137,10 +167,10 @@ public class Worker extends AbstractWorker {
             return;
         }
 
-        if (targetFactory != null) {
-            boolean factoryBuilt = targetFactory.isBuilt();
-            boolean needsRepair = targetFactory.getHealth() < 3 * targetFactory.getMaxHealth() / 4;
-            if (!factoryBuilt || needsRepair) {
+        if (targetStructure != null) {
+            boolean structureBuilt = targetStructure.isBuilt();
+            boolean needsRepair = targetStructure.getHealth() < 3 * targetStructure.getMaxHealth() / 4;
+            if (!structureBuilt || needsRepair) {
                 // replicate if factory not yet built or factory damaged
                 List<MyUnit> nearbyWorkers = senseNearbyFriendlies(UnitType.Worker);
                 if (nearbyWorkers.size() < 7) {
@@ -155,24 +185,24 @@ public class Worker extends AbstractWorker {
                     }
                 }
                 // building a factory based on the blueprint created.
-                if (!factoryBuilt) {
-                    if (canBuild(targetFactory)) {
+                if (!structureBuilt) {
+                    if (canBuild(targetStructure)) {
                         //println("Building");
-                        build(targetFactory);
+                        build(targetStructure);
                         return;
                     }
                 }
-                else if (canRepair(targetFactory)) {
+                else if (canRepair(targetStructure)) {
                     //println("Repairing");
-                    repair(targetFactory);
+                    repair(targetStructure);
                     return;
                 }
             }
             else {
                 // De-assign worker from factory so he can explore the map
-                if (Factory.workersPerFactory.get(targetFactory.getID()) > 3) {
-                    deassignFactory();
-                    targetFactory = null;
+                if (workersPerStructure.get(targetStructure.getID()) > 3) {
+                    deassignStructure();
+                    targetStructure = null;
                 }
             }
         }
@@ -189,47 +219,50 @@ public class Worker extends AbstractWorker {
 
     @Override
     protected void onDeath() {
-        deassignFactory();
+        deassignStructure();
     }
 
     /**
-     * Gets the {@link Factory} assigned to the {@link Worker} calling this method
+     * Gets the structure assigned to the {@link Worker} calling this method
      * Pre-condition: this method should only be called by instances of the {@link Worker} class
      * @return the factory
      */
-    Factory getFactoryAssignment() {
-        return Factory.workerFactoryAssignment.get(getID());
+    MyStructure getStructureAssignment() {
+        return workerStructureAssignment.get(getID());
     }
 
     /**
-     * Assigns the factory with the given ID to the {@link Worker} calling this method.
+     * Assigns the structure with the given ID to the {@link Worker} calling this method.
      * Pre-condition: this method should only be called by instances of the {@link Worker} class.
      * @param factory the factory.
      */
-    void assignFactory(Factory factory) {
-        Factory.workerFactoryAssignment.put(getID(), factory);
-        if (!Factory.workersPerFactory.containsKey(factory.getID())) {
-            Factory.workersPerFactory.put(factory.getID(), 1);
+    void assignStructure(MyStructure structure) {
+        MyStructure previousAssignment = workerStructureAssignment.put(getID(), structure);
+        if (previousAssignment != null) {
+            workersPerStructure.put(previousAssignment.getID(), workersPerStructure.get(previousAssignment.getID()) - 1);
+        }
+        if (!workersPerStructure.containsKey(structure.getID())) {
+            workersPerStructure.put(structure.getID(), 1);
         }
         else {
-            Factory.workersPerFactory.put(factory.getID(), Factory.workersPerFactory.get(factory.getID()) + 1);
+            workersPerStructure.put(structure.getID(), workersPerStructure.get(structure.getID()) + 1);
         }
     }
 
     /**
-     * De-assigns the factory assigned to the {@link Worker} calling this method.
+     * De-assigns the structure assigned to the {@link Worker} calling this method.
      * If there is no assigned factory, no changes are made
      * Pre-condition: this method should only be called by instances of the {@link Worker} class
      * @return the the de-assigned factory, or null if none
      */
-    Factory deassignFactory() {
-        Factory factory = Factory.workerFactoryAssignment.remove(getID());
-        if (factory != null) {
-            Integer count = Factory.workersPerFactory.get(factory.getID());
+    MyStructure deassignStructure() {
+        MyStructure structure = workerStructureAssignment.remove(getID());
+        if (structure != null) {
+            Integer count = workersPerStructure.get(structure.getID());
             if (count != null) {
-                Factory.workersPerFactory.put(factory.getID(), count - 1);
+                workersPerStructure.put(structure.getID(), count - 1);
             }
         }
-        return factory;
+        return structure;
     }
 }
