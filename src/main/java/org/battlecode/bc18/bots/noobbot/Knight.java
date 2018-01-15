@@ -62,7 +62,7 @@ public class Knight extends AbstractKnight {
                 int offset = Utils.rand.nextInt(Utils.dirs.length);
                 for (int i = 0; i < Utils.dirs.length; i++) {
                     Direction dir = Utils.dirs[(i + offset) % Utils.dirs.length]; //Cycle through based on random offset
-                    //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAcessible()`
+                    //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
                     if (isAccessible(dir)) {
                         //println("Moving");
                         move(dir);
@@ -79,7 +79,7 @@ public class Knight extends AbstractKnight {
             MapLocation targetEnemy = this.target.location().mapLocation();
             int[][] distances = PathFinding.earthPathfinder.search(targetEnemy.getY(), targetEnemy.getX());
             Direction towardsEnemy = PathFinding.moveDirectionToDestination(distances, myMapLoc.getY(), myMapLoc.getX(), myMapLoc.getPlanet());
-            //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAcessible()`
+            //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
             if (isAccessible(towardsEnemy)) {
                 move(towardsEnemy);
             }
