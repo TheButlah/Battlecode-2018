@@ -33,14 +33,18 @@ public abstract class AbstractUnit {
     /** Prepares the AbstractUnit objects for their logic this turn. */
     public static void initTurn() {
         //Clean out all dead units from unitList. This is
+        unitList.forEach((unit) -> {
+            if (!gc.canSenseUnit(unit.id)) {
+                unit.informOfDeath();
+            }
+        });
         unitList.removeIf(AbstractUnit::isDead);
     }
 
     /** Goes through all our player's units and has them act. Requires `initTurn()` to run first. */
     public static void doTurn() {
-        //Use ListIterator so that we can modify the list while we loop
-        for (ListIterator<AbstractUnit> it = unitList.listIterator(); it.hasNext();) {
-            AbstractUnit unit = it.next();
+        for (int i = 0; i < unitList.size(); ++i) {
+            AbstractUnit unit = unitList.get(i);
             try { //Avoid breaking the loop leading to instant loss
                 if (unit.isDead()) continue; //Don't act on dead units
                 unit.act();
@@ -432,7 +436,7 @@ public abstract class AbstractUnit {
      * NOTE: Do not attempt to iterate through this map unless you're sure you won't modify it.
      */
     private static final Map<Integer, AbstractUnit> units = new HashMap<>();
-    private static final List<AbstractUnit> unitList = new LinkedList<>();
+    private static final List<AbstractUnit> unitList = new ArrayList<>();
 
     private final int id;
     private final Team team;
@@ -501,6 +505,7 @@ public abstract class AbstractUnit {
         assert !gc.canSenseUnit(getID()); //Test to see if its dead
         isDead = true;
         units.remove(getID());
+        onDeath();
     }
 
     /**

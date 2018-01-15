@@ -18,7 +18,7 @@ public class Factory extends AbstractFactory {
     /**
      * A mapping of workers to the factories they are assigned to
      */
-    public static final Map<Integer, Integer> workerFactoryAssignment = new HashMap<>();
+    public static final Map<Integer, Factory> workerFactoryAssignment = new HashMap<>();
 
     /**
      * Constructor for Factory.
