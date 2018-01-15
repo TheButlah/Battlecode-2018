@@ -258,8 +258,10 @@ public abstract class AbstractUnit {
      * @return The associated AbstractUnit object.
      */
     public static AbstractUnit getUnit(int id) {
-        //`computeIfAbsent` is used to add any unidentified units to the list
-        return units.computeIfAbsent(id, AbstractUnit::makeUnit);
+        AbstractUnit unit = units.get(id);
+        if (unit != null) return unit;
+        //Unit doesn't yet exist
+        return makeUnit(id);
     }
 
     /**
@@ -282,8 +284,9 @@ public abstract class AbstractUnit {
      * @return The associated list of AbstractUnit objects.
      */
     public static List<? extends AbstractUnit> getUnits(VecUnitID units) {
-        List<AbstractUnit> result = new ArrayList<>((int) units.size());
-        for (int i=0; i<units.size(); i++) {
+        int numUnits = (int) units.size();
+        List<AbstractUnit> result = new ArrayList<>(numUnits);
+        for (int i=0; i<numUnits; i++) {
             int id = units.get(i);
             result.add(getUnit(id));
         }
@@ -292,6 +295,7 @@ public abstract class AbstractUnit {
 
     /**
      * Gets the AbstractUnit objects that correspond to a Collection of units.
+     * NOTE: `units` cannot be modified!
      * @param units The Collection of units. All contained units should belong to our player and not be dead.
      * @return The associated list of AbstractUnit objects.
      */
