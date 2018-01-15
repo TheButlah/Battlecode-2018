@@ -5,7 +5,7 @@ import static org.battlecode.bc18.util.Utils.gc;
 import bc.Unit;
 import bc.UnitType;
 
-public abstract class AbstractFactory extends AbstractStructure {
+public abstract class AbstractFactory extends AStructure {
 
     public static final UnitType TYPE = UnitType.Factory;
 
@@ -34,7 +34,7 @@ public abstract class AbstractFactory extends AbstractStructure {
         gc.produceRobot(getID(), type);
         System.out.println("Garrison after production: ");
         getGarrison().forEach(System.out::print);
-        //return (AbstractStructure) MyUnit.makeUnit(unit);*/
+        //return (MyStructure) MyUnit.makeUnit(unit);*/
         return null; //TODO: Figure out how to get the MyUnit object of a robot being built.
     }
 

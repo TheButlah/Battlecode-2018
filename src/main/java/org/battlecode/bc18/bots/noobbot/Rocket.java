@@ -3,7 +3,6 @@ package org.battlecode.bc18.bots.noobbot;
 import bc.Unit;
 import bc.UnitType;
 import org.battlecode.bc18.api.AbstractRocket;
-import org.battlecode.bc18.api.AbstractStructure;
 
 public class Rocket extends AbstractRocket {
 

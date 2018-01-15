@@ -2,7 +2,7 @@ package org.battlecode.bc18.api;
 
 import bc.*;
 
-public abstract class AbstractRocket extends AbstractStructure {
+public abstract class AbstractRocket extends AStructure {
 
     public static final UnitType TYPE = UnitType.Rocket;
 

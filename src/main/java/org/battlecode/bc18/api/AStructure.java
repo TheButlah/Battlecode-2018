@@ -9,15 +9,15 @@ import java.util.List;
 
 import static org.battlecode.bc18.util.Utils.gc;
 
-public abstract class AbstractStructure extends AUnit {
+public abstract class AStructure extends AUnit implements MyStructure {
 
-    /** Whether the structure is fully built or not. */
+    @Override
     public boolean isBuilt() {
         return Utils.toBool(getAsUnit().structureIsBuilt());
         //TODO: Cache/calculate this
     }
 
-    /** Gets the garrison of this Structure. */
+    @Override
     public List<MyRobot> getGarrison() {
 
         @SuppressWarnings("unchecked")
@@ -26,21 +26,12 @@ public abstract class AbstractStructure extends AUnit {
         return result;
     }
 
-    /**
-     * Whether the factory can unload one of its garrisoned robots in a given direction.
-     * There must be space in that direction, and the unit must be ready to move.
-     * @param direction The direction to check.
-     */
+    @Override
     public boolean canUnload(Direction direction) {
         return gc.canUnload(getID(), direction);
     }
 
-    /**
-     * Unloads a garrisoned robot in a given direction.
-     * NOTE: Does not check to see if it can first.
-     * @param direction The direction to unload to.
-     * @return The robot that was unloaded.
-     */
+    @Override
     public MyRobot unload(Direction direction) {
         assert canUnload(direction);
         gc.unload(getID(), direction);
@@ -53,10 +44,10 @@ public abstract class AbstractStructure extends AUnit {
     //////////END OF API//////////
 
     /**
-     * Constructor for AbstractStructure.
+     * Constructor for MyStructure.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
-    AbstractStructure(Unit unit) {
+    AStructure(Unit unit) {
         super(unit);
     }
 

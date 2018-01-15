@@ -34,11 +34,11 @@ public abstract class AbstractWorker extends ARobot {
      * @param dir The direction to create the blueprint.
      * @return The structure blueprinted.
      */
-    public AbstractStructure blueprint(UnitType type, Direction dir) {
+    public MyStructure blueprint(UnitType type, Direction dir) {
         assert canBlueprint(type, dir);
         gc.blueprint(getID(), type, dir);
         Unit unit = gc.senseUnitAtLocation(getMapLocation().add(dir));
-        return (AbstractStructure) AUnit.makeUnit(unit);
+        return (MyStructure) AUnit.makeUnit(unit);
     }
 
     /**
@@ -48,7 +48,7 @@ public abstract class AbstractWorker extends ARobot {
      * @param blueprint The blueprint to build up.
      * @return Whether the worker can build up the blueprint.
      */
-    public boolean canBuild(AbstractStructure blueprint) {
+    public boolean canBuild(MyStructure blueprint) {
         return gc.canBuild(getID(), blueprint.getID());
     }
 
@@ -58,7 +58,7 @@ public abstract class AbstractWorker extends ARobot {
      * NOTE: Does not check to see if it can build first.
      * @param blueprint The structure to build.
      */
-    public void build(AbstractStructure blueprint) {
+    public void build(MyStructure blueprint) {
         assert canBuild(blueprint);
         gc.build(getID(), blueprint.getID());
     }
@@ -71,7 +71,7 @@ public abstract class AbstractWorker extends ARobot {
      * @param structure The structure to repair.
      * @return Whether the worker can repair the structure.
      */
-    public boolean canRepair(AbstractStructure structure) {
+    public boolean canRepair(MyStructure structure) {
         return gc.canRepair(getID(), structure.getID());
     }
 
@@ -81,7 +81,7 @@ public abstract class AbstractWorker extends ARobot {
      * NOTE: Does not check to see if it can repair first.
      * @param structure The structure to repair
      */
-    public void repair(AbstractStructure structure) {
+    public void repair(MyStructure structure) {
         assert canRepair(structure);
         gc.repair(getID(), structure.getID());
     }
