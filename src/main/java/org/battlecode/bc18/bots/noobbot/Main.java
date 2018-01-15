@@ -39,7 +39,6 @@ public class Main {
 
         while (true) {
             System.out.println("Current round: " + gc.round());
-            //Perform beginning of turn logic
             try{
                 AbstractUnit.initTurn();
                 AbstractUnit.doTurn();

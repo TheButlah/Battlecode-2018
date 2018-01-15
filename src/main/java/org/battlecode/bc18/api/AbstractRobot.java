@@ -7,14 +7,6 @@ import static org.battlecode.bc18.util.Utils.gc;
 public abstract class AbstractRobot extends AbstractUnit {
 
     /**
-     * Constructor for AbstractRobot.
-     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
-     */
-    AbstractRobot(Unit unit) {
-        super(unit);
-    }
-
-    /**
      * Checks to see if a direction is accessible, meaning there is nothing blocking physical access.
      * Takes into account only the map terrain, positions of other robots, and the edge of the game map.
      * NOTE: Does not take into account movement heat. Use `canMove()` or `isMoveReady()` for that.
@@ -53,5 +45,19 @@ public abstract class AbstractRobot extends AbstractUnit {
         MapLocation newLoc = getMapLocation().add(dir);
         setLocation(newLoc);
         return newLoc;
+    }
+
+
+
+    //////////END OF API//////////
+
+
+
+    /**
+     * Constructor for AbstractRobot.
+     * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
+     */
+    AbstractRobot(Unit unit) {
+        super(unit);
     }
 }

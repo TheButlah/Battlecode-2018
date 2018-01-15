@@ -56,7 +56,7 @@ public abstract class AbstractStructure extends AbstractUnit {
      * Constructor for AbstractStructure.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
-    protected AbstractStructure(Unit unit) {
+    AbstractStructure(Unit unit) {
         super(unit);
     }
 
