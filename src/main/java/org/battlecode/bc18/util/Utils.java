@@ -21,19 +21,19 @@ public final class Utils {
     public static GameController gc;
 
     public static boolean toBool(short x) {
-        return x > 0;
+        return x != 0;
     }
     
     public static boolean toBool(int x) {
-        return x > 0;
+        return x != 0;
     }
 
     public static boolean toBool(byte x) {
-        return x > 0;
+        return x != 0;
     }
 
     public static boolean toBool(long x) {
-        return x > 0;
+        return x != 0;
     }
 
     public static void setEarthDims(PlanetMap earthMap) {
