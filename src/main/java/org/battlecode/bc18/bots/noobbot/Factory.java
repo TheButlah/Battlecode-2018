@@ -5,20 +5,9 @@ import org.battlecode.bc18.api.AFactory;
 import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Utils;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Factory extends AFactory {
-
-    /**
-     * A mapping of factories to numbers of workers assigned to each factory
-     */
-    public static final Map<Integer, Integer> workersPerFactory = new HashMap<>();
-    /**
-     * A mapping of workers to the factories they are assigned to
-     */
-    public static final Map<Integer, Factory> workerFactoryAssignment = new HashMap<>();
 
     /**
      * Constructor for Factory.
