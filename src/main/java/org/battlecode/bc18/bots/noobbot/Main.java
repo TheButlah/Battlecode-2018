@@ -9,14 +9,27 @@ import org.battlecode.bc18.util.Utils;
 import bc.GameController;
 import bc.Planet;
 import bc.PlanetMap;
+import bc.UnitType;
 
 public class Main {
 
     public static void main(String[] args) {
         // Connect to the manager, starting the game
         gc = new GameController();
+
         //Without this, AbstractUnit cannot form new units
         AbstractUnit.init(new UnitBuilder());
+
+        gc.queueResearch(UnitType.Knight);
+        gc.queueResearch(UnitType.Knight);
+        gc.queueResearch(UnitType.Knight);
+        gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Worker);
+        gc.queueResearch(UnitType.Worker);
+        gc.queueResearch(UnitType.Worker);
+        gc.queueResearch(UnitType.Worker);
 
         if (gc.planet() == Planet.Earth) {
             PlanetMap earthMap = gc.startingMap(Planet.Earth);
