@@ -1,6 +1,7 @@
 package org.battlecode.bc18.api;
 
 import bc.*;
+import org.battlecode.bc18.util.Utils;
 
 import static org.battlecode.bc18.util.Utils.gc;
 
@@ -48,10 +49,41 @@ public abstract class AbstractRobot extends AbstractUnit {
     }
 
 
+    /** Gets the current active ability heat for this robot. */
+    public int getAbilityHeat() {
+        return (int) getAsUnit().abilityHeat();
+    }
+
+    /** Gets the cooldown of this robot's active ability, i.e. how much heat it produces. */
+    public int getAbilityCooldown() {
+        if (abilityCooldown == -1) abilityCooldown = (int) getAsUnit().abilityCooldown();
+        return abilityCooldown;
+    }
+
+    /** Whether this unit has its active ability unlocked .*/
+    public boolean isAbilityUnlocked() {
+        return Utils.toBool(getAsUnit().isAbilityUnlocked());
+    }
+
+    /** Gets the range of this unit's active ability */
+    public int getAbililtyRange() {
+        if (abilityRange == -1) {
+            long tmp = getAsUnit().abilityRange();
+            if (tmp > Integer.MAX_VALUE) tmp = Integer.MAX_VALUE; //prevent overflow from snipe ability
+            abilityRange = (int) tmp;
+        }
+        return abilityRange;
+    }
+
+
 
     //////////END OF API//////////
 
 
+
+    //We don't know these values yet
+    private int abilityCooldown = -1;
+    private int abilityRange = -1;
 
     /**
      * Constructor for AbstractRobot.

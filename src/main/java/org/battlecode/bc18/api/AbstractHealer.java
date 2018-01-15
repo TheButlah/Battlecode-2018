@@ -13,33 +13,66 @@ public abstract class AbstractHealer extends AbstractRobot {
         return AbstractHealer.TYPE;
     }
 
+    /** Gets the healing range of this healer. */
+    public int getHealRange() {
+        if (healRange == -1) healRange = (int) getAsUnit().attackRange();
+        return healRange;
+    }
+
+    /** Whether the target is within healing range. */
+    public boolean isWithinHealRange(AbstractRobot target) {
+        return gc.canHeal(getID(), target.getID());
+    }
+
+    /** Whether the healer is ready to heal. */
+    public boolean isHealReady() {
+        return gc.isHealReady(getID());
+    }
+
+    /** Whether we can heal the target */
+    public boolean canHeal(AbstractRobot target) {
+        return isHealReady() && isWithinHealRange(target);
+    }
+
     /**
      * Heal the target robot.
-     * @param targetID target robot id
-     * @return true if healing was successful, false otherwise
+     * NOTE: Does not check if it can first.
+     * @param target The robot to heal.
      */
-    public boolean heal(int targetID) {
-        if (gc.isHealReady(getID()) &&
-                gc.canHeal(getID(), targetID)) {
-            gc.heal(getID(), targetID);
-            return true;
-        }
-        return false;
+    public void heal(AbstractRobot target) {
+        assert canHeal(target);
+        gc.heal(getID(), target.getID());
+    }
+
+    /**
+     * Whether overcharge ability is ready.
+     * NOTE: Checks both heat and unlock status.
+     */
+    public boolean isOverchargeReady() {
+        return isAbilityUnlocked() && gc.isOverchargeReady(getID());
+    }
+
+    /** Whether the target unit is within overcharge range. */
+    public boolean isWithinOverchargeRange(AbstractRobot target) {
+        return gc.canOvercharge(getID(), target.getID());
+    }
+
+    /**
+     * Whether the unit can overcharge the target.
+     * Checks heat, distance, and unlock status.
+     */
+    public boolean canOvercharge(AbstractRobot target) {
+        assert isAbilityUnlocked();
+        return isOverchargeReady() && isWithinOverchargeRange(target);
     }
     
     /**
-     * Overcharges the robot, resetting the robot's cooldowns.
-     * The robot must be on the same team as you.
-     * @param targetID target robot id
-     * @return true if overcharging was successful, false otherwise
+     * Overcharges the target, resetting its cooldowns.
+     * Note: Does not check to see if it can first.
      */
-    public boolean overcharge(int targetID) {
-        if (gc.isOverchargeReady(getID()) &&
-                gc.canOvercharge(getID(), targetID)) {
-            gc.overcharge(getID(), targetID);
-            return true;
-        }
-        return false;
+    public void overcharge(AbstractRobot target) {
+        assert canOvercharge(target);
+        gc.overcharge(getID(), target.getID());
     }
 
 
@@ -47,6 +80,8 @@ public abstract class AbstractHealer extends AbstractRobot {
     //////////END OF API//////////
 
 
+
+    private static int healRange = -1;
 
     /**
      * Constructor for AbstractHealer.

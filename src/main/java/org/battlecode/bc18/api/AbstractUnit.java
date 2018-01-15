@@ -417,7 +417,7 @@ public abstract class AbstractUnit {
         System.out.println(this + " " + obj);
     }
 
-    /** Called whenever this unit dies. Use this to update any referenced you made to the unit. */
+    /** Called whenever this unit dies. Use this to update any references you made to the unit. */
     protected abstract void onDeath();
 
 

@@ -15,29 +15,30 @@ public abstract class AbstractMage extends AbstractRobot {
 
     /**
      * Checks to see if a location is accessible by blink, meaning there is nothing blocking physical access.
-     * Takes into account only the mage's ability range, map terrain, other units, and the edge of the game map.
-     * NOTE: Does not take into account ability heat. Use `canBlink()` or `isBlinkReady()` for that.
+     * Takes into account only ability range, terrain, other units, and the edge of the game map.
      * @param loc The location to check.
      * @return If there are no physical objects preventing movement to that direction.
      */
-    public boolean isBlinkAcessible(MapLocation loc) {
+    public boolean isAcessibleBlink(MapLocation loc) {
         return gc.canBlink(getID(), loc);
     }
 
-    /** Whether the mage is ready to blink */
+    /**
+     * Whether blink ability is ready.
+     * NOTE: Checks both heat and unlock status.
+     */
     public boolean isBlinkReady() {
-        return gc.isBlinkReady(getID());
+        return isAbilityUnlocked() && gc.isBlinkReady(getID());
     }
 
     /**
      * Checks to see if a location is able to be blinked to.
-     * This means there is nothing blocking physical access and blink is off cooldown.
-     * Takes into account ability heat, ability range, map terrain, other units, and the edge of the game map.
+     * This means there is nothing blocking physical access and blink is ready to be used.
      * @param loc The location to check.
-     * @return If there is nothing preventing movement to that direction.
+     * @return Whether the mage can blink.
      */
     public boolean canBlink(MapLocation loc) {
-        return isBlinkAcessible(loc) && isBlinkReady();
+        return isAcessibleBlink(loc) && isBlinkReady();
     }
 
     /**
