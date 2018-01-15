@@ -3,6 +3,7 @@ package org.battlecode.bc18.bots.noobbot;
 import bc.*;
 import org.battlecode.bc18.PathFinding;
 import org.battlecode.bc18.api.*;
+import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Pair;
 import org.battlecode.bc18.util.Utils;
 
@@ -46,9 +47,9 @@ public class Worker extends AbstractWorker {
         }
 
         if (turn == 1 || gc.karbonite() >= 300) {
-            List<AbstractUnit> nearbyFactories = senseNearbyFriendlies(3, UnitType.Factory);
+            List<MyUnit> nearbyFactories = senseNearbyFriendlies(3, UnitType.Factory);
             ArrayList<MapLocation> nearbyFactoriesLoc = new ArrayList<>();
-            for (AbstractUnit factory : nearbyFactories) {
+            for (MyUnit factory : nearbyFactories) {
                 nearbyFactoriesLoc.add(factory.getMapLocation());
             }
             // for each direction, find the first availabile spot for a factory.
@@ -64,15 +65,15 @@ public class Worker extends AbstractWorker {
         }
 
         if (!hasActed() && turn >= 200 && gc.karbonite() >= 200) {
-            List<AbstractUnit> nearbyFactories = senseNearbyFriendlies(2, UnitType.Factory);
+            List<MyUnit> nearbyFactories = senseNearbyFriendlies(2, UnitType.Factory);
             // TODO: blueprint rockets
         }
 
         if (targetFactory == null) {
-            List<AbstractUnit> nearbyFactories = senseNearbyFriendlies(UnitType.Factory);
+            List<MyUnit> nearbyFactories = senseNearbyFriendlies(UnitType.Factory);
             Factory closestFactory = null;
             long closestFactoryDist = Long.MAX_VALUE;
-            for (AbstractUnit unit : nearbyFactories) {
+            for (MyUnit unit : nearbyFactories) {
                 Factory factory = (Factory) unit;
                 if (!factory.isBuilt() || factory.getHealth() < factory.getMaxHealth() * 3 / 4) {
                     long distance = factory.getMapLocation().distanceSquaredTo(myMapLoc);
@@ -141,12 +142,12 @@ public class Worker extends AbstractWorker {
             boolean needsRepair = targetFactory.getHealth() < 3 * targetFactory.getMaxHealth() / 4;
             if (!factoryBuilt || needsRepair) {
                 // replicate if factory not yet built or factory damaged
-                List<AbstractUnit> nearbyWorkers = senseNearbyFriendlies(UnitType.Worker);
+                List<MyUnit> nearbyWorkers = senseNearbyFriendlies(UnitType.Worker);
                 if (nearbyWorkers.size() < 7) {
                     for (Direction dir : Utils.dirs) {
                         if (canReplicate(dir)) {
                             //println("Replicating");
-                            AbstractUnit newWorker = replicate(dir);
+                            MyUnit newWorker = replicate(dir);
                             if (newWorker != null) {
                                 return;
                             }
@@ -201,9 +202,9 @@ public class Worker extends AbstractWorker {
     }
 
     /**
-     * Assigns the factory with the given ID to the {@link Worker} calling this method
-     * Pre-condition: this method should only be called by instances of the {@link Worker} class
-     * @param factoryId the factory ID
+     * Assigns the factory with the given ID to the {@link Worker} calling this method.
+     * Pre-condition: this method should only be called by instances of the {@link Worker} class.
+     * @param factory the factory.
      */
     void assignFactory(Factory factory) {
         Factory.workerFactoryAssignment.put(getID(), factory);

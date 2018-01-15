@@ -34,11 +34,13 @@ public abstract class AbstractFactory extends AbstractStructure {
      */
     public AbstractRobot produceRobot(UnitType type) {
         assert canProduceRobot(type);
-        println("Producing: " + type);
+        System.out.println("Producing: Units currently in garrison: ");
+        getGarrison().forEach(System.out::println);
         gc.produceRobot(getID(), type);
-        /*Unit unit = gc.unit(getMapLocation());
-        return (AbstractStructure) AbstractUnit.makeUnit(unit);*/
-        return null; //TODO: Figure out how to get the Unit object of a robot being built.
+        System.out.println("Garrison after production: ");
+        getGarrison().forEach(System.out::print);
+        //return (AbstractStructure) MyUnit.makeUnit(unit);*/
+        return null; //TODO: Figure out how to get the MyUnit object of a robot being built.
     }
 
 

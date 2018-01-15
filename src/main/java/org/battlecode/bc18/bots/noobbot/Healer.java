@@ -4,7 +4,7 @@ import bc.Direction;
 import bc.Unit;
 import org.battlecode.bc18.api.AbstractHealer;
 import org.battlecode.bc18.api.AbstractRobot;
-import org.battlecode.bc18.api.AbstractUnit;
+import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Utils;
 
 public class Healer extends AbstractHealer {
@@ -24,7 +24,7 @@ public class Healer extends AbstractHealer {
         // gets the weakest ally within heal range
         AbstractRobot target = null;
         int healthLeft = Integer.MAX_VALUE;
-        for (AbstractUnit u : senseNearbyFriendlies(getHealRange())) {
+        for (MyUnit u : senseNearbyFriendlies(getHealRange())) {
             if (!(u instanceof AbstractRobot)) continue;
             int health = u.getHealth();
             if (health < u.getMaxHealth() && health < healthLeft) {

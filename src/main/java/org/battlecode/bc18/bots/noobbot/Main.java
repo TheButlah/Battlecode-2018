@@ -3,7 +3,7 @@ package org.battlecode.bc18.bots.noobbot;
 import static org.battlecode.bc18.util.Utils.gc;
 
 import org.battlecode.bc18.PathFinding;
-import org.battlecode.bc18.api.AbstractUnit;
+import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.util.Utils;
 
 import bc.GameController;
@@ -17,8 +17,8 @@ public class Main {
         // Connect to the manager, starting the game
         gc = new GameController();
 
-        //Without this, AbstractUnit cannot form new units
-        AbstractUnit.init(new UnitBuilder());
+        //Without this, MyUnit cannot form new units
+        AUnit.init(new UnitBuilder());
 
         gc.queueResearch(UnitType.Knight);
         gc.queueResearch(UnitType.Knight);
@@ -40,8 +40,8 @@ public class Main {
         while (true) {
             System.out.println("Current round: " + gc.round());
             try{
-                AbstractUnit.initTurn();
-                AbstractUnit.doTurn();
+                AUnit.initTurn();
+                AUnit.doTurn();
             } catch (Exception e) {
                 e.printStackTrace();
             }

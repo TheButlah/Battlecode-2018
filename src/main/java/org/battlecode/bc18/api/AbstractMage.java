@@ -55,6 +55,8 @@ public abstract class AbstractMage extends AbstractRobot {
 
     //////////END OF API//////////
 
+
+
     /**
      * Constructor for AbstractMage.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.

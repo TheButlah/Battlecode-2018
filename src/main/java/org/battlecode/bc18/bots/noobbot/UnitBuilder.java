@@ -1,12 +1,11 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import bc.Unit;
 import bc.UnitType;
 import org.battlecode.bc18.api.*;
 
 public class UnitBuilder implements org.battlecode.bc18.api.UnitBuilder {
     @Override
-    public AbstractUnit newUnit(Unit ourUnit) {
+    public AUnit newUnit(bc.Unit ourUnit) {
         UnitType type = ourUnit.unitType();
         switch(type) {
             case Worker:

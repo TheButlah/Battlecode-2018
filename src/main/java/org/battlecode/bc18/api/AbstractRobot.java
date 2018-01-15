@@ -5,7 +5,7 @@ import org.battlecode.bc18.util.Utils;
 
 import static org.battlecode.bc18.util.Utils.gc;
 
-public abstract class AbstractRobot extends AbstractUnit {
+public abstract class AbstractRobot extends AUnit {
 
     /**
      * Checks to see if a direction is accessible, meaning there is nothing blocking physical access.

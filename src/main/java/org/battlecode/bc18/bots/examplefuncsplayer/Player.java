@@ -24,7 +24,7 @@ public class Player {
 
         while (true) {
             System.out.println("Current round: "+gc.round());
-            // VecUnit is a class that you can think of as similar to ArrayList<Unit>, but immutable.
+            // VecUnit is a class that you can think of as similar to ArrayList<MyUnit>, but immutable.
             VecUnit units = gc.myUnits();
             for (int i = 0; i < units.size(); i++) {
                 Unit unit = units.get(i);

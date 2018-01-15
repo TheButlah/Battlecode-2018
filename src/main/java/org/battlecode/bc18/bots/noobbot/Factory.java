@@ -2,7 +2,7 @@ package org.battlecode.bc18.bots.noobbot;
 
 import bc.*;
 import org.battlecode.bc18.api.AbstractFactory;
-import org.battlecode.bc18.api.AbstractUnit;
+import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Utils;
 
 import java.util.HashMap;
@@ -30,13 +30,13 @@ public class Factory extends AbstractFactory {
 
     @Override
     public void act() {
-        System.out.println("Workers assigned to me: " + workersPerFactory.get(getID()));
+        //System.out.println("Workers assigned to me: " + workersPerFactory.get(getID()));
         // Since we cant maintain the invariant for the units HashMap, manually add in units to ensure invariant.
         VecUnitID vec = getAsUnit().structureGarrison();
         getUnits(vec); //Add the
 
         // make and place knights until you can't :D
-        List<AbstractUnit> nearbyWorkers = senseNearbyFriendlies(UnitType.Worker);
+        List<MyUnit> nearbyWorkers = senseNearbyFriendlies(UnitType.Worker);
         boolean hasNearbyWorker = (nearbyWorkers.size() >=1);
 
         if (!hasNearbyWorker && canProduceRobot(UnitType.Worker)) {

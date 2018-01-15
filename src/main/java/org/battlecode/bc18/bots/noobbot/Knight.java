@@ -31,21 +31,21 @@ public class Knight extends AbstractKnight {
         // if so, move towards it or attack it
         // else, move randomly
 
-        //Unit myUnit = getAsUnit();
+        //MyUnit myUnit = getAsUnit();
         if (!isOnMap()) {
-            println("TODO: handle knight in space");
+            //"TODO: handle knight in space
             return;
         }
 
         MapLocation myMapLoc = getMapLocation();
 
-        // Get closest enemy Unit
+        // Get closest enemy MyUnit
         Unit closestUnit = null;
-        long closestUnitDist = Long.MAX_VALUE;
+        int closestUnitDist = Integer.MAX_VALUE;
 
         List<Unit> nearbyEnemies = senseNearbyEnemies();
         for (Unit enemy : nearbyEnemies) {
-            long distance = enemy.location().mapLocation().distanceSquaredTo(myMapLoc);
+            int distance = (int) enemy.location().mapLocation().distanceSquaredTo(myMapLoc);
             if (distance < closestUnitDist) {
                 closestUnit = enemy;
                 closestUnitDist = distance;
@@ -86,9 +86,7 @@ public class Knight extends AbstractKnight {
         }
 
         // if we can attack the target, attack
-        if (javelin(this.target.id())) {
-        }
-        else if (gc.isAttackReady(getID()) && gc.canAttack(getID(), this.target.id())) {
+        if (isAttackReady(getID()) && gc.canAttack(getID(), this.target.id())) {
             gc.attack(getID(), this.target.id());
         }
     }

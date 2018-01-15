@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.battlecode.bc18.util.Utils.gc;
 
-public abstract class AbstractStructure extends AbstractUnit {
+public abstract class AbstractStructure extends AUnit {
 
     /** Whether the structure is fully built or not. */
     public boolean isBuilt() {
@@ -21,7 +21,7 @@ public abstract class AbstractStructure extends AbstractUnit {
     public List<AbstractRobot> getGarrison() {
 
         @SuppressWarnings("unchecked")
-        //TODO: Can we determine if this will give an Exception?
+        //TODO: Can we determine whether this will cast will give an Exception?
         List<AbstractRobot> result = (List<AbstractRobot>) getUnits(getAsUnit().structureGarrison());
         return result;
     }

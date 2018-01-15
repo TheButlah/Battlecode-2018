@@ -36,10 +36,9 @@ public abstract class AbstractWorker extends AbstractRobot {
      */
     public AbstractStructure blueprint(UnitType type, Direction dir) {
         assert canBlueprint(type, dir);
-        println("Blueprinting: " + type + " towards " + dir);
         gc.blueprint(getID(), type, dir);
         Unit unit = gc.senseUnitAtLocation(getMapLocation().add(dir));
-        return (AbstractStructure) AbstractUnit.makeUnit(unit);
+        return (AbstractStructure) AUnit.makeUnit(unit);
     }
 
     /**
@@ -61,7 +60,6 @@ public abstract class AbstractWorker extends AbstractRobot {
      */
     public void build(AbstractStructure blueprint) {
         assert canBuild(blueprint);
-        println("Building: " + blueprint);
         gc.build(getID(), blueprint.getID());
     }
 
@@ -85,7 +83,6 @@ public abstract class AbstractWorker extends AbstractRobot {
      */
     public void repair(AbstractStructure structure) {
         assert canRepair(structure);
-        //println("Repairing: " + structure);
         gc.repair(getID(), structure.getID());
     }
 
@@ -107,7 +104,6 @@ public abstract class AbstractWorker extends AbstractRobot {
      */
     public void harvest(Direction direction) {
         assert canHarvest(direction);
-        //println("Harvesting: towards " + direction);
         gc.harvest(getID(), direction);
     }
 
@@ -130,7 +126,6 @@ public abstract class AbstractWorker extends AbstractRobot {
      * @return The new replicated worker.
      */
     public AbstractWorker replicate(Direction direction) {
-        //println("Replicating: towards " + direction);
         gc.replicate(getID(), direction);
         Unit unit = gc.senseUnitAtLocation(getMapLocation().add(direction));
         if (unit.unitType() != UnitType.Worker) {

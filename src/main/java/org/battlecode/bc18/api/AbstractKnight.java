@@ -14,17 +14,34 @@ public abstract class AbstractKnight extends AbstractRobot {
     }
 
     /**
-     * Javelins the robot, dealing the knight's standard damage.
-     * @param targetID target unit id
-     * @return true if javelin was successful, false otherwise
+     * Whether the javelin is ready to use.
+     * NOTE: Checks both heat and unlock status.
      */
-    public boolean javelin(int targetID) {
-        if (gc.isJavelinReady(getID()) &&
-            gc.canJavelin(getID(), targetID)) {
-            gc.javelin(getID(), targetID);
-            return true;
-        }
-        return false;
+    public boolean isJavelinReady() {
+        return isAbilityUnlocked() && gc.isJavelinReady(getID());
+    }
+
+    /** Whether the target is within javelin range */
+    public boolean isWithinJavelinRange(Unit target) {
+        return gc.canJavelin(getID(), target.id());
+    }
+
+    /**
+     * Whether we can javelin the target.
+     * Checks heat, distance, and unlock status.
+     */
+    public boolean canJavelin(Unit target) {
+        return isJavelinReady() && isWithinJavelinRange(target);
+    }
+
+    /**
+     * Javelins the target, dealing the knight's standard damage.
+     * NOTE: Does not check to see if we can first.
+     * @param target The target unit.
+     */
+    public void javelin(Unit target) {
+        assert canJavelin(target);
+        gc.javelin(getID(), target.id());
     }
 
 
