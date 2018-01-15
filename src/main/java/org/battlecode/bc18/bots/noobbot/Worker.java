@@ -90,7 +90,7 @@ public class Worker extends AWorker {
                 nearbyStructuresLoc.add(rocket.getMapLocation());
             }
             for (Direction dir : dirs) {
-                if (canBlueprint(UnitType.Factory, dir)
+                if (canBlueprint(UnitType.Rocket, dir)
                         && !Utils.isAnyAdjacent(nearbyStructuresLoc, myMapLoc.add(dir))) {
                     targetStructure = (Rocket) blueprint(UnitType.Rocket, dir);
                     assignStructure(targetStructure);
