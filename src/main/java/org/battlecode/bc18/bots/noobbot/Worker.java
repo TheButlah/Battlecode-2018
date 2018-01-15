@@ -106,7 +106,9 @@ public class Worker extends AWorker {
             long closestStructureDist = Long.MAX_VALUE;
             for (MyUnit unit : nearbyStructures) {
                 MyStructure structure = (MyStructure) unit;
-                if (!structure.isBuilt() || structure.getHealth() < structure.getMaxHealth() * 3 / 4) {
+                if (!structure.isBuilt()
+                        || structure.getHealth() < structure.getMaxHealth() * 3 / 4
+                        || workersPerStructure.get(structure.getID()) < 3) {
                     long distance = structure.getMapLocation().distanceSquaredTo(myMapLoc);
                     if (distance < closestStructureDist) {
                         closestStructure = structure;
@@ -169,7 +171,7 @@ public class Worker extends AWorker {
 
         if (targetStructure != null) {
             boolean structureBuilt = targetStructure.isBuilt();
-            boolean needsRepair = targetStructure.getHealth() < 3 * targetStructure.getMaxHealth() / 4;
+            boolean needsRepair = targetStructure.getHealth() < targetStructure.getMaxHealth();
             if (!structureBuilt || needsRepair) {
                 // replicate if factory not yet built or factory damaged
                 List<MyUnit> nearbyWorkers = senseNearbyFriendlies(UnitType.Worker);
