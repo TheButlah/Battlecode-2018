@@ -46,17 +46,26 @@ public class Worker extends AbstractWorker {
         }
 
         if (turn == 1 || gc.karbonite() >= 300) {
-            List<AbstractUnit> nearbyFactories = senseNearbyFriendlies(2, UnitType.Factory);
-            if (nearbyFactories.size() == 0) {
-                // for each direction, find the first availabile spot for a factory.
-                for (Direction dir : dirs) {
-                    if (canBlueprint(UnitType.Factory, dir)) {
-                        println("Blueprinting: " + UnitType.Factory + " towards " + dir);
-                        targetFactory = (AbstractFactory) blueprint(UnitType.Factory, dir);
-                        assignFactory(targetFactory.getID());
-                    }
+            List<AbstractUnit> nearbyFactories = senseNearbyFriendlies(3, UnitType.Factory);
+            ArrayList<MapLocation> nearbyFactoriesLoc = new ArrayList<>();
+            for (AbstractUnit factory : nearbyFactories) {
+                nearbyFactoriesLoc.add(factory.getMapLocation());
+            }
+            // for each direction, find the first availabile spot for a factory.
+            for (Direction dir : dirs) {
+                if (canBlueprint(UnitType.Factory, dir)
+                        && !Utils.isAnyAdjacent(nearbyFactoriesLoc, myMapLoc.add(dir))) {
+                    println("Blueprinting: " + UnitType.Factory + " towards " + dir);
+                    targetFactory = (AbstractFactory) blueprint(UnitType.Factory, dir);
+                    assignFactory(targetFactory.getID());
+                    break;
                 }
             }
+        }
+
+        if (!hasActed() && turn >= 200 && gc.karbonite() >= 200) {
+            List<AbstractUnit> nearbyFactories = senseNearbyFriendlies(2, UnitType.Factory);
+            // TODO: blueprint rockets
         }
 
         if (targetFactory == null) {
