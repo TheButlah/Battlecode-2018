@@ -3,8 +3,6 @@ package org.battlecode.bc18.api;
 import bc.*;
 import org.battlecode.bc18.util.Utils;
 
-import java.util.ArrayList;
-
 import static org.battlecode.bc18.util.Utils.gc;
 
 public abstract class AbstractWorker extends AbstractRobot {
@@ -161,29 +159,4 @@ public abstract class AbstractWorker extends AbstractRobot {
         assert unit.unitType() == UnitType.Worker;
     }
 
-    public ArrayList<MapLocation> senseNearbyKarbonite(MapLocation here, int senseRange) {
-        int x = here.getX();
-        int y = here.getY();
-        Planet planet = here.getPlanet();
-        ArrayList<MapLocation> nearbyKarbonite = new ArrayList<>();
-        senseRange = (int)Math.sqrt(senseRange);
-        for (int r = y - senseRange; r <= y + senseRange; ++r) {
-            if (r < 0 || r > Utils.earthHeight) {
-                continue;
-            }
-            for (int c = x - senseRange; c <= x + senseRange; ++c) {
-                if (c < 0 || c > Utils.earthWidth) {
-                    continue;
-                }
-                try {
-                    MapLocation loc = new MapLocation(planet, c, r);
-                    if (gc.karboniteAt(loc) > 0) {
-                        nearbyKarbonite.add(loc);
-                    }
-                }
-                catch (Exception e) { }
-            }
-        }
-        return nearbyKarbonite;
-    }
 }

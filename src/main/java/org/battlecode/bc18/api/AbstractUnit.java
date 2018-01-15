@@ -7,6 +7,7 @@ import bc.MapLocation;
 import bc.Team;
 import bc.Unit;
 import bc.UnitType;
+import bc.VecMapLocation;
 import bc.VecUnit;
 import bc.VecUnitID;
 import bc.bc;
@@ -350,6 +351,29 @@ public abstract class AbstractUnit {
     /** Gets the health of the unit */
     public int getHealth() {
         return (int) getAsUnit().health();
+    }
+
+
+    /**
+     * Gets the locations that contain karbonite within some distance of a location
+     * @param here The location around which to search
+     * @param senseRange The distance to look (in units squared)
+     * @return ArrayList of MapLocations which contain karbonite
+     */
+    public ArrayList<MapLocation> senseNearbyKarbonite(MapLocation here, int senseRange) {
+        ArrayList<MapLocation> nearbyKarbonite = new ArrayList<>();
+        VecMapLocation locs = gc.allLocationsWithin(here, senseRange);
+        MapLocation loc;
+        for(int i = 0; i < locs.size(); i++) {
+            try {
+                loc = locs.get(i);
+                if (gc.karboniteAt(loc) > 0) {
+                    nearbyKarbonite.add(loc);
+                }
+            }
+            catch (Exception e) { }
+        }
+        return nearbyKarbonite;
     }
 
     /** Whether the unit is dead or not. */
