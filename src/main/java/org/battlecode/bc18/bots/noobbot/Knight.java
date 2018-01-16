@@ -44,26 +44,28 @@ public class Knight extends AKnight {
         if (hasTarget() && !Utils.gc.canSenseUnit(target.id())) {
             target = null;
         }
-        // Get closest enemy MyUnit
-        Unit closestUnit = null;
-        int closestUnitDist = Integer.MAX_VALUE;
+        if (!hasTarget() || isAttackReady() || isJavelinReady()) {
+            // Get closest enemy MyUnit
+            Unit closestUnit = null;
+            int closestUnitDist = Integer.MAX_VALUE;
 
-        //startTime = System.currentTimeMillis();
-        // Direct API access to GameController for performance
-        VecUnit nearbyEnemies = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, getVisionRange(), Utils.OTHER_TEAM);
-        for (int i = 0; i < nearbyEnemies.size(); ++i) {
-            Unit enemy = nearbyEnemies.get(i);
-            int distance = (int) enemy.location().mapLocation().distanceSquaredTo(myMapLoc);
-            if (distance < closestUnitDist) {
-                closestUnit = enemy;
-                closestUnitDist = distance;
+            //startTime = System.currentTimeMillis();
+            // Direct API access to GameController for performance
+            VecUnit nearbyEnemies = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, getVisionRange(), Utils.OTHER_TEAM);
+            for (int i = 0; i < nearbyEnemies.size(); ++i) {
+                Unit enemy = nearbyEnemies.get(i);
+                int distance = (int) enemy.location().mapLocation().distanceSquaredTo(myMapLoc);
+                if (distance < closestUnitDist) {
+                    closestUnit = enemy;
+                    closestUnitDist = distance;
+                }
             }
+            if (closestUnit != null) {
+                target = closestUnit;
+            }
+            //time1 += System.currentTimeMillis() - startTime;
+            //System.out.println("time 1: " + time1);
         }
-        if (closestUnit != null) {
-            target = closestUnit;
-        }
-        //time1 += System.currentTimeMillis() - startTime;
-        //System.out.println("time 1: " + time1);
 
         if (isMoveReady()) {
             boolean moved = false;
@@ -124,7 +126,7 @@ public class Knight extends AKnight {
             }
         }
 
-        if (hasTarget()) {
+        if (hasTarget() && (isAttackReady() || isJavelinReady())) {
             // if we can attack the target, attack, with javelin as backup
             if (canAttack(target)) {
                 attack(target);
