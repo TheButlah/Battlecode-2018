@@ -14,6 +14,8 @@ import bc.Unit;
 
 import org.battlecode.bc18.util.Utils;
 
+import com.lodborg.cache.LRUCache;
+
 
 /**
  * Path Finding Algorithm for Grid-like Graph.
@@ -31,8 +33,7 @@ public class PathFinding {
     private int[][] distance;
     private final PriorityQueue<Node> queue;
     private int[][] weights;
-    private HashMap<String, int[][]> cache;
-    private ArrayList<String> cacheKeys;
+    private LRUCache<String, int[][]> cache;
     private final int MAX_CACHE_SIZE = 100;
 
     public static PathFinding earthPathfinder;
@@ -55,8 +56,7 @@ public class PathFinding {
         if (weights[0].length != cols) {
             throw new IllegalArgumentException("Incorrect number of cols provided in weights!");
         }
-        cache = new HashMap<>();
-        cacheKeys = new ArrayList<>();
+        cache = new LRUCache<>(MAX_CACHE_SIZE);
     }
 
     public void setWeights(PlanetMap terrainMap) {
@@ -90,10 +90,9 @@ public class PathFinding {
 
     public int[][] search(int targetRow, int targetCol) {
         String key = targetRow + "," + targetCol;
-        if (cache.containsKey(key)) {
-            cacheKeys.remove(key);
-            cacheKeys.add(key);
-            return cache.get(key);
+        int[][] cachedResult = cache.get(key);
+        if (cachedResult != null) {
+            return cachedResult;
         }
         queue.clear();
         distance = new int[rows][cols];
@@ -150,11 +149,6 @@ public class PathFinding {
             visit++;
         }
         cache.put(key, distance);
-        cacheKeys.add(key);
-        if (cacheKeys.size() > MAX_CACHE_SIZE) {
-            String removedKey = cacheKeys.remove(0);
-            cache.remove(removedKey);
-        }
         return distance;
     }
 
