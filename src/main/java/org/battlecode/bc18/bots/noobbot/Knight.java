@@ -63,7 +63,6 @@ public class Knight extends AKnight {
             boolean moved = false;
             // If we have a target, move towards it
             if (hasTarget()) {
-                println("target loc: " + target.location().mapLocation());
                 MapLocation targetEnemy = target.location().mapLocation();
                 int[][] distances = PathFinding.earthPathfinder.search(targetEnemy.getY(), targetEnemy.getX());
                 Direction towardsEnemy = PathFinding.moveDirectionToDestination(distances, myMapLoc);
