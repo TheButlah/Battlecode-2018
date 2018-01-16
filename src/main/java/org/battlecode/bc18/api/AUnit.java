@@ -13,6 +13,7 @@ import bc.Unit;
 import bc.bc;
 
 import org.battlecode.bc18.util.Pair;
+import org.battlecode.bc18.util.Utils;
 
 import static org.battlecode.bc18.util.Utils.gc;
 
@@ -120,6 +121,16 @@ public abstract class AUnit implements MyUnit {
         List<MyUnit> result = new ArrayList<>(units.size());
         for (Unit unit : units) result.add(getUnit(unit));
         return result;
+    }
+
+    /** Gets the total number of friendly units */
+    public static int getNumUnits() {
+        return totalUnitCount;
+    }
+
+    /** Gets the number of friendly units of the given type */
+    public static int getNumUnits(UnitType type) {
+        return unitCounts[type.swigValue()];
     }
 
     @Override
@@ -376,6 +387,9 @@ public abstract class AUnit implements MyUnit {
     private boolean isDead;
     private static UnitBuilder builder;
 
+    private static final int[] unitCounts = new int[UnitType.values().length];
+    private static int totalUnitCount;
+
     /**
      * Constructor for AUnit.
      * @exception RuntimeException When unit already exists, has unknown type, doesn't belong to our player, or is dead.
@@ -399,6 +413,8 @@ public abstract class AUnit implements MyUnit {
             throw new RuntimeException("The unit " + unit + " already exists!");
         }
         unitList.add(this);
+        unitCounts[unit.unitType().swigValue()]++;
+        totalUnitCount++;
     }
 
     /**
@@ -433,8 +449,11 @@ public abstract class AUnit implements MyUnit {
      */
     void informOfDeath() {
         assert !gc.canSenseUnit(getID()); //Test to see if its dead
+        UnitType type = getType();
         isDead = true;
         units.remove(getID());
+        unitCounts[type.swigValue()]--;
+        totalUnitCount--;
         onDeath();
     }
 
