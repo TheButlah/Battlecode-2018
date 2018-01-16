@@ -6,8 +6,17 @@ import bc.VecUnit;
 import org.battlecode.bc18.util.Utils;
 
 import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * Manages the targets of our army. It achieves this by keeping track of a small number of "centroids"
+ * that represent the center of mass of the enemy forces. These centroids are initialized at the start
+ * to be the starting locations of the enemy. These centroids are updated any time we sense an enemy,
+ * and they essentially are inspired by K-means clustering. Any time we call `updateCentroids()`, we
+ * find the centroid closest to the new point and move it towards the midpoint between it and the new
+ * point. The further the centroid and new point are, the less we move towards the midpoint.
+ *
+ * @author Ryan Butler
+ */
 public class TargetManager {
 
     /**
@@ -18,9 +27,14 @@ public class TargetManager {
 
     /** `K` centers of enemy mass */
     private final int K;
+
     /** Centroid positions. Shaped (K,2) where last dim is X and Y*/
     private final float[][] centroids;
 
+    /** Constructs a TargetManager.
+     * @param startingUnits The initial starting units. Will use to compute centroid locations.
+     * @param numCentroids The number of centroids to use.
+     */
     public TargetManager(VecUnit startingUnits, int numCentroids) {
         assert numCentroids > 0;
         this.K = numCentroids;
@@ -67,7 +81,14 @@ public class TargetManager {
                 updateCentroids(loc.getX(), loc.getY());
             }
         }
-        //This would be if numUnits == K == i, which means we are good to go!
+        //This would be if numUnits == K == i, which means we are finished!
+    }
+
+    /** Constructs a TargetManager.
+     * @param startingUnits The initial starting units. Will use to compute centroid locations.
+     */
+    public TargetManager(VecUnit startingUnits) {
+        this(startingUnits, 3);
     }
 
     /**
