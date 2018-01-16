@@ -19,6 +19,7 @@ public final class Utils {
     public static final Planet PLANET;
 
     public static final Team TEAM;
+    public static final Team OTHER_TEAM;
 
     static {
         gc = new GameController();
@@ -28,6 +29,7 @@ public final class Utils {
         MAP_WIDTH = (int) EARTH_START.getWidth();
         MAP_HEIGHT = (int) EARTH_START.getHeight();
         TEAM = gc.team();
+        OTHER_TEAM = TEAM == Team.Red ? Team.Blue : Team.Red;
     }
 
     public static boolean toBool(short x) {

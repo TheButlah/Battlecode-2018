@@ -186,13 +186,13 @@ public abstract class AUnit implements MyUnit {
         assert radius <= getVisionRange();
 
         VecUnit vec = (type == null) ?
-            gc.senseNearbyUnits(getMapLocation(), radius) :
+            gc.senseNearbyUnitsByTeam(getMapLocation(), radius, Utils.OTHER_TEAM) :
             gc.senseNearbyUnitsByType(getMapLocation(), radius, type);
 
         ArrayList<Unit> enemyUnits = new ArrayList<>((int) vec.size());
         for (int i=0; i<vec.size(); i++) {
             Unit unit = vec.get(i);
-            if (unit.team() != gc.team()) enemyUnits.add(unit);
+            if (unit.team() == Utils.OTHER_TEAM) enemyUnits.add(unit);
         }
         return enemyUnits;
     }
@@ -218,13 +218,13 @@ public abstract class AUnit implements MyUnit {
         assert radius <= getVisionRange();
 
         VecUnit vec = (type == null) ?
-            gc.senseNearbyUnits(getMapLocation(), radius) :
+            gc.senseNearbyUnitsByTeam(getMapLocation(), radius, Utils.TEAM) :
             gc.senseNearbyUnitsByType(getMapLocation(), radius, type);
 
         ArrayList<MyUnit> myUnits = new ArrayList<>((int) vec.size());
         for (int i=0; i<vec.size(); i++) {
             Unit unit = vec.get(i);
-            if (unit.team() == gc.team()) myUnits.add(getUnit(unit));
+            if (unit.team() == Utils.TEAM) myUnits.add(getUnit(unit));
         }
         return myUnits;
     }

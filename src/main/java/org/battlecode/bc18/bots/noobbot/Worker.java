@@ -21,7 +21,8 @@ import bc.Unit;
 import bc.UnitType;
 
 public class Worker extends AWorker {
-
+    //static int time1, time2, time3, time4, time5, time6, time7;
+    //static long startTime;
 
     /**
      * A mapping of structures to numbers of workers assigned to each structure
@@ -63,6 +64,7 @@ public class Worker extends AWorker {
         }
 
         if (turn == 1 || gc.karbonite() >= 300) {
+            //startTime = System.currentTimeMillis();
             List<MyUnit> nearbyFactories = senseNearbyFriendlies(3, UnitType.Factory);
             ArrayList<MapLocation> nearbyFactoriesLoc = new ArrayList<>();
             for (MyUnit factory : nearbyFactories) {
@@ -77,9 +79,12 @@ public class Worker extends AWorker {
                     break;
                 }
             }
+            //time1 += System.currentTimeMillis() - startTime;
+            //System.out.println("time 1: " + time1);
         }
 
         if (!hasActed() && turn >= 200 && gc.karbonite() >= 200) { // TODO: balance number of factories and rockets
+            //startTime = System.currentTimeMillis();
             List<MyUnit> nearbyFactories = senseNearbyFriendlies(3, UnitType.Factory);
             List<MyUnit> nearbyRockets = senseNearbyFriendlies(3, UnitType.Rocket);
             ArrayList<MapLocation> nearbyStructuresLoc = new ArrayList<>();
@@ -97,9 +102,12 @@ public class Worker extends AWorker {
                     break;
                 }
             }
+            //time2 += System.currentTimeMillis() - startTime;
+            //System.out.println("time 2: " + time2);
         }
 
         if (targetStructure == null) {
+            //startTime = System.currentTimeMillis();
             List<MyUnit> nearbyStructures = senseNearbyFriendlies(UnitType.Factory);
             nearbyStructures.addAll(senseNearbyFriendlies(UnitType.Rocket));
             MyStructure closestStructure = null;
@@ -120,10 +128,13 @@ public class Worker extends AWorker {
             if (targetStructure != null) {
                 assignStructure(targetStructure);
             }
+            //time3 += System.currentTimeMillis() - startTime;
+            //System.out.println("time 3: " + time3);
         }
 
         if (isMoveReady()) {
             if (targetStructure != null) {
+                //startTime = System.currentTimeMillis();
                 // Move towards target structure
                 MapLocation structureLoc = targetStructure.getMapLocation();
                 int[][] distances = PathFinding.earthPathfinder.search(structureLoc.getY(),
@@ -132,7 +143,10 @@ public class Worker extends AWorker {
                 if (towardsStructure != Direction.Center && isAccessible(towardsStructure)) {
                     move(towardsStructure);
                 }
+                //time4 += System.currentTimeMillis() - startTime;
+                //System.out.println("time 4: " + time4);
             } else {
+                //startTime = System.currentTimeMillis();
                 //No target structure, so look for nearby karbonite
                 List<Pair<MapLocation, Integer>> deposits = senseNearbyKarbonite();
                 if (deposits.size() != 0) {
@@ -157,6 +171,8 @@ public class Worker extends AWorker {
                         }
                     }
                 }
+                //time5 += System.currentTimeMillis() - startTime;
+                //System.out.println("time 5: " + time5);
             }
         }
 
@@ -168,6 +184,7 @@ public class Worker extends AWorker {
             boolean structureBuilt = targetStructure.isBuilt();
             boolean needsRepair = targetStructure.getHealth() < targetStructure.getMaxHealth();
             if (!structureBuilt || needsRepair) {
+                //startTime = System.currentTimeMillis();
                 // replicate if factory not yet built or factory damaged
                 List<MyUnit> nearbyWorkers = senseNearbyFriendlies(UnitType.Worker);
                 if (nearbyWorkers.size() < 7) {
@@ -194,6 +211,8 @@ public class Worker extends AWorker {
                     repair(targetStructure);
                     return;
                 }
+                //time6 += System.currentTimeMillis() - startTime;
+                //System.out.println("time 6: " + time6);
             }
             else {
                 // De-assign worker from factory so he can explore the map
@@ -204,6 +223,7 @@ public class Worker extends AWorker {
             }
         }
 
+        //startTime = System.currentTimeMillis();
         // if can see Karbonite, mine it
         for (Direction dir : Utils.dirs) {
             if (canHarvest(dir)) {
@@ -212,6 +232,8 @@ public class Worker extends AWorker {
                 return;
             }
         }
+        //time7 += System.currentTimeMillis() - startTime;
+        //System.out.println("time 7: " + time7);
     }
 
     @Override

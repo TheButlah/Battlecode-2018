@@ -1,7 +1,5 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import java.util.List;
-
 import org.battlecode.bc18.PathFinding;
 import org.battlecode.bc18.api.AKnight;
 import org.battlecode.bc18.util.Utils;
@@ -10,9 +8,12 @@ import bc.Direction;
 import bc.MapLocation;
 import bc.Unit;
 import bc.UnitType;
+import bc.VecUnit;
 
 public class Knight extends AKnight {
 
+    //static int time1, time2, time3, time4;
+    //static long startTime;
     private Unit target = null; //Although this doesn't update, it will allow us to go to last seen spot.
     private int spawnTargetSeed;
 
@@ -47,8 +48,11 @@ public class Knight extends AKnight {
         Unit closestUnit = null;
         int closestUnitDist = Integer.MAX_VALUE;
 
-        List<Unit> nearbyEnemies = senseNearbyEnemies();
-        for (Unit enemy : nearbyEnemies) {
+        //startTime = System.currentTimeMillis();
+        // Direct API access to GameController for performance
+        VecUnit nearbyEnemies = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, getVisionRange(), Utils.OTHER_TEAM);
+        for (int i = 0; i < nearbyEnemies.size(); ++i) {
+            Unit enemy = nearbyEnemies.get(i);
             int distance = (int) enemy.location().mapLocation().distanceSquaredTo(myMapLoc);
             if (distance < closestUnitDist) {
                 closestUnit = enemy;
@@ -58,11 +62,14 @@ public class Knight extends AKnight {
         if (closestUnit != null) {
             target = closestUnit;
         }
+        //time1 += System.currentTimeMillis() - startTime;
+        //System.out.println("time 1: " + time1);
 
         if (isMoveReady()) {
             boolean moved = false;
             // If we have a target, move towards it
             if (hasTarget()) {
+                //startTime = System.currentTimeMillis();
                 MapLocation targetEnemy = target.location().mapLocation();
                 int[][] distances = PathFinding.earthPathfinder.search(targetEnemy.getY(), targetEnemy.getX());
                 Direction towardsEnemy = PathFinding.moveDirectionToDestination(distances, myMapLoc);
@@ -71,8 +78,11 @@ public class Knight extends AKnight {
                     move(towardsEnemy);
                     moved = true;
                 }
+                //time2 += System.currentTimeMillis() - startTime;
+                //System.out.println("time 2: " + time2);
             }
             else if (Main.enemySpawns.size() != 0) { // Otherwise, we move towards the enemy spawn
+                //startTime = System.currentTimeMillis();
                 // TODO: this assumes the unit is on earth
                 MapLocation spawnTarget = Main.enemySpawns.get(spawnTargetSeed % Main.enemySpawns.size());
                 if (spawnTarget.equals(myMapLoc)) {
@@ -93,9 +103,12 @@ public class Knight extends AKnight {
                         moved = true;
                     }
                 }
+                //time3 += System.currentTimeMillis() - startTime;
+                //System.out.println("time 3: " + time3);
             }
             // If we haven't yet moved, move randomly
             if (!moved) {
+                //startTime = System.currentTimeMillis();
                 int offset = Utils.rand.nextInt(Utils.dirs.length);
                 for (int i = 0; i < Utils.dirs.length; i++) {
                     Direction dir = Utils.dirs[(i + offset) % Utils.dirs.length]; //Cycle through based on random offset
@@ -106,6 +119,8 @@ public class Knight extends AKnight {
                         break;
                     }
                 }
+                //time4 += System.currentTimeMillis() - startTime;
+                //System.out.println("time 4: " + time4);
             }
         }
 
