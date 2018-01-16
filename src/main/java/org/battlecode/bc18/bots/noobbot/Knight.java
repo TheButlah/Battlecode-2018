@@ -60,8 +60,6 @@ public class Knight extends AKnight {
         }
 
         if (isMoveReady()) {
-            println(Main.enemySpawns.size());
-            println("hasTarget: " + hasTarget());
             boolean moved = false;
             // If we have a target, move towards it
             if (hasTarget()) {
