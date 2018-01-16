@@ -21,6 +21,8 @@ import static org.battlecode.bc18.util.Utils.gc;
 @SuppressWarnings("unused")
 public abstract class AUnit implements MyUnit {
 
+
+
     /** Sets the UnitBuilder that will be used to make units. Should be run at very start. */
     public static void init(UnitBuilder builder) {
         AUnit.builder = builder;
@@ -44,6 +46,11 @@ public abstract class AUnit implements MyUnit {
 
     /** Goes through all our player's units and has them act. Requires `initTurn()` to run first. */
     public static void doTurn() {
+        //TODO: Structures should go first
+        //TODO: before calling act() for structure, call makeUnit() on its newly produced units by
+        //TODO: keeping a Queue of the turn numbers at which units should be ready.
+        //TODO: Peek the queue to see if the turn matches this one, and if it does call makeUnit()
+        //TODO: on last member of garrison
         for (int i = 0; i < unitList.size(); ++i) {
             MyUnit unit = unitList.get(i);
             try { //Avoid breaking the loop leading to instant loss

@@ -14,8 +14,6 @@ import bc.UnitType;
 public class Main {
 
     public static void main(String[] args) {
-        // Connect to the manager, starting the game
-        gc = new GameController();
 
         //Without this, MyUnit cannot form new units
         AUnit.init(new UnitBuilder());

@@ -1,24 +1,34 @@
 package org.battlecode.bc18.util;
 
-import bc.Direction;
-import bc.GameController;
-import bc.MapLocation;
-import bc.PlanetMap;
+import bc.*;
 
 import java.util.List;
 import java.util.Random;
 
 public final class Utils {
-    private Utils() {} //Prevent instantiation
+    //private Utils() {} //Prevent instantiation
+
+    public static final GameController gc;
 
     public static final long SEED = 8675309;
     public static final Random rand = new Random(SEED);
 
     public static final Direction[] dirs = Direction.values();
-    public static int earthWidth;
-    public static int earthHeight;
+    public static final PlanetMap EARTH_START, MARS_START;
+    public static final int MAP_WIDTH, MAP_HEIGHT;
+    public static final Planet PLANET;
 
-    public static GameController gc;
+    public static final Team TEAM;
+
+    static {
+        gc = new GameController();
+        PLANET = gc.planet();
+        EARTH_START = gc.startingMap(Planet.Earth);
+        MARS_START = gc.startingMap(Planet.Mars);
+        MAP_WIDTH = (int) EARTH_START.getWidth();
+        MAP_HEIGHT = (int) EARTH_START.getHeight();
+        TEAM = gc.team();
+    }
 
     public static boolean toBool(short x) {
         return x != 0;
@@ -34,11 +44,6 @@ public final class Utils {
 
     public static boolean toBool(long x) {
         return x != 0;
-    }
-
-    public static void setEarthDims(PlanetMap earthMap) {
-        earthWidth = (int)earthMap.getWidth();
-        earthHeight = (int)earthMap.getHeight();
     }
 
     public static MapLocation closest(List<MapLocation> locations, MapLocation here) {

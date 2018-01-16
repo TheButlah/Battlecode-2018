@@ -21,7 +21,6 @@ public interface MyFactory extends MyStructure {
      * Starts producing the robot of the given type.
      * NOTE: Does not check to see if it can produce it first.
      * @param type The UnitType of the robot to produce. Must be a robot.
-     * @return The robot produced. Currently will always be null until fixed
      */
-    MyRobot produceRobot(UnitType type);
+    void produceRobot(UnitType type);
 }

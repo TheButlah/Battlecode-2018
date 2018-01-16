@@ -21,8 +21,6 @@ public class Factory extends AFactory {
     public void act() {
         //System.out.println("Workers assigned to me: " + workersPerFactory.get(getID()));
         // Since we cant maintain the invariant for the units HashMap, manually add in units to ensure invariant.
-        VecUnitID vec = getAsUnit().structureGarrison();
-        getUnits(vec); //Add the
 
         // make and place knights until you can't :D
         List<MyUnit> nearbyWorkers = senseNearbyFriendlies(UnitType.Worker);

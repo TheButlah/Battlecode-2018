@@ -69,8 +69,7 @@ public class Knight extends AKnight {
                     move(towardsEnemy);
                     moved = true;
                 }
-            }
-            else { // Otherwise, we move towards the enemy spawn
+            } else { // Otherwise, we move towards the enemy spawn
                 // TODO: this assumes the unit is on earth
                 if (Utils.gc.round() > 50) {
                     PlanetMap initialMap = Utils.gc.startingMap(Planet.Earth);

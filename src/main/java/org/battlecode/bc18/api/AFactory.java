@@ -13,13 +13,9 @@ public abstract class AFactory extends AStructure implements MyFactory {
     }
 
     @Override
-    public MyRobot produceRobot(UnitType type) {
+    public void produceRobot(UnitType type) {
         assert canProduceRobot(type);
         gc.produceRobot(getID(), type);
-        System.out.println("Garrison after production: ");
-        getGarrison().forEach(System.out::print);
-        //return (MyStructure) MyUnit.makeUnit(unit);*/
-        return null; //TODO: Figure out how to get the MyUnit object of a robot being built.
     }
 
 
