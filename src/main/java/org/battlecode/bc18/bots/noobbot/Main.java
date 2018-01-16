@@ -54,8 +54,14 @@ public class Main {
         while (true) {
             System.out.println("Current round: " + gc.round());
             try{
-                AUnit.initTurn();
-                AUnit.doTurn();
+                //System.out.println(gc.getTimeLeftMs());
+                if (gc.getTimeLeftMs() > 300) {
+                    // Don't trigger timeout!!
+                    // We want to stay alive for as long as possible, in case the opponent times out
+                    // and we can steal the victory
+                    AUnit.initTurn();
+                    AUnit.doTurn();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
