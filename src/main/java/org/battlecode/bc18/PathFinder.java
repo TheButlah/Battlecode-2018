@@ -1,16 +1,13 @@
 package org.battlecode.bc18;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.PriorityQueue;
 
 import bc.Direction;
 import bc.MapLocation;
 import bc.Planet;
 import bc.PlanetMap;
-import bc.Unit;
 
 import org.battlecode.bc18.util.Utils;
 
@@ -23,44 +20,53 @@ import com.lodborg.cache.LRUCache;
  * Time efficiency is around 25 ms for an 80 * 80 grid.
  *
  * @author Jared Junyoung Lim
+ * @author Chesley Tan
  */
-public class PathFinding {
+public class PathFinder {
 
-    public static final int INFINITY = Integer.MAX_VALUE / 2 - 1;
+    public static final int INFINITY = 1_000; //This is longer than the longest path through the grid
     private final int rows;
     private final int cols;
     private final boolean[][] visited;
     private int[][] distance;
     private final PriorityQueue<Node> queue;
     private int[][] weights;
-    private LRUCache<String, int[][]> cache;
+    private final LRUCache<String, int[][]> cache;
     private final int MAX_CACHE_SIZE = 100;
 
-    public static PathFinding earthPathfinder;
+    public static PathFinder earthPathfinder;
 
-    public PathFinding(int rows, int cols) {
-        this.rows = rows;
-        this.cols = cols;
+    public PathFinder(int[][] weights) {
+        this.rows = weights.length;
+        this.cols = weights[0].length;
+        cache = new LRUCache<>(MAX_CACHE_SIZE);
         visited = new boolean[rows][cols];
-        queue = new PriorityQueue<>(Comparator.comparingInt(o -> distance[o.r][o.c]));
+        queue = new PriorityQueue<>(Comparator.comparingInt(node -> distance[node.r][node.c]));
+        setWeights(weights);
+    }
+
+    public PathFinder(PlanetMap map) {
+        this.rows = (int) map.getHeight();
+        this.cols = (int) map.getHeight();
+        cache = new LRUCache<>(MAX_CACHE_SIZE);
+        visited = new boolean[rows][cols];
+        queue = new PriorityQueue<>(Comparator.comparingInt(node -> distance[node.r][node.c]));
+        setWeights(map);
     }
 
     /**
      * Precondition: All weights should be at most {@value #INFINITY}}, otherwise integer overflow may occur
      */
     public void setWeights(int[][] weights) {
+        assert weights.length == rows;
+        assert weights[0].length == cols;
         this.weights = weights;
-        if (weights.length != rows) {
-            throw new IllegalArgumentException("Incorrect number of rows provided in weights!");
-        }
-        if (weights[0].length != cols) {
-            throw new IllegalArgumentException("Incorrect number of cols provided in weights!");
-        }
-        cache = new LRUCache<>(MAX_CACHE_SIZE);
+        cache.evictAll();
     }
 
-    public void setWeights(PlanetMap terrainMap) {
-        int[][] weights = this.weights;
+    private void setWeights(PlanetMap terrainMap) {
+        assert terrainMap.getHeight() == rows;
+        assert terrainMap.getWidth() == cols;
         if (weights == null) {
             weights = new int[rows][cols];
         }
@@ -72,22 +78,22 @@ public class PathFinding {
                      ? 1 : INFINITY;
             }
         }
-        setWeights(weights);
+        cache.evictAll();
     }
 
     public static void main(String[] args) {
         // execution time calculation
         int[][] testWeights = WEIGHT2;
-        PathFinding pf = new PathFinding(testWeights.length, testWeights[0].length);
+        PathFinder pf = new PathFinder(testWeights);
         long start = System.nanoTime();
-        pf.setWeights(testWeights);
         int[][] distances = pf.search(testWeights.length - 1, 0);
         System.out.println(Arrays.deepToString(distances)); // search
-        System.out.println(PathFinding.moveDirectionToDestination(distances, new MapLocation(Planet.Earth, testWeights[0].length - 1, 0)));
+        System.out.println(PathFinder.directionToDestination(distances, new MapLocation(Planet.Earth, testWeights[0].length - 1, 0)));
         long end = System.nanoTime();
         System.out.println("exe time is " + (end - start) / 1000000d + " ms");
     }
 
+    /** Returns grid of distances to target location */
     public int[][] search(int targetRow, int targetCol) {
         String key = targetRow + "," + targetCol;
         int[][] cachedResult = cache.get(key);
@@ -95,6 +101,8 @@ public class PathFinding {
             return cachedResult;
         }
         queue.clear();
+
+        //Fill distance array with INFINITY
         distance = new int[rows][cols];
         for (int[] row : distance) {
             Arrays.fill(row, INFINITY);
@@ -102,6 +110,8 @@ public class PathFinding {
         for (boolean[] row : visited) {
             Arrays.fill(row, false);
         }
+
+
         distance[targetRow][targetCol] = weights[targetRow][targetCol];
         queue.add(new Node(targetRow, targetCol));
 
@@ -187,37 +197,31 @@ public class PathFinding {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof Node)) return false;
             if (obj == this) return true;
+            if (!(obj instanceof Node)) return false;
 
             Node n = (Node) obj;
             return n.r == this.r && n.c == this.c;
         }
     }
 
-    public static void initializeEarthPathfinder(PlanetMap earthMap) {
-        earthPathfinder = new PathFinding((int)earthMap.getHeight(), (int)earthMap.getWidth());
-        earthPathfinder.setWeights(earthMap);
-    }
-
-    public static Direction moveDirectionToDestination(int[][] distances, MapLocation start) {
+    /** Use to find the optimal non-blocked direction to move, given a solved array of distances */
+    public static Direction directionToDestination(int[][] distances, MapLocation myLoc) {
         Direction optimalDirection = Direction.Center;
         int optimalDist = INFINITY;
         int rows = distances.length;
         int cols = distances[0].length;
-        for (Direction dir : Direction.values()) {
-            MapLocation location = start.add(dir);
+        for (Direction dir : Utils.dirs) {
+            MapLocation location = myLoc.add(dir);
             int x = location.getX();
             int y = location.getY();
-            if (0 <= x && x < cols && 0 <= y && y < rows) {
-                try {
-                    // Allow movement to starting location (i.e. no movement)
+            if (x >= 0 && x < cols && y >= 0 && y < rows) {
+                // Allow movement to starting location (i.e. no movement)
+                if (!location.equals(myLoc)){
                     // Disallow movement to any occupied coordinate
-                    if (!location.equals(start) && Utils.gc.senseUnitAtLocation(location) != null) {
-                        continue;
-                    }
+                    assert Utils.gc.canSenseLocation(location);
+                    if (Utils.gc.hasUnitAtLocation(location)) continue;
                 }
-                catch (Exception e) { }
                 if (distances[y][x] < optimalDist) {
                     optimalDist = distances[y][x];
                     optimalDirection = dir;

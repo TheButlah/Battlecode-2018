@@ -1,6 +1,6 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import org.battlecode.bc18.PathFinding;
+import org.battlecode.bc18.PathFinder;
 import org.battlecode.bc18.api.AKnight;
 import org.battlecode.bc18.util.Utils;
 
@@ -73,8 +73,8 @@ public class Knight extends AKnight {
             if (hasTarget()) {
                 //startTime = System.currentTimeMillis();
                 MapLocation targetEnemy = target.location().mapLocation();
-                int[][] distances = PathFinding.earthPathfinder.search(targetEnemy.getY(), targetEnemy.getX());
-                Direction towardsEnemy = PathFinding.moveDirectionToDestination(distances, myMapLoc);
+                int[][] distances = PathFinder.earthPathfinder.search(targetEnemy.getY(), targetEnemy.getX());
+                Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
                 //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
                 if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
                     move(towardsEnemy);
@@ -97,8 +97,8 @@ public class Knight extends AKnight {
                     }
                 }
                 if (Utils.gc.round() > 50 && spawnTarget != null) {
-                    int[][] distances = PathFinding.earthPathfinder.search(spawnTarget.getY(), spawnTarget.getX());
-                    Direction towardsEnemy = PathFinding.moveDirectionToDestination(distances, myMapLoc);
+                    int[][] distances = PathFinder.earthPathfinder.search(spawnTarget.getY(), spawnTarget.getX());
+                    Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
                     //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
                     if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
                         move(towardsEnemy);

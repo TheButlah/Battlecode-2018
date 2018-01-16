@@ -19,6 +19,8 @@ import java.util.ArrayList;
  */
 public class TargetManager {
 
+    public static TargetManager tman;
+
     /**
      * The base amount by which we resist moving centroids.
      * If this is 0, then we would move the centroid to the midpoint of prev loc and new point.
@@ -112,7 +114,7 @@ public class TargetManager {
         }
 
         //factor scales the adjustment to be less than the midpoint distance
-        float factor = 1/(2+closestDistSq*BASE_RESIST); //  for 1D, this would be dx/(2+dx*dx/constant)
+        float factor = 1/(2+closestDistSq*BASE_RESIST); //  for 1D, this would be x += dx/(2+dx*dx/constant)
         centroids[closest][0] += closestDX * factor;
         centroids[closest][1] += closestDY * factor;
         return closest;

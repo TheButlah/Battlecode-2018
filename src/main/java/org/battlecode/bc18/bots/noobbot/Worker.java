@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.battlecode.bc18.PathFinding;
+import org.battlecode.bc18.PathFinder;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.AWorker;
 import org.battlecode.bc18.api.MyStructure;
@@ -133,9 +133,9 @@ public class Worker extends AWorker {
                 //startTime = System.currentTimeMillis();
                 // Move towards target structure
                 MapLocation structureLoc = targetStructure.getMapLocation();
-                int[][] distances = PathFinding.earthPathfinder.search(structureLoc.getY(),
+                int[][] distances = PathFinder.earthPathfinder.search(structureLoc.getY(),
                         structureLoc.getX());
-                Direction towardsStructure = PathFinding.moveDirectionToDestination(distances, myMapLoc);
+                Direction towardsStructure = PathFinder.directionToDestination(distances, myMapLoc);
                 if (towardsStructure != Direction.Center && isAccessible(towardsStructure)) {
                     move(towardsStructure);
                 }
@@ -148,10 +148,10 @@ public class Worker extends AWorker {
                 if (deposits.size() != 0) {
                     Pair<MapLocation, Integer> targetDeposit = Utils.closestPair(deposits, myMapLoc);
                     MapLocation targetLoc = targetDeposit.getFirst();
-                    int[][] distances = PathFinding.earthPathfinder.search(
+                    int[][] distances = PathFinder.earthPathfinder.search(
                         targetLoc.getY(),
                         targetLoc.getX());
-                    Direction towardsKarbonite = PathFinding.moveDirectionToDestination(distances, myMapLoc);
+                    Direction towardsKarbonite = PathFinder.directionToDestination(distances, myMapLoc);
                     if (towardsKarbonite != Direction.Center && isAccessible(towardsKarbonite)) {
                         move(towardsKarbonite);
                     }

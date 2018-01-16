@@ -4,15 +4,14 @@ import static org.battlecode.bc18.util.Utils.gc;
 
 import java.util.ArrayList;
 
-import org.battlecode.bc18.PathFinding;
+import org.battlecode.bc18.PathFinder;
+import org.battlecode.bc18.TargetManager;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.util.Utils;
 
-import bc.GameController;
 import bc.MapLocation;
 import bc.Planet;
 import bc.PlanetMap;
-import bc.Team;
 import bc.Unit;
 import bc.UnitType;
 import bc.VecUnit;
@@ -37,9 +36,10 @@ public class Main {
 
         if (gc.planet() == Planet.Earth) {
             // Get enemy spawns
-            enemySpawns = new ArrayList<>();
+            enemySpawns = new ArrayList<>(3);
             PlanetMap initialMap = Utils.EARTH_START;
             VecUnit initialUnits = initialMap.getInitial_units();
+            TargetManager.tman = new TargetManager(initialUnits);
             for (int i = 0; i < initialUnits.size(); ++i) {
                 Unit unit = initialUnits.get(i);
                 if (unit.team() != Utils.TEAM) {
@@ -47,8 +47,8 @@ public class Main {
                 }
             }
 
-            // Set pathfinding weights
-            PathFinding.initializeEarthPathfinder(initialMap);
+            // Initialize Pathfinder
+            PathFinder.earthPathfinder = new PathFinder(Utils.EARTH_START);
         }
 
         while (true) {
