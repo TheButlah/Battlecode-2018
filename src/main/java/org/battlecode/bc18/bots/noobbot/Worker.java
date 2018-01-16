@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.battlecode.bc18.PathFinding;
+import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.AWorker;
 import org.battlecode.bc18.api.MyStructure;
 import org.battlecode.bc18.api.MyUnit;
@@ -65,15 +66,14 @@ public class Worker extends AWorker {
 
         if (turn == 1 || gc.karbonite() >= 300) {
             //startTime = System.currentTimeMillis();
-            List<MyUnit> nearbyFactories = senseNearbyFriendlies(3, UnitType.Factory);
-            ArrayList<MapLocation> nearbyFactoriesLoc = new ArrayList<>();
-            for (MyUnit factory : nearbyFactories) {
-                nearbyFactoriesLoc.add(factory.getMapLocation());
+            List<MyStructure> nearbyStructures = getNearbyStructures();
+            ArrayList<MapLocation> nearbyStructuresLoc = new ArrayList<>();
+            for (MyStructure structure : nearbyStructures) {
+                nearbyStructuresLoc.add(structure.getMapLocation());
             }
-            // for each direction, find the first availabile spot for a factory.
             for (Direction dir : dirs) {
                 if (canBlueprint(UnitType.Factory, dir)
-                        && !Utils.isAnyAdjacent(nearbyFactoriesLoc, myMapLoc.add(dir))) {
+                        && !Utils.isAnyWithinDistance(nearbyStructuresLoc, myMapLoc.add(dir), 4)) {
                     targetStructure = (Factory) blueprint(UnitType.Factory, dir);
                     assignStructure(targetStructure);
                     break;
@@ -85,18 +85,14 @@ public class Worker extends AWorker {
 
         if (!hasActed() && turn >= 200 && gc.karbonite() >= 200) { // TODO: balance number of factories and rockets
             //startTime = System.currentTimeMillis();
-            List<MyUnit> nearbyFactories = senseNearbyFriendlies(3, UnitType.Factory);
-            List<MyUnit> nearbyRockets = senseNearbyFriendlies(3, UnitType.Rocket);
+            List<MyStructure> nearbyStructures = getNearbyStructures();
             ArrayList<MapLocation> nearbyStructuresLoc = new ArrayList<>();
-            for (MyUnit factory : nearbyFactories) {
-                nearbyStructuresLoc.add(factory.getMapLocation());
-            }
-            for (MyUnit rocket : nearbyRockets) {
-                nearbyStructuresLoc.add(rocket.getMapLocation());
+            for (MyStructure structure : nearbyStructures) {
+                nearbyStructuresLoc.add(structure.getMapLocation());
             }
             for (Direction dir : dirs) {
                 if (canBlueprint(UnitType.Rocket, dir)
-                        && !Utils.isAnyAdjacent(nearbyStructuresLoc, myMapLoc.add(dir))) {
+                        && !Utils.isAnyWithinDistance(nearbyStructuresLoc, myMapLoc.add(dir), 4)) {
                     targetStructure = (Rocket) blueprint(UnitType.Rocket, dir);
                     assignStructure(targetStructure);
                     break;
@@ -283,5 +279,17 @@ public class Worker extends AWorker {
             }
         }
         return structure;
+    }
+
+    List<MyStructure> getNearbyStructures() {
+        ArrayList<MyStructure> structures = new ArrayList<>();
+        MapLocation myMapLoc = getMapLocation();
+        for (int structureId : workersPerStructure.keySet()) {
+            MyStructure structure = (MyStructure) AUnit.getUnit(structureId);
+            if (myMapLoc.distanceSquaredTo(structure.getMapLocation()) <= 10) {
+                structures.add(structure);
+            }
+        }
+        return structures;
     }
 }

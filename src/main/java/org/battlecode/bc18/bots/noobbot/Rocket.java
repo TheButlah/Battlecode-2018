@@ -22,6 +22,6 @@ public class Rocket extends ARocket {
 
     @Override
     protected void onDeath() {
-
+        Worker.workersPerStructure.remove(getID());
     }
 }

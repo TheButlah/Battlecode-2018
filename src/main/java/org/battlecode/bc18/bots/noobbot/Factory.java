@@ -55,6 +55,6 @@ public class Factory extends AFactory {
 
     @Override
     protected void onDeath() {
-        //TODO: Do this
+        Worker.workersPerStructure.remove(getID());
     }
 }

@@ -84,4 +84,13 @@ public final class Utils {
         return false;
     }
 
+    public static boolean isAnyWithinDistance(List<MapLocation> locations, MapLocation target, int distance) {
+        for (MapLocation loc : locations) {
+            if (loc.distanceSquaredTo(target) <= distance) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
