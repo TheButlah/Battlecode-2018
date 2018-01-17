@@ -13,7 +13,6 @@ import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.util.Utils;
 
 public class Main {
-    public static ArrayList<MapLocation> enemySpawns;
 
     public static void main(String[] args) {
         System.out.println("INITIALIZING MUSK THE DESTROYER - \"MEME MACHINE\" CLASS.");
@@ -50,7 +49,6 @@ public class Main {
                     gc.nextTurn();
                     continue;
                 }
-
                 //Update centroids all at once to avoid units updating one enemy multiple times
                 VecUnit units = gc.units();
                 int numUnits = (int) units.size();
@@ -62,7 +60,7 @@ public class Main {
                     MapLocation mapLoc = loc.mapLocation();
                     tman.updateCentroids(mapLoc.getX(), mapLoc.getY());
                 }
-                //System.out.println(Arrays.deepToString(tman.centroids) + "\n");
+                if (Utils.gc.round() % 10 == 0) System.out.println(Arrays.toString(Knight.tman.centroids));
                 AUnit.initTurn();
                 AUnit.doTurn();
 

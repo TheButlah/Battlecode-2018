@@ -155,7 +155,7 @@ public class TargetManager {
      */
     public boolean markTargetEliminated(float[] targetLoc) {
         //System.out.println("Target Eliminated: " + Arrays.toString(targetLoc));
-        System.out.println("Z: " + Arrays.toString(targetLoc) + "\n");
+        System.out.println("E: " + Arrays.toString(targetLoc) + "\n");
         ArrayList<Integer> closeCentroids = new ArrayList<>(K);
         ArrayList<Integer> farCentroids = new ArrayList<>(K);
         //int indexOfTarget = -1; //We don't know the index yet.
@@ -201,7 +201,8 @@ public class TargetManager {
      * Will become false again when we next call `updateCentroids()`.
      */
     public boolean hasEliminatedAll() {
-        if (hasEliminatedAll) System.out.println("HA + \n");
+        //if (hasEliminatedAll) System.out.println("Has Eliminated All");
+        if (hasEliminatedAll) System.out.println("HEA");
         return hasEliminatedAll;
     }
 
