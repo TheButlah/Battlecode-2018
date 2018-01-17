@@ -24,7 +24,7 @@ public class Knight extends AKnight {
     private Unit target = null; //Although this doesn't update, it will allow us to go to last seen spot.
     /** The macro-strategy (long-term) target. First index is x, second is y. If null, no target. */
     private float[] macroTarget = null;
-    private int macroTargetID;
+    private int macroTargetSeed;
 
     /**
      * Constructor for Knight.
@@ -35,8 +35,7 @@ public class Knight extends AKnight {
         assert unit.unitType() == UnitType.Knight;
         //If needed, assign this based on some rule - for example,
         //groups with fewer members get priority.
-        macroTargetID = Utils.rand.nextInt(tman.numTargets());
-        macroTarget = tman.getTarget(macroTargetID);
+        macroTargetSeed = Utils.rand.nextInt(Integer.MAX_VALUE);
     }
 
     @Override
@@ -56,6 +55,8 @@ public class Knight extends AKnight {
         MapLocation macroLoc = null;
         VecUnit nearbyEnemies = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, getVisionRange(), Utils.OTHER_TEAM);
 
+        // Update macro target
+        macroTarget = tman.getTarget(macroTargetSeed % tman.numTargets());
         //If we are very close to the macro target and there are no enemies, mark it as eliminated
         if (hasMacroTarget()) {
             macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
@@ -75,7 +76,9 @@ public class Knight extends AKnight {
             //startTime = System.currentTimeMillis();
             // Direct API access to GameController for performance
             //Find nearest unit, prioritize all but workers
-            target = Utils.getNearest(nearbyEnemies, myMapLoc, u -> u.unitType() != UnitType.Worker);
+            //target = Utils.getNearest(nearbyEnemies, myMapLoc, u -> u.unitType() != UnitType.Worker);
+            // TODO: we probably need a finer ranking system rather than just excluding workers
+            target = Utils.getNearest(nearbyEnemies, myMapLoc);
             //time1 += System.currentTimeMillis() - startTime;
             //System.out.println("time 1: " + time1);
         }
