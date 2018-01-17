@@ -28,11 +28,16 @@ public class TargetManager {
     /** The minimum distance that the total spread between centroids can be */
     public static final float MIN_SEPARATION = 2;
 
+    /** The random spread of centroids (as a diameter) when they are set directly to a point. */
+    private static final float RAND_SPREAD = 4;
+
     /** `K` centers of enemy mass */
     private final int K;
 
     /** Centroid positions. Shaped (K,2) where last dim is X and Y*/
     private final float[][] centroids;
+
+    private boolean hasEliminatedAll = false;
 
     /** Constructs a TargetManager.
      * @param startingUnits The initial starting units. Will use to compute centroid locations.
@@ -72,10 +77,10 @@ public class TargetManager {
             //Turn sum into avg
             xAvg /= i;
             yAvg /= i;
-            //Fill in remaining centroids with avg
+            //Fill in remaining centroids with avg position, plus random spread.
             for (; i<K; i++) {
-                centroids[i][0] = xAvg;
-                centroids[i][1] = yAvg;
+                centroids[i][0] = xAvg + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
+                centroids[i][1] = yAvg + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
             }
         } else if (numUnits>K) {
             //We have too many units - we have to merge the excess into the centroids
@@ -87,7 +92,8 @@ public class TargetManager {
         //This would be if numUnits == K == i, which means we are finished!
     }
 
-    /** Constructs a TargetManager.
+    /**
+     * Constructs a TargetManager.
      * @param startingUnits The initial starting units. Will use to compute centroid locations.
      */
     public TargetManager(VecUnit startingUnits) {
@@ -96,9 +102,17 @@ public class TargetManager {
 
     /**
      * Updates the centroid locations with a new point.
-     * @return The index of the centroid closest to the point.
      */
-    public int updateCentroids(float x, float y) {
+    public void updateCentroids(float x, float y) {
+        if (hasEliminatedAll) {
+            //Set all centroids directly to new location, with some random spread.
+            for (int i=0; i<K; i++) {
+                centroids[i][0] = x + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
+                centroids[i][1] = y + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
+            }
+            hasEliminatedAll = false;
+            return;
+        }
         int closest = -1; //Index of the closest centroid
         float closestDistSq = Float.MAX_VALUE;
         float closestDX = Float.MAX_VALUE, closestDY = Float.MAX_VALUE;
@@ -118,37 +132,53 @@ public class TargetManager {
         float factor = 1/(2+closestDistSq*BASE_RESIST); //  for 1D, this would be x += dx/(2+dx*dx/constant)
         centroids[closest][0] += closestDX * factor;
         centroids[closest][1] += closestDY * factor;
-        return closest;
     }
 
     /**
      * Call this when we have reached a target but there are no enemies.
      * @param indexOfTarget The index of the target centroid in the array.
+     * @return Whether all targets have been eliminated.
      */
-    public void markTargetEliminated(int indexOfTarget) {
+    public boolean markTargetEliminated(int indexOfTarget) {
         float myX = centroids[indexOfTarget][0];
         float myY = centroids[indexOfTarget][1];
         ArrayList<Integer> closeCentroids = new ArrayList<>(K);
         ArrayList<Integer> farCentroids = new ArrayList<>(K);
-        for (int i = 0; i<K && i!=indexOfTarget; i++) {
+        //Split centroids into near and far
+        for (int i = 0; i<K; i++) {
+            //Dont compare against ourself.
+            if (i == indexOfTarget) continue;
             float dx = Math.abs(centroids[i][0] - myX);
             float dy = Math.abs(centroids[i][1] - myY);
             if (dx+dy < MIN_SEPARATION) closeCentroids.add(i);
             else farCentroids.add(i);
         }
-        //Move close centroids to somewhere "useful"
-        for (int i : closeCentroids) {
-            if (farCentroids.size() > 0) {
+        int numFar = farCentroids.size();
+        if (numFar > 0) {
+            //Far centroids exist, so move halfway to those
+            assert !hasEliminatedAll;
+            int offset = Utils.rand.nextInt(numFar);
+            int i = 0;
+            for (int closeIndex : closeCentroids) {
                 //Pick random far centroid and move halfway to it
-                float[] loc = centroids[Utils.rand.nextInt(farCentroids.size())];
-                centroids[i][0] += (loc[0]-centroids[i][0])/2;
-                centroids[i][1] += (loc[1]-centroids[i][1])/2;
-            } else {
-                //Move centroid to random point on map
-                centroids[i][0] = Utils.rand.nextInt(Utils.MAP_WIDTH);
-                centroids[i][1] = Utils.rand.nextInt(Utils.MAP_HEIGHT);
+                int randIndex = farCentroids.get((i + offset) % numFar);
+                float[] loc = centroids[randIndex];
+                centroids[closeIndex][0] += (loc[0]-centroids[closeIndex][0])/2;
+                centroids[closeIndex][1] += (loc[1]-centroids[closeIndex][1])/2;
+                i++;
             }
+        } else {
+            hasEliminatedAll = true;
         }
+        return hasEliminatedAll;
+    }
+
+    public boolean hasEliminatedAll() {
+        return hasEliminatedAll;
+    }
+
+    public int numTargets() {
+        return K;
     }
 
 }
