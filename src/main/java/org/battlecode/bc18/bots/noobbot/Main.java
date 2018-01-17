@@ -63,9 +63,7 @@ public class Main {
                     MapLocation mapLoc = loc.mapLocation();
                     tman.updateCentroids(mapLoc.getX(), mapLoc.getY());
                 }
-                System.out.println(Arrays.deepToString(tman.centroids) + "\n");
-
-
+                //System.out.println(Arrays.deepToString(tman.centroids) + "\n");
                 AUnit.initTurn();
                 AUnit.doTurn();
 

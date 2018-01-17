@@ -8,18 +8,23 @@ import org.battlecode.bc18.util.Utils;
 
 public class Knight extends AKnight {
 
+    private static short MAX_TURNS_STUCK = 5;
+
     static TargetManager tman;
     static {
         PlanetMap myMap = (Utils.PLANET == Planet.Earth) ? Utils.EARTH_START : Utils.MARS_START;
         tman = new TargetManager(myMap.getInitial_units(), 3);
     }
-    private MapLocation lastLoc = null;
+
+    /** The number of turns we have been unable to move */
+    private short turnsStuck = 0;
 
     //static int time1, time2, time3, time4;
     //static long startTime;
     private Unit target = null; //Although this doesn't update, it will allow us to go to last seen spot.
     /** The macro-strategy (long-term) target. First index is x, second is y. If null, no target. */
     private float[] macroTarget = null;
+    private int macroTargetID;
 
     /**
      * Constructor for Knight.
@@ -30,7 +35,8 @@ public class Knight extends AKnight {
         assert unit.unitType() == UnitType.Knight;
         //If needed, assign this based on some rule - for example,
         //groups with fewer members get priority.
-        macroTarget = tman.getTarget(Utils.rand.nextInt(tman.numTargets()));
+        macroTargetID = Utils.rand.nextInt(tman.numTargets());
+        macroTarget = tman.getTarget(macroTargetID);
     }
 
     @Override
@@ -46,6 +52,7 @@ public class Knight extends AKnight {
         }
 
         MapLocation myMapLoc = getMapLocation();
+
         MapLocation macroLoc = null;
         VecUnit nearbyEnemies = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, getVisionRange(), Utils.OTHER_TEAM);
 
@@ -116,6 +123,12 @@ public class Knight extends AKnight {
                 }
                 //time4 += System.currentTimeMillis() - startTime;
                 //System.out.println("time 4: " + time4);
+            }
+            if (!moved) {
+                turnsStuck++;
+                if (turnsStuck >= MAX_TURNS_STUCK){
+                    //TODO: Tell pathfinders with different macro targets to update weights
+                }
             }
         }
 

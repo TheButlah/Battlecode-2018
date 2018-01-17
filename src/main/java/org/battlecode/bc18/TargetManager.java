@@ -26,7 +26,7 @@ public class TargetManager {
      */
     public static final float BASE_RESIST = 1f/32;
 
-    /** The minimum distance that the total spread between centroids can be */
+    /** The minimum manhattan distance that the total spread between centroids can be */
     public static final float MIN_SEPARATION = 2;
 
     /** The random spread of centroids (as a diameter) when they are set directly to a point. */
@@ -154,7 +154,8 @@ public class TargetManager {
      * @return Whether all targets have been eliminated.
      */
     public boolean markTargetEliminated(float[] targetLoc) {
-        System.out.println("Target Eliminated: " + Arrays.toString(targetLoc));
+        //System.out.println("Target Eliminated: " + Arrays.toString(targetLoc));
+        System.out.println("Z: " + Arrays.toString(targetLoc) + "\n");
         ArrayList<Integer> closeCentroids = new ArrayList<>(K);
         ArrayList<Integer> farCentroids = new ArrayList<>(K);
         //int indexOfTarget = -1; //We don't know the index yet.
@@ -163,8 +164,10 @@ public class TargetManager {
             float[] centroidLoc = centroids[i];
             //targetLoc references the actual subarray in `centroids` so == will work
             if (targetLoc == centroidLoc || Arrays.equals(targetLoc, centroidLoc)) {
-                //indexOfTarget = i;
-                continue; //Dont compare against ourself.
+                //In order to update our location, put it in closeCentroids.
+                closeCentroids.add(i);
+                //Because we know that it should be added, skip the unnecessary calculations.
+                continue;
             }
 
             float dx = Math.abs(centroids[i][0] - targetLoc[0]);
@@ -198,6 +201,7 @@ public class TargetManager {
      * Will become false again when we next call `updateCentroids()`.
      */
     public boolean hasEliminatedAll() {
+        if (hasEliminatedAll) System.out.println("HA + \n");
         return hasEliminatedAll;
     }
 

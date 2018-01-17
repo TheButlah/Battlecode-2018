@@ -36,6 +36,7 @@ public class PathFinder {
 
     public static PathFinder myPlanetPathfinder;
 
+    /** Constructs a PathFinder with the provided weights */
     public PathFinder(int[][] weights) {
         this.rows = weights.length;
         this.cols = weights[0].length;
@@ -45,6 +46,7 @@ public class PathFinder {
         setWeights(weights);
     }
 
+    /** Constructs a PathFinder for the provided map and its terrain */
     public PathFinder(PlanetMap map) {
         this.rows = (int) map.getHeight();
         this.cols = (int) map.getHeight();
@@ -111,7 +113,7 @@ public class PathFinder {
             Arrays.fill(row, false);
         }
 
-
+        //Add starting position to queue
         distance[targetRow][targetCol] = weights[targetRow][targetCol];
         queue.add(new Node(targetRow, targetCol));
 
