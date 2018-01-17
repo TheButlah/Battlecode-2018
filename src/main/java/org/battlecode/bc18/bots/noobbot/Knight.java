@@ -99,14 +99,12 @@ public class Knight extends AKnight {
                 //System.out.println("time 2: " + time2);
             } else if (hasMacroTarget()) {
                 //Attack our macro target
-                if (Utils.gc.round() > 50 && macroTarget != null) {
-                    int[][] distances = PathFinder.myPlanetPathfinder.search(macroLoc.getY(), macroLoc.getX());
-                    Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
-                    //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
-                    if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
-                        move(towardsEnemy);
-                        moved = true;
-                    }
+                int[][] distances = PathFinder.myPlanetPathfinder.search(macroLoc.getY(), macroLoc.getX());
+                Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
+                //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
+                if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
+                    move(towardsEnemy);
+                    moved = true;
                 }
                 //time3 += System.currentTimeMillis() - startTime;
                 //System.out.println("time 3: " + time3);
