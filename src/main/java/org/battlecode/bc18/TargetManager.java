@@ -6,6 +6,7 @@ import bc.VecUnit;
 import org.battlecode.bc18.util.Utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Manages the targets of our army. It achieves this by keeping track of a small number of "centroids"
@@ -68,19 +69,22 @@ public class TargetManager {
         }
         if (i<K) {
             //Still need to fill the remaining centroids - use centroid of centroids
-            float xAvg = 0, yAvg = 0;
+            float xAvg = 0.01f, yAvg = 0.01f; //Slightly off of 0 to avoid any fp errors leaving map
             //Loop over current centroids to get sum
             for (int j=0; j<i; j++) {
                 xAvg += centroids[j][0];
                 yAvg += centroids[j][1];
             }
-            //Turn sum into avg
-            xAvg /= i;
-            yAvg /= i;
+            //Turn sum into avg. Add 1 because of 0-indexing
+            xAvg /= i+1;
+            yAvg /= i+1;
             //Fill in remaining centroids with avg position, plus random spread.
             for (; i<K; i++) {
-                centroids[i][0] = xAvg + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
-                centroids[i][1] = yAvg + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
+                float newX = xAvg + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
+                float newY = yAvg + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
+                //Clamp it to map boundaries
+                centroids[i][0] = Utils.clamp(0, Utils.MAP_WIDTH-0.01f, xAvg);
+                centroids[i][1] = Utils.clamp(0, Utils.MAP_HEIGHT-0.01f, yAvg);
             }
         } else if (numUnits>K) {
             //We have too many units - we have to merge the excess into the centroids
@@ -89,7 +93,7 @@ public class TargetManager {
                 updateCentroids(loc.getX(), loc.getY());
             }
         }
-        //This would be if numUnits == K == i, which means we are finished!
+        //This is when numUnits == K == i, which means we are finished!
     }
 
     /**
@@ -104,15 +108,22 @@ public class TargetManager {
      * Updates the centroid locations with a new point.
      */
     public void updateCentroids(float x, float y) {
+        //If we have no useful centroids, move them all to the first unit we see.
         if (hasEliminatedAll) {
             //Set all centroids directly to new location, with some random spread.
             for (int i=0; i<K; i++) {
-                centroids[i][0] = x + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
-                centroids[i][1] = y + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
+                //Compute location with spread
+                float newX = x + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
+                float newY = y + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
+                //Clamp it to map boundaries
+                centroids[i][0] = Utils.clamp(0, Utils.MAP_WIDTH-0.001f, x);
+                centroids[i][1] = Utils.clamp(0, Utils.MAP_HEIGHT-0.001f, y);
             }
             hasEliminatedAll = false;
-            return;
+            return; //We just computed the centroids - we are finished.
         }
+
+        //Find closest centroid
         int closest = -1; //Index of the closest centroid
         float closestDistSq = Float.MAX_VALUE;
         float closestDX = Float.MAX_VALUE, closestDY = Float.MAX_VALUE;
@@ -128,28 +139,33 @@ public class TargetManager {
             }
         }
 
-        //factor scales the adjustment to be less than the midpoint distance
-        float factor = 1/(2+closestDistSq*BASE_RESIST); //  for 1D, this would be x += dx/(2+dx*dx/constant)
+        //Take closest centroid and move it towards the midpoint to our location.
+        //`factor` scales the adjustment to be less than the midpoint distance
+        float factor = 1/(2+closestDistSq*BASE_RESIST); //For 1D, this would be x += dx/(2+dx*dx/constant)
         centroids[closest][0] += closestDX * factor;
         centroids[closest][1] += closestDY * factor;
     }
 
     /**
      * Call this when we have reached a target but there are no enemies.
-     * @param indexOfTarget The index of the target centroid in the array.
+     * @param targetLoc The location of the target centroid that has been eliminated.
      * @return Whether all targets have been eliminated.
      */
-    public boolean markTargetEliminated(int indexOfTarget) {
-        float myX = centroids[indexOfTarget][0];
-        float myY = centroids[indexOfTarget][1];
+    public boolean markTargetEliminated(float[] targetLoc) {
         ArrayList<Integer> closeCentroids = new ArrayList<>(K);
         ArrayList<Integer> farCentroids = new ArrayList<>(K);
-        //Split centroids into near and far
+        //int indexOfTarget = -1; //We don't know the index yet.
+        //Split centroids into near and far while simultaneously searching for our target index.
         for (int i = 0; i<K; i++) {
-            //Dont compare against ourself.
-            if (i == indexOfTarget) continue;
-            float dx = Math.abs(centroids[i][0] - myX);
-            float dy = Math.abs(centroids[i][1] - myY);
+            float[] centroidLoc = centroids[i];
+            //targetLoc references the actual subarray in `centroids` so == will work
+            if (targetLoc == centroidLoc || Arrays.equals(targetLoc, centroidLoc)) {
+                //indexOfTarget = i;
+                continue; //Dont compare against ourself.
+            }
+
+            float dx = Math.abs(centroids[i][0] - targetLoc[0]);
+            float dy = Math.abs(centroids[i][1] - targetLoc[1]);
             if (dx+dy < MIN_SEPARATION) closeCentroids.add(i);
             else farCentroids.add(i);
         }
@@ -173,12 +189,25 @@ public class TargetManager {
         return hasEliminatedAll;
     }
 
+    /**
+     * Whether we have eliminated all of the targets.
+     * True when all the targets are close together and we call `markTargetEliminated()`.
+     * Will become false again when we next call `updateCentroids()`.
+     */
     public boolean hasEliminatedAll() {
         return hasEliminatedAll;
     }
 
     public int numTargets() {
         return K;
+    }
+
+    /**
+     * Gets the target location based on its ID.
+     * NOTE: DO NOT MODIFY. This is an actual reference to the internal location of the target.
+     */
+    public float[] getTarget(int targetID) {
+        return centroids[targetID];
     }
 
 }

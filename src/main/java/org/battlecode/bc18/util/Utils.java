@@ -97,6 +97,21 @@ public final class Utils {
         return false;
     }
 
+    /** Clamps `val` to be within [min, max]. */
+    public static double clamp(double min, double max, double val) {
+        return (val < min) ? min : (val > max) ? max : val;
+    }
+
+    /** Clamps `val` to be within [min, max]. */
+    public static float clamp(float min, float max, float val) {
+        return (val < min) ? min : (val > max) ? max : val;
+    }
+
+    /** Clamps `val` to be within [min, max]. */
+    public static int clamp(int min, int max, int val) {
+        return (val < min) ? min : (val > max) ? max : val;
+    }
+
     /** Gets all units that match the filter. */
     public static ArrayList<Unit> filterUnitsBy(VecUnit units, Predicate<Unit> filter) {
         int numUnits = (int) units.size();

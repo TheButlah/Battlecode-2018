@@ -8,16 +8,17 @@ import org.battlecode.bc18.util.Utils;
 
 public class Knight extends AKnight {
 
-    private static TargetManager tman;
+    static TargetManager tman;
     static {
         PlanetMap myMap = (Utils.PLANET == Planet.Earth) ? Utils.EARTH_START : Utils.MARS_START;
-
+        tman = new TargetManager(myMap.getInitial_units(), 1);
     }
 
     //static int time1, time2, time3, time4;
     //static long startTime;
     private Unit target = null; //Although this doesn't update, it will allow us to go to last seen spot.
-    private int spawnTargetSeed;
+    /** The macro-strategy (long-term) target. First index is x, second is y. If null, no target. */
+    private float[] macroTarget = null;
 
     /**
      * Constructor for Knight.
@@ -26,7 +27,9 @@ public class Knight extends AKnight {
     Knight(Unit unit) {
         super(unit);
         assert unit.unitType() == UnitType.Knight;
-        spawnTargetSeed = Utils.rand.nextInt(Integer.MAX_VALUE);
+        //If needed, assign this based on some rule - for example,
+        //groups with fewer members get priority.
+        macroTarget = tman.getTarget(Utils.rand.nextInt(tman.numTargets()));
     }
 
     @Override
@@ -42,29 +45,18 @@ public class Knight extends AKnight {
         }
 
         MapLocation myMapLoc = getMapLocation();
+        VecUnit nearbyEnemies = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, getVisionRange(), Utils.TEAM);
 
+        //Drop targets we can't sense
         if (hasTarget() && !Utils.gc.canSenseUnit(target.id())) {
             target = null;
         }
-        if (!hasTarget() || isAttackReady() || isJavelinReady()) {
-            // Get closest enemy MyUnit
-            Unit closestUnit = null;
-            int closestUnitDist = Integer.MAX_VALUE;
 
+        if (!hasTarget() || isAttackReady() || isJavelinReady()) {
             //startTime = System.currentTimeMillis();
             // Direct API access to GameController for performance
-            VecUnit nearbyEnemies = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, getVisionRange(), Utils.OTHER_TEAM);
-            for (int i = 0; i < nearbyEnemies.size(); ++i) {
-                Unit enemy = nearbyEnemies.get(i);
-                int distance = (int) enemy.location().mapLocation().distanceSquaredTo(myMapLoc);
-                if (distance < closestUnitDist) {
-                    closestUnit = enemy;
-                    closestUnitDist = distance;
-                }
-            }
-            if (closestUnit != null) {
-                target = closestUnit;
-            }
+            //Find nearest unit, prioritize all but workers
+            target = Utils.getNearest(nearbyEnemies, myMapLoc, u -> u.unitType() != UnitType.Worker);
             //time1 += System.currentTimeMillis() - startTime;
             //System.out.println("time 1: " + time1);
         }
@@ -73,9 +65,8 @@ public class Knight extends AKnight {
             boolean moved = false;
             // If we have a target, move towards it
             if (hasTarget()) {
-                //startTime = System.currentTimeMillis();
-                MapLocation targetEnemy = target.location().mapLocation();
-                int[][] distances = PathFinder.myPlanetPathfinder.search(targetEnemy.getY(), targetEnemy.getX());
+                MapLocation targetLoc = target.location().mapLocation();
+                int[][] distances = PathFinder.myPlanetPathfinder.search(targetLoc.getY(), targetLoc.getX());
                 Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
                 //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
                 if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
@@ -84,22 +75,11 @@ public class Knight extends AKnight {
                 }
                 //time2 += System.currentTimeMillis() - startTime;
                 //System.out.println("time 2: " + time2);
-            }
-            else if (Main.enemySpawns.size() != 0) { // Otherwise, we move towards the enemy spawn
-                //startTime = System.currentTimeMillis();
-                // TODO: this assumes the unit is on earth
-                MapLocation spawnTarget = Main.enemySpawns.get(spawnTargetSeed % Main.enemySpawns.size());
-                if (spawnTarget.equals(myMapLoc)) {
-                    // We are already at the enemy spawn and we see no enemies, so we will
-                    // conclude that the enemy spawn has been eliminated
-                    Main.enemySpawns.remove(spawnTarget);
-                    // Get next spawn target
-                    if (Main.enemySpawns.size() != 0) {
-                        Main.enemySpawns.get(spawnTargetSeed % Main.enemySpawns.size());
-                    }
-                }
-                if (Utils.gc.round() > 50 && spawnTarget != null) {
-                    int[][] distances = PathFinder.myPlanetPathfinder.search(spawnTarget.getY(), spawnTarget.getX());
+            } else if (hasMacroTarget()) {
+                //Attack our macro target
+                MapLocation macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
+                if (Utils.gc.round() > 50 && macroTarget != null) {
+                    int[][] distances = PathFinder.myPlanetPathfinder.search(macroLoc.getY(), macroLoc.getX());
                     Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
                     //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
                     if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
@@ -145,5 +125,9 @@ public class Knight extends AKnight {
 
     private boolean hasTarget() {
         return target != null;
+    }
+
+    private boolean hasMacroTarget() {
+        return macroTarget != null && !tman.hasEliminatedAll();
     }
 }
