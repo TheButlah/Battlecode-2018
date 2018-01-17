@@ -13,7 +13,7 @@ import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.util.Utils;
 
 public class Main {
-    public static ArrayList<MapLocation> enemySpawns;
+    public static int initializingWorkerId;
 
     public static void main(String[] args) {
         System.out.println("INITIALIZING MUSK THE DESTROYER - \"MEME MACHINE\" CLASS.");
@@ -35,7 +35,22 @@ public class Main {
 
         if (gc.planet() == Planet.Earth) {
             // Initialize Pathfinder
-            PathFinder.myPlanetPathfinder = new PathFinder(Utils.EARTH_START);
+            PathFinder.myPlanetPathfinder = new PathFinder();
+            // Determine initializer worker
+            VecUnit startingWorkers = gc.myUnits();
+            Unit optimalInitializingWorker = null;
+            int maxConnectedComponentSize = Integer.MIN_VALUE;
+            for (int i = 0; i < startingWorkers.size(); ++i) {
+                Unit worker = startingWorkers.get(i);
+                MapLocation workerLoc = worker.location().mapLocation();
+                int connectedComponentSize = Utils.CONNECTED_COMPONENT_SIZES.get(
+                        Utils.CONNECTED_COMPONENTS[workerLoc.getY()][workerLoc.getX()]);
+                if (connectedComponentSize > maxConnectedComponentSize) {
+                    optimalInitializingWorker = worker;
+                    maxConnectedComponentSize = connectedComponentSize;
+                }
+            }
+            initializingWorkerId = optimalInitializingWorker.id();
         }
 
         while (true) {

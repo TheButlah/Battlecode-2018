@@ -47,13 +47,13 @@ public class PathFinder {
     }
 
     /** Constructs a PathFinder for the provided map and its terrain */
-    public PathFinder(PlanetMap map) {
-        this.rows = (int) map.getHeight();
-        this.cols = (int) map.getHeight();
+    public PathFinder() {
+        this.rows = Utils.MAP_HEIGHT;
+        this.cols = Utils.MAP_WIDTH;
         cache = new LRUCache<>(MAX_CACHE_SIZE);
         visited = new boolean[rows][cols];
         queue = new PriorityQueue<>(Comparator.comparingInt(node -> distance[node.r][node.c]));
-        setWeights(map);
+        setWeights();
     }
 
     /**
@@ -66,17 +66,14 @@ public class PathFinder {
         cache.evictAll();
     }
 
-    private void setWeights(PlanetMap terrainMap) {
-        assert terrainMap.getHeight() == rows;
-        assert terrainMap.getWidth() == cols;
+    private void setWeights() {
         if (weights == null) {
             weights = new int[rows][cols];
         }
-        Planet planet = terrainMap.getPlanet();
         for (int r = 0; r < rows; ++r) {
             for (int c = 0; c < cols; ++c) {
                 weights[r][c] =
-                     Utils.toBool(terrainMap.isPassableTerrainAt(new MapLocation(planet, c, r)))
+                     Utils.CONNECTED_COMPONENTS[r][c] != Utils.IMPASSIBLE_TERRAIN
                      ? 1 : INFINITY;
             }
         }

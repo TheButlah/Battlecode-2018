@@ -1,13 +1,24 @@
 package org.battlecode.bc18.util;
 
-import bc.*;
-import org.battlecode.bc18.api.MyStructure;
-import org.battlecode.bc18.api.MyUnit;
-
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Random;
 import java.util.function.Predicate;
+
+import org.battlecode.bc18.api.MyUnit;
+
+import bc.Direction;
+import bc.GameController;
+import bc.MapLocation;
+import bc.Planet;
+import bc.PlanetMap;
+import bc.Team;
+import bc.Unit;
+import bc.UnitType;
+import bc.VecUnit;
 
 public final class Utils {
     //private Utils() {} //Prevent instantiation
@@ -21,6 +32,9 @@ public final class Utils {
     public static final PlanetMap EARTH_START, MARS_START;
     public static final int MAP_WIDTH, MAP_HEIGHT;
     public static final Planet PLANET;
+    public static final int[][] CONNECTED_COMPONENTS;
+    public static final ArrayList<Integer> CONNECTED_COMPONENT_SIZES;
+    public static final int IMPASSIBLE_TERRAIN = 9999;
 
     public static final Team TEAM;
     public static final Team OTHER_TEAM;
@@ -32,6 +46,104 @@ public final class Utils {
         MARS_START = gc.startingMap(Planet.Mars);
         MAP_WIDTH = (int) EARTH_START.getWidth();
         MAP_HEIGHT = (int) EARTH_START.getHeight();
+        CONNECTED_COMPONENTS = new int[MAP_HEIGHT][MAP_WIDTH];
+        CONNECTED_COMPONENT_SIZES = new ArrayList<>();
+        CONNECTED_COMPONENT_SIZES.add(0); // Add dummy value so that array is 1-indexed so we can
+                                          // perform size lookup for the nth connected component by
+                                          // getting the nth element
+        PlanetMap connectedComponentMap = PLANET == Planet.Earth ? EARTH_START : MARS_START;
+        for (int r = 0; r < MAP_HEIGHT; ++r) {
+            for (int c = 0; c < MAP_WIDTH; ++c) {
+                MapLocation loc = new MapLocation(PLANET, c, r);
+                if (!toBool(connectedComponentMap.isPassableTerrainAt(loc))) {
+                    CONNECTED_COMPONENTS[r][c] = IMPASSIBLE_TERRAIN;
+                }
+            }
+        }
+        int count = 0;
+        for (int r = 0; r < MAP_HEIGHT; ++r) {
+            for (int c = 0; c < MAP_WIDTH; ++c) {
+                if (CONNECTED_COMPONENTS[r][c] != 0) continue;
+                CONNECTED_COMPONENTS[r][c] = ++count;
+                int size = 1;
+                Queue<Integer> q = new LinkedList<>();
+                q.add((r << 16) | c);
+                while (!q.isEmpty()) {
+                    Integer coordinate = q.poll();
+                    int row = coordinate >>> 16;
+                    int col = coordinate & 0x0000FFFF;
+                    int newRow = row;
+                    int newCol = col - 1;
+                    if (newCol >= 0) {
+                        if (CONNECTED_COMPONENTS[newRow][newCol] == 0) {
+                            CONNECTED_COMPONENTS[newRow][newCol] = count;
+                            q.add((newRow << 16) | newCol);
+                            ++size;
+                        }
+                    }
+                    newCol = col + 1;
+                    if (newCol < MAP_WIDTH) {
+                        if (CONNECTED_COMPONENTS[newRow][newCol] == 0) {
+                            CONNECTED_COMPONENTS[newRow][newCol] = count;
+                            q.add((newRow << 16) | newCol);
+                            ++size;
+                        }
+                    }
+                    newRow = row - 1;
+                    if (newRow >= 0) {
+                        newCol = col;
+                        if (CONNECTED_COMPONENTS[newRow][newCol] == 0) {
+                            CONNECTED_COMPONENTS[newRow][newCol] = count;
+                            q.add((newRow << 16) | newCol);
+                            ++size;
+                        }
+                        newCol = col - 1;
+                        if (newCol >= 0) {
+                            if (CONNECTED_COMPONENTS[newRow][newCol] == 0) {
+                                CONNECTED_COMPONENTS[newRow][newCol] = count;
+                                q.add((newRow << 16) | newCol);
+                                ++size;
+                            }
+                        }
+                        newCol = col + 1;
+                        if (newCol < MAP_WIDTH) {
+                            if (CONNECTED_COMPONENTS[newRow][newCol] == 0) {
+                                CONNECTED_COMPONENTS[newRow][newCol] = count;
+                                q.add((newRow << 16) | newCol);
+                                ++size;
+                            }
+                        }
+                    }
+                    newRow = row + 1;
+                    if (newRow < MAP_HEIGHT) {
+                        newCol = col;
+                        if (CONNECTED_COMPONENTS[newRow][newCol] == 0) {
+                            CONNECTED_COMPONENTS[newRow][newCol] = count;
+                            q.add((newRow << 16) | newCol);
+                            ++size;
+                        }
+                        newCol = col - 1;
+                        if (newCol >= 0) {
+                            if (CONNECTED_COMPONENTS[newRow][newCol] == 0) {
+                                CONNECTED_COMPONENTS[newRow][newCol] = count;
+                                q.add((newRow << 16) | newCol);
+                                ++size;
+                            }
+                        }
+                        newCol = col + 1;
+                        if (newCol < MAP_WIDTH) {
+                            if (CONNECTED_COMPONENTS[newRow][newCol] == 0) {
+                                CONNECTED_COMPONENTS[newRow][newCol] = count;
+                                q.add((newRow << 16) | newCol);
+                                ++size;
+                            }
+                        }
+                    }
+                }
+                CONNECTED_COMPONENT_SIZES.add(size);
+            }
+        }
+
         TEAM = gc.team();
         OTHER_TEAM = TEAM == Team.Red ? Team.Blue : Team.Red;
     }
