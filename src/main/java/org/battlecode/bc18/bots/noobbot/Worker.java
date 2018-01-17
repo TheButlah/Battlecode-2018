@@ -224,7 +224,7 @@ public class Worker extends AWorker {
                             //println("Replicating");
                             MyUnit newWorker = replicate(dir);
                             if (newWorker != null) {
-                                return;
+                                break;
                             }
                         }
                     }
