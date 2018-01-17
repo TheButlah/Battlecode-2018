@@ -166,15 +166,13 @@ public class PathFinder {
 
     private void operate(int r, int c, int row, int col) {
         if (!visited[r][c]) {
-            if (weights[r][c] != distance[r][c]) {
-                distance[r][c] = Math.min(distance[r][c], distance[row][col] + weights[r][c]);
-                if (!queue.contains(new Node(r, c))) {
-                    queue.add(new Node(r, c));
-                }
-                else {
-                    queue.remove(new Node(r, c));
-                    queue.add(new Node(r, c));
-                }
+            distance[r][c] = Math.min(distance[r][c], distance[row][col] + weights[r][c]);
+            if (!queue.contains(new Node(r, c))) {
+                queue.add(new Node(r, c));
+            }
+            else {
+                queue.remove(new Node(r, c));
+                queue.add(new Node(r, c));
             }
         }
     }
