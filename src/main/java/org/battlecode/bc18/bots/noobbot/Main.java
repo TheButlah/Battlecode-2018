@@ -38,7 +38,6 @@ public class Main {
             PathFinder.myPlanetPathfinder = new PathFinder(Utils.EARTH_START);
         }
 
-        boolean hitTimeLimit = false;
         while (true) {
             System.out.println("Current round: " + gc.round());
             try{
@@ -46,9 +45,8 @@ public class Main {
                 // We want to stay alive for as long as possible, in case the opponent times out
                 // and we can steal the victory
                 int timeLeft = gc.getTimeLeftMs();
-                if (timeLeft < 300 && !hitTimeLimit) {
+                if (timeLeft < 300) {
                     System.out.println("Time Left: " + timeLeft + ", skipping turn...");
-                    hitTimeLimit = true;
                     continue;
                 }
 
