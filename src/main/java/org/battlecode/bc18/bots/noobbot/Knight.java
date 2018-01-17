@@ -11,8 +11,9 @@ public class Knight extends AKnight {
     static TargetManager tman;
     static {
         PlanetMap myMap = (Utils.PLANET == Planet.Earth) ? Utils.EARTH_START : Utils.MARS_START;
-        tman = new TargetManager(myMap.getInitial_units(), 1);
+        tman = new TargetManager(myMap.getInitial_units(), 3);
     }
+    private MapLocation lastLoc = null;
 
     //static int time1, time2, time3, time4;
     //static long startTime;
@@ -45,7 +46,18 @@ public class Knight extends AKnight {
         }
 
         MapLocation myMapLoc = getMapLocation();
-        VecUnit nearbyEnemies = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, getVisionRange(), Utils.TEAM);
+        MapLocation macroLoc = null;
+        VecUnit nearbyEnemies = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, getVisionRange(), Utils.OTHER_TEAM);
+
+        //If we are very close to the macro target and there are no enemies, mark it as eliminated
+        if (hasMacroTarget()) {
+            macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
+            if (nearbyEnemies.size() == 0 && macroLoc.distanceSquaredTo(myMapLoc) <= 4) {
+                tman.markTargetEliminated(macroTarget);
+                //Macro target location will change when eliminated so update its MapLocation
+                macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
+            }
+        }
 
         //Drop targets we can't sense
         if (hasTarget() && !Utils.gc.canSenseUnit(target.id())) {
@@ -77,7 +89,6 @@ public class Knight extends AKnight {
                 //System.out.println("time 2: " + time2);
             } else if (hasMacroTarget()) {
                 //Attack our macro target
-                MapLocation macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
                 if (Utils.gc.round() > 50 && macroTarget != null) {
                     int[][] distances = PathFinder.myPlanetPathfinder.search(macroLoc.getY(), macroLoc.getX());
                     Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);

@@ -1,8 +1,10 @@
 package org.battlecode.bc18.bots.noobbot;
 
+import static org.battlecode.bc18.bots.noobbot.Knight.tman;
 import static org.battlecode.bc18.util.Utils.gc;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import bc.*;
 import org.battlecode.bc18.PathFinder;
@@ -14,8 +16,8 @@ public class Main {
     public static ArrayList<MapLocation> enemySpawns;
 
     public static void main(String[] args) {
-        System.out.println("INITIALIZING MUSK THE DESTROYER - CLASS \"MEME MACHINE\".");
-        System.out.println("YOU DO NOT KNOW DA WAE. YOUR INFERIOR PROGRAMMING WILL BE TERMINATED.");
+        System.out.println("INITIALIZING MUSK THE DESTROYER - \"MEME MACHINE\" CLASS.");
+        System.out.println("YOUR INFERIOR PROGRAMMING WILL BE TERMINATED.");
 
         //Without this, MyUnit cannot form new units
         AUnit.init(new UnitBuilder());
@@ -49,19 +51,21 @@ public class Main {
                     hitTimeLimit = true;
                     continue;
                 }
-                //Update centroids
+
+                //Update centroids all at once to avoid units updating one enemy multiple times
                 VecUnit units = gc.units();
                 int numUnits = (int) units.size();
-                //ArrayList<Unit> enemies = new ArrayList<>(numUnits/2);
                 for (int i=0; i<numUnits; i++) {
                     Unit unit = units.get(i);
-                    if (unit.team() == Utils.OTHER_TEAM) {
-                        Location loc = unit.location();
-                        if (!loc.isOnMap()) continue;
-                        MapLocation mapLoc = loc.mapLocation();
-                        Knight.tman.updateCentroids(mapLoc.getX(), mapLoc.getY());
-                    }
+                    if (unit.team() == Utils.TEAM) continue;
+                    Location loc = unit.location();
+                    if (!loc.isOnMap()) continue;
+                    MapLocation mapLoc = loc.mapLocation();
+                    tman.updateCentroids(mapLoc.getX(), mapLoc.getY());
                 }
+                System.out.println(Arrays.deepToString(tman.centroids) + "\n");
+
+
                 AUnit.initTurn();
                 AUnit.doTurn();
 

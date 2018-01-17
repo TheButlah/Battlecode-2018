@@ -36,7 +36,7 @@ public class TargetManager {
     private final int K;
 
     /** Centroid positions. Shaped (K,2) where last dim is X and Y*/
-    private final float[][] centroids;
+    public final float[][] centroids;
 
     private boolean hasEliminatedAll = false;
 
@@ -94,6 +94,8 @@ public class TargetManager {
             }
         }
         //This is when numUnits == K == i, which means we are finished!
+
+        System.out.println(Arrays.deepToString(centroids) + "\n");
     }
 
     /**
@@ -128,8 +130,8 @@ public class TargetManager {
         float closestDistSq = Float.MAX_VALUE;
         float closestDX = Float.MAX_VALUE, closestDY = Float.MAX_VALUE;
         for (int i=0; i<K; i++) {
-            float dx = (centroids[i][0] - x);
-            float dy = (centroids[i][1] - y);
+            float dx = (x - centroids[i][0]);
+            float dy = (y - centroids[i][1]);
             float distSq = dx*dx + dy*dy;
             if (distSq < closestDistSq) {
                 closest = i;
@@ -152,6 +154,7 @@ public class TargetManager {
      * @return Whether all targets have been eliminated.
      */
     public boolean markTargetEliminated(float[] targetLoc) {
+        System.out.println("Target Eliminated: " + Arrays.toString(targetLoc));
         ArrayList<Integer> closeCentroids = new ArrayList<>(K);
         ArrayList<Integer> farCentroids = new ArrayList<>(K);
         //int indexOfTarget = -1; //We don't know the index yet.
@@ -178,9 +181,9 @@ public class TargetManager {
             for (int closeIndex : closeCentroids) {
                 //Pick random far centroid and move halfway to it
                 int randIndex = farCentroids.get((i + offset) % numFar);
-                float[] loc = centroids[randIndex];
-                centroids[closeIndex][0] += (loc[0]-centroids[closeIndex][0])/2;
-                centroids[closeIndex][1] += (loc[1]-centroids[closeIndex][1])/2;
+                float[] farLoc = centroids[randIndex];
+                centroids[closeIndex][0] += (farLoc[0]-centroids[closeIndex][0])/2;
+                centroids[closeIndex][1] += (farLoc[1]-centroids[closeIndex][1])/2;
                 i++;
             }
         } else {

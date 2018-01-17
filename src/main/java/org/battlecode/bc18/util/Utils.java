@@ -135,11 +135,12 @@ public final class Utils {
      * NOTE: Assumes we can sense all the provided units.
      * @param units A list of units to check.
      * @param shouldPrioritize A function. When it returns true, these units are prioritized. If null, don't prioritize.
-     * @return The lowest health unit found.
+     * @return The lowest health unit found, or null if none were found.
      */
     public static Unit getLowestHealth(VecUnit units, Predicate<Unit> shouldPrioritize) {
+        if (units == null) return null;
         int numUnits = (int) units.size();
-        assert numUnits > 0;
+        if (numUnits == 0) return null;
         Unit weakest = null;
         Unit weakestLowPrio = null;
         int weakestHealth = Integer.MAX_VALUE;
@@ -179,11 +180,12 @@ public final class Utils {
      * @param units A list of units to check.
      * @param loc The location to test proximity to.
      * @param shouldPrioritize A function. When it returns true, these units are prioritized. If null, don't prioritize.
-     * @return The closest unit found.
+     * @return The closest unit found, or null if none were found.
      */
     public static Unit getNearest(VecUnit units, MapLocation loc, Predicate<Unit> shouldPrioritize) {
+        if (units == null) return null;
         int numUnits = (int) units.size();
-        assert numUnits > 0;
+        if (numUnits == 0) return null;
         Unit nearest = null;
         Unit nearestLowPrio = null;
         int nearistDist = Integer.MAX_VALUE;

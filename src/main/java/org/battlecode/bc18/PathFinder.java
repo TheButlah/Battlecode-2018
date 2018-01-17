@@ -31,7 +31,7 @@ public class PathFinder {
     private int[][] distance;
     private final PriorityQueue<Node> queue;
     private int[][] weights;
-    private final LRUCache<String, int[][]> cache;
+    private final LRUCache<Integer, int[][]> cache;
     private final int MAX_CACHE_SIZE = 100;
 
     public static PathFinder myPlanetPathfinder;
@@ -95,7 +95,7 @@ public class PathFinder {
 
     /** Returns grid of distances to target location */
     public int[][] search(int targetRow, int targetCol) {
-        String key = targetRow + "," + targetCol;
+        int key = targetRow << 16 | targetCol; //Bit-pack a key.
         int[][] cachedResult = cache.get(key);
         if (cachedResult != null) {
             return cachedResult;
