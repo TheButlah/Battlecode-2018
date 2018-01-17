@@ -34,7 +34,7 @@ public class PathFinder {
     private final LRUCache<String, int[][]> cache;
     private final int MAX_CACHE_SIZE = 100;
 
-    public static PathFinder earthPathfinder;
+    public static PathFinder myPlanetPathfinder;
 
     public PathFinder(int[][] weights) {
         this.rows = weights.length;

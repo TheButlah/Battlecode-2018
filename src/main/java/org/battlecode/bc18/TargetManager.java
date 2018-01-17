@@ -19,13 +19,14 @@ import java.util.ArrayList;
  */
 public class TargetManager {
 
-    public static TargetManager tman;
-
     /**
      * The base amount by which we resist moving centroids.
      * If this is 0, then we would move the centroid to the midpoint of prev loc and new point.
      */
     public static final float BASE_RESIST = 1f/32;
+
+    /** The minimum distance that the total spread between centroids can be */
+    public static final float MIN_SEPARATION = 2;
 
     /** `K` centers of enemy mass */
     private final int K;
@@ -118,6 +119,36 @@ public class TargetManager {
         centroids[closest][0] += closestDX * factor;
         centroids[closest][1] += closestDY * factor;
         return closest;
+    }
+
+    /**
+     * Call this when we have reached a target but there are no enemies.
+     * @param indexOfTarget The index of the target centroid in the array.
+     */
+    public void markTargetEliminated(int indexOfTarget) {
+        float myX = centroids[indexOfTarget][0];
+        float myY = centroids[indexOfTarget][1];
+        ArrayList<Integer> closeCentroids = new ArrayList<>(K);
+        ArrayList<Integer> farCentroids = new ArrayList<>(K);
+        for (int i = 0; i<K && i!=indexOfTarget; i++) {
+            float dx = Math.abs(centroids[i][0] - myX);
+            float dy = Math.abs(centroids[i][1] - myY);
+            if (dx+dy < MIN_SEPARATION) closeCentroids.add(i);
+            else farCentroids.add(i);
+        }
+        //Move close centroids to somewhere "useful"
+        for (int i : closeCentroids) {
+            if (farCentroids.size() > 0) {
+                //Pick random far centroid and move halfway to it
+                float[] loc = centroids[Utils.rand.nextInt(farCentroids.size())];
+                centroids[i][0] += (loc[0]-centroids[i][0])/2;
+                centroids[i][1] += (loc[1]-centroids[i][1])/2;
+            } else {
+                //Move centroid to random point on map
+                centroids[i][0] = Utils.rand.nextInt(Utils.MAP_WIDTH);
+                centroids[i][1] = Utils.rand.nextInt(Utils.MAP_HEIGHT);
+            }
+        }
     }
 
 }

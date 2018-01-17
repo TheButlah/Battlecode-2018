@@ -133,7 +133,7 @@ public class Worker extends AWorker {
                 //startTime = System.currentTimeMillis();
                 // Move towards target structure
                 MapLocation structureLoc = targetStructure.getMapLocation();
-                int[][] distances = PathFinder.earthPathfinder.search(structureLoc.getY(),
+                int[][] distances = PathFinder.myPlanetPathfinder.search(structureLoc.getY(),
                         structureLoc.getX());
                 Direction towardsStructure = PathFinder.directionToDestination(distances, myMapLoc);
                 if (towardsStructure != Direction.Center && isAccessible(towardsStructure)) {
@@ -148,7 +148,7 @@ public class Worker extends AWorker {
                 if (deposits.size() != 0) {
                     Pair<MapLocation, Integer> targetDeposit = Utils.closestPair(deposits, myMapLoc);
                     MapLocation targetLoc = targetDeposit.getFirst();
-                    int[][] distances = PathFinder.earthPathfinder.search(
+                    int[][] distances = PathFinder.myPlanetPathfinder.search(
                         targetLoc.getY(),
                         targetLoc.getX());
                     Direction towardsKarbonite = PathFinder.directionToDestination(distances, myMapLoc);

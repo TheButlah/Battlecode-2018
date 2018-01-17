@@ -35,20 +35,8 @@ public class Main {
         gc.queueResearch(UnitType.Worker);
 
         if (gc.planet() == Planet.Earth) {
-            // Get enemy spawns
-            enemySpawns = new ArrayList<>(3);
-            PlanetMap initialMap = Utils.EARTH_START;
-            VecUnit initialUnits = initialMap.getInitial_units();
-            TargetManager.tman = new TargetManager(initialUnits);
-            for (int i = 0; i < initialUnits.size(); ++i) {
-                Unit unit = initialUnits.get(i);
-                if (unit.team() != Utils.TEAM) {
-                    enemySpawns.add(unit.location().mapLocation());
-                }
-            }
-
             // Initialize Pathfinder
-            PathFinder.earthPathfinder = new PathFinder(Utils.EARTH_START);
+            PathFinder.myPlanetPathfinder = new PathFinder(Utils.EARTH_START);
         }
 
         while (true) {

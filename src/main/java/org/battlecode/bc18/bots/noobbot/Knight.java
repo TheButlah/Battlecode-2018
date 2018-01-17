@@ -1,16 +1,18 @@
 package org.battlecode.bc18.bots.noobbot;
 
+import bc.*;
 import org.battlecode.bc18.PathFinder;
+import org.battlecode.bc18.TargetManager;
 import org.battlecode.bc18.api.AKnight;
 import org.battlecode.bc18.util.Utils;
 
-import bc.Direction;
-import bc.MapLocation;
-import bc.Unit;
-import bc.UnitType;
-import bc.VecUnit;
-
 public class Knight extends AKnight {
+
+    private static TargetManager tman;
+    static {
+        PlanetMap myMap = (Utils.PLANET == Planet.Earth) ? Utils.EARTH_START : Utils.MARS_START;
+
+    }
 
     //static int time1, time2, time3, time4;
     //static long startTime;
@@ -73,7 +75,7 @@ public class Knight extends AKnight {
             if (hasTarget()) {
                 //startTime = System.currentTimeMillis();
                 MapLocation targetEnemy = target.location().mapLocation();
-                int[][] distances = PathFinder.earthPathfinder.search(targetEnemy.getY(), targetEnemy.getX());
+                int[][] distances = PathFinder.myPlanetPathfinder.search(targetEnemy.getY(), targetEnemy.getX());
                 Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
                 //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
                 if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
@@ -97,7 +99,7 @@ public class Knight extends AKnight {
                     }
                 }
                 if (Utils.gc.round() > 50 && spawnTarget != null) {
-                    int[][] distances = PathFinder.earthPathfinder.search(spawnTarget.getY(), spawnTarget.getX());
+                    int[][] distances = PathFinder.myPlanetPathfinder.search(spawnTarget.getY(), spawnTarget.getX());
                     Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
                     //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
                     if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
