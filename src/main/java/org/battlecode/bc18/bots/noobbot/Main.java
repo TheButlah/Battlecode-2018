@@ -47,6 +47,7 @@ public class Main {
                 int timeLeft = gc.getTimeLeftMs();
                 if (timeLeft < 300) {
                     System.out.println("Time Left: " + timeLeft + ", skipping turn...");
+                    gc.nextTurn();
                     continue;
                 }
 

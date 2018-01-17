@@ -1,6 +1,5 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import static org.battlecode.bc18.util.Utils.dirs;
 import static org.battlecode.bc18.util.Utils.gc;
 
 import java.util.ArrayList;
@@ -33,6 +32,42 @@ public class Worker extends AWorker {
      * A mapping of workers to the structures they are assigned to
      */
     public static final Map<Integer, MyStructure> workerStructureAssignment = new HashMap<>();
+    private static final Direction[] dirsBottomLeft = new Direction[] {
+            Direction.Northeast, Direction.North, Direction.East, Direction.Northwest,
+            Direction.Southeast, Direction.West, Direction.South, Direction.Southwest
+    };
+    private static final Direction[] dirsTopLeft = new Direction[] {
+            Direction.Southeast, Direction.South, Direction.East, Direction.Southwest,
+            Direction.Northeast, Direction.West, Direction.North, Direction.Northwest
+    };
+    private static final Direction[] dirsLeft = new Direction[] {
+            Direction.East, Direction.Northeast, Direction.Southeast, Direction.North,
+            Direction.South, Direction.Northwest, Direction.Southwest, Direction.West
+    };
+    private static final Direction[] dirsBottomRight = new Direction[] {
+            Direction.Northwest, Direction.North, Direction.West, Direction.Northeast,
+            Direction.Southwest, Direction.East, Direction.South, Direction.Southeast
+    };
+    private static final Direction[] dirsTopRight = new Direction[] {
+            Direction.Southwest, Direction.South, Direction.West, Direction.Southeast,
+            Direction.Northwest, Direction.East, Direction.North, Direction.Northeast
+    };
+    private static final Direction[] dirsRight = new Direction[] {
+            Direction.West, Direction.Northwest, Direction.Southwest, Direction.North,
+            Direction.South, Direction.Northeast, Direction.Southeast, Direction.East
+    };
+    private static final Direction[] dirsBottom = new Direction[] {
+            Direction.North, Direction.Northwest, Direction.Northeast, Direction.West,
+            Direction.East, Direction.Southwest, Direction.Southeast, Direction.South
+    };
+    private static final Direction[] dirsTop = new Direction[] {
+            Direction.South, Direction.Southwest, Direction.Southeast, Direction.West,
+            Direction.East, Direction.Northwest, Direction.Northeast, Direction.North
+    };
+    private static final Direction[] dirsNoPrefs = new Direction[] {
+            Direction.North, Direction.Northeast, Direction.East, Direction.Southeast,
+            Direction.South, Direction.Southwest, Direction.West, Direction.Northwest
+    };
     /**
      * Constructor for Worker.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
@@ -71,7 +106,7 @@ public class Worker extends AWorker {
             for (MyStructure structure : nearbyStructures) {
                 nearbyStructuresLoc.add(structure.getMapLocation());
             }
-            for (Direction dir : dirs) {
+            for (Direction dir : preferredDirections(myMapLoc)) {
                 if (canBlueprint(UnitType.Factory, dir)
                         && !Utils.isAnyWithinDistance(nearbyStructuresLoc, myMapLoc.add(dir), 4)) {
                     targetStructure = (Factory) blueprint(UnitType.Factory, dir);
@@ -90,7 +125,7 @@ public class Worker extends AWorker {
             for (MyStructure structure : nearbyStructures) {
                 nearbyStructuresLoc.add(structure.getMapLocation());
             }
-            for (Direction dir : dirs) {
+            for (Direction dir : preferredDirections(myMapLoc)) {
                 if (canBlueprint(UnitType.Rocket, dir)
                         && !Utils.isAnyWithinDistance(nearbyStructuresLoc, myMapLoc.add(dir), 4)) {
                     targetStructure = (Rocket) blueprint(UnitType.Rocket, dir);
@@ -291,5 +326,49 @@ public class Worker extends AWorker {
             }
         }
         return structures;
+    }
+
+    private Direction[] preferredDirections(MapLocation myMapLoc) {
+        int x = myMapLoc.getX();
+        int y = myMapLoc.getY();
+        if (x < 2) {
+            if (y < 2) {
+                // Avoid bottom-left
+                return dirsBottomLeft;
+            }
+            else if (y >= Utils.MAP_HEIGHT - 2) {
+                // Avoid top-left
+                return dirsTopLeft;
+            }
+            else {
+                // Avoid left
+                return dirsLeft;
+            }
+        }
+        else if (x >= Utils.MAP_WIDTH - 2) {
+            if (y < 2) {
+                // Avoid bottom-right
+                return dirsBottomRight;
+            }
+            else if (y >= Utils.MAP_HEIGHT - 2) {
+                // Avoid top-right
+                return dirsTopRight;
+            }
+            else {
+                // Avoid right
+                return dirsRight;
+            }
+        }
+        else if (y < 2) {
+            // Avoid bottom
+            return dirsBottom;
+        }
+        else if (y >= Utils.MAP_HEIGHT - 2) {
+            // Avoid top
+            return dirsTop;
+        }
+        else {
+            return dirsNoPrefs;
+        }
     }
 }
