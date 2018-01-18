@@ -1,10 +1,17 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import bc.*;
 import org.battlecode.bc18.PathFinder;
 import org.battlecode.bc18.TargetManager;
 import org.battlecode.bc18.api.AKnight;
 import org.battlecode.bc18.util.Utils;
+
+import bc.Direction;
+import bc.MapLocation;
+import bc.Planet;
+import bc.PlanetMap;
+import bc.Unit;
+import bc.UnitType;
+import bc.VecUnit;
 
 public class Knight extends AKnight {
 

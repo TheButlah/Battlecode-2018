@@ -24,7 +24,8 @@ import com.lodborg.cache.LRUCache;
  */
 public class PathFinder {
 
-    public static final int INFINITY = 1_000; //This is longer than the longest path through the grid
+    public static final int UNREACHABLE = 999999;
+    public static final int INFINITY = 1_000; //Weight for impassible tile; this is longer than the longest path through the grid
     private final int rows;
     private final int cols;
     private final boolean[][] visited;
@@ -101,10 +102,10 @@ public class PathFinder {
         }
         queue.clear();
 
-        //Fill distance array with INFINITY
+        //Fill distance array with UNREACHABLE
         distance = new int[rows][cols];
         for (int[] row : distance) {
-            Arrays.fill(row, INFINITY);
+            Arrays.fill(row, UNREACHABLE);
         }
         for (boolean[] row : visited) {
             Arrays.fill(row, false);
@@ -205,7 +206,7 @@ public class PathFinder {
     /** Use to find the optimal non-blocked direction to move, given a solved array of distances */
     public static Direction directionToDestination(int[][] distances, MapLocation myLoc) {
         Direction optimalDirection = Direction.Center;
-        int optimalDist = INFINITY;
+        int optimalDist = UNREACHABLE;
         int rows = distances.length;
         int cols = distances[0].length;
         for (Direction dir : Utils.dirs) {
