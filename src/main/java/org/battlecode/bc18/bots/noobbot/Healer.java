@@ -33,7 +33,7 @@ public class Healer extends AHealer {
             }
         }
 
-        if (target != null) {
+        if (target != null && canHeal(target)) {
             heal(target);
         } else {
             if (isMoveReady()) {

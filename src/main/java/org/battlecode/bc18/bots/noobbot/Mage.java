@@ -1,8 +1,11 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import bc.Unit;
-import bc.UnitType;
+import static org.battlecode.bc18.util.Utils.gc;
+
+import bc.*;
+import org.battlecode.bc18.TargetManager;
 import org.battlecode.bc18.api.AMage;
+import org.battlecode.bc18.util.Utils;
 
 public class Mage extends AMage {
 
@@ -18,7 +21,91 @@ public class Mage extends AMage {
 
     @Override
     public void act() {
-        //TODO: implement this
+        if (isDead()) return;
+
+        // Mage Strategy
+        // Mage is the most fragile unit, yet has a wide attack range and deals most amount of damage
+        // not only to one square but also the ones adjacent to it which is :+1:
+        // It will look for the safest place on the given map and blink to that space.
+        // And then deal damage to certain units (the most "dangerous" one).
+
+        long turn = gc.round();
+        if (!isOnMap()) {
+            //TODO: Handle worker in space/garrison/dead?
+            println("TODO: handle worker not on map");
+            return;
+        }
+
+        //We already checked that we were on the map
+        MapLocation myMapLoc = getMapLocation();
+        
+        // attack if ready and there is an immediate target
+        if (isAttackReady()) {
+
+            // Find immediate opponent
+            Unit immediateTarget = null;
+
+            VecUnit vec = gc.senseNearbyUnitsByTeam(myMapLoc, 50, gc.team() == Team.Red ? Team.Blue : Team.Red);
+            for (int i = 0; i < vec.size(); i++) {
+                Unit enemy = vec.get(i);
+                MapLocation enemyMapLoc = enemy.location().mapLocation();
+                if (myMapLoc.distanceSquaredTo(enemyMapLoc) <= enemy.attackRange()) {
+                    if (immediateTarget == null) {
+                        immediateTarget = enemy;
+                    }
+                    else if (enemy.damage() > immediateTarget.damage()) {
+                        immediateTarget = enemy;
+                    }
+                    else if (enemy.damage() == immediateTarget.damage() &&
+                            enemy.health() > immediateTarget.health()) {
+                        immediateTarget = enemy;
+                    }
+                }
+            }
+            
+            if (immediateTarget != null && isWithinAttackRange(immediateTarget)) {
+                attack(immediateTarget);
+                return;
+            }
+        }
+        
+        // at this point, immediate attacking didn't happen.
+        // As a followup strategy, it will blink to the centroid.
+        Planet planet = gc.planet();
+        PlanetMap planetMap = gc.startingMap(planet);
+        
+        if (isBlinkReady()) {
+            TargetManager tman = new TargetManager(planetMap.getInitial_units(), 3);
+
+            // FIXME: find a MapLocation to blink.
+            MapLocation blinkLoc = new MapLocation(planet, 0, 0);
+
+            if (isAcessibleBlink(blinkLoc)) {
+                blink(blinkLoc);
+                return;
+            }
+        }
+        
+        // At this point, blinking also didn't happen.
+        // TODO: move toward a centroid. 
+        
+
+        // If we haven't yet moved, move randomly
+        moveRandomly();
+    }
+
+    private void moveRandomly() {
+        
+        int offset = Utils.rand.nextInt(Utils.dirs.length);
+        for (int i = 0; i < Utils.dirs.length; i++) {
+            Direction dir = Utils.dirs[(i + offset) % Utils.dirs.length]; //Cycle through based on random offset
+            //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
+            if (isAccessible(dir)) {
+                //println("Moving");
+                move(dir);
+                return;
+            }
+        }
     }
 
     @Override
