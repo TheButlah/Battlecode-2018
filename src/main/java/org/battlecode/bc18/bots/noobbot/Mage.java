@@ -23,12 +23,6 @@ public class Mage extends AMage {
     public void act() {
         if (isDead()) return;
 
-        // Mage Strategy
-        // Mage is the most fragile unit, yet has a wide attack range and deals most amount of damage
-        // not only to one square but also the ones adjacent to it which is :+1:
-        // It will look for the safest place on the given map and blink to that space.
-        // And then deal damage to certain units (the most "dangerous" one).
-
         long turn = gc.round();
         if (!isOnMap()) {
             //TODO: Handle worker in space/garrison/dead?
