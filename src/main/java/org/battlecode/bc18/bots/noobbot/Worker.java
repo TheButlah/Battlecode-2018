@@ -99,7 +99,7 @@ public class Worker extends AWorker {
             targetStructure = null;
         }
 
-        if (turn == 1 || gc.karbonite() >= 300) {
+        if ((turn == 1 && getID() == Main.initializingWorkerId) || gc.karbonite() >= 300) {
             //startTime = System.currentTimeMillis();
             List<MyStructure> nearbyStructures = getNearbyStructures();
             ArrayList<MapLocation> nearbyStructuresLoc = new ArrayList<>();
