@@ -2,6 +2,8 @@ package org.battlecode.bc18.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -19,6 +21,7 @@ import bc.Team;
 import bc.Unit;
 import bc.UnitType;
 import bc.VecUnit;
+import bc.Veci32;
 
 public final class Utils {
     //private Utils() {} //Prevent instantiation
@@ -38,6 +41,8 @@ public final class Utils {
 
     public static final Team TEAM;
     public static final Team OTHER_TEAM;
+
+    private static int landingLocationIndex = 0;
 
     static {
         gc = new GameController();
@@ -142,6 +147,9 @@ public final class Utils {
                 }
                 CONNECTED_COMPONENT_SIZES.add(size);
             }
+        }
+        if (Utils.PLANET == Planet.Mars) {
+            broadcastLandingLocations();
         }
 
         TEAM = gc.team();
@@ -358,4 +366,72 @@ public final class Utils {
         return isAttacker(unit.getType());
     }
 
+    private static void broadcastLandingLocations() {
+        // Compile mapping of CC to locations within that CC
+        ArrayList<Pair<Integer, Integer>> ccBySize = new ArrayList<>();
+        for (int cc = 1; cc < CONNECTED_COMPONENT_SIZES.size(); ++cc) {
+            ccBySize.add(new Pair<Integer, Integer>(cc, CONNECTED_COMPONENT_SIZES.get(cc)));
+        }
+        // Sort connected components by size, decreasing
+        ccBySize.sort(new Comparator<Pair<Integer, Integer>>() {
+            @Override
+            public int compare(Pair<Integer, Integer> o1, Pair<Integer, Integer> o2) {
+                return o2.getSecond() - o1.getSecond();
+            }
+        });
+        int[][] locationsWithinCC = new int[CONNECTED_COMPONENT_SIZES.size()][];
+        ArrayList<HashSet<Integer>> landingCoordinates = new ArrayList<>(CONNECTED_COMPONENT_SIZES.size());
+        for (int cc = 0; cc < CONNECTED_COMPONENT_SIZES.size(); ++cc) {
+            locationsWithinCC[cc] = new int[CONNECTED_COMPONENT_SIZES.get(cc)];
+            landingCoordinates.add(new HashSet<>());
+        }
+        // Indices within locationsWithinCC arrays
+        int[] locationsWithinCCIndices = new int[CONNECTED_COMPONENT_SIZES.size()];
+        for (int r = 0; r < MAP_HEIGHT; ++r) {
+            for (int c = 0; c < MAP_WIDTH; ++c) {
+                int cc = CONNECTED_COMPONENTS[r][c];
+                if (cc == IMPASSIBLE_TERRAIN) continue;
+                int coord = (r << 16) | c;
+                locationsWithinCC[cc][locationsWithinCCIndices[cc]++] = coord;
+            }
+        }
+        //System.out.println(Arrays.deepToString(locationsWithinCC));
+        int totalNumCoords = 0;
+        // Choose (cc size)^(1/4) locations in each cc
+        for (int cc = 1; cc < CONNECTED_COMPONENT_SIZES.size(); ++cc) {
+            HashSet<Integer> chosenCoords = landingCoordinates.get(cc);
+            int numDesiredCoords = (int) Math.pow(CONNECTED_COMPONENT_SIZES.get(cc), 1d/4d);
+            int[] locations = locationsWithinCC[cc];
+            for (; chosenCoords.size() < numDesiredCoords;) {
+                int randCoord = locations[rand.nextInt(locations.length)];
+                chosenCoords.add(randCoord);
+            }
+            totalNumCoords += numDesiredCoords;
+        }
+        //for (int cc = 1; cc < CONNECTED_COMPONENT_SIZES.size(); ++cc) {
+        //    System.out.println(landingCoordinates.get(cc));
+        //}
+        gc.writeTeamArray(0, totalNumCoords);
+        int communicationArrayIndex = 1;
+        // Write landing locations to communication array in decreasing order of connected component size
+        for (Pair<Integer, Integer> ccSizePair : ccBySize) {
+            int cc = ccSizePair.getFirst();
+            for (Integer coord : landingCoordinates.get(cc)) {
+                gc.writeTeamArray(communicationArrayIndex, coord);
+                ++communicationArrayIndex;
+            }
+        }
+    }
+
+    /**
+     * Pre-condition: If the calling context is the Earth player, the round is at least COMMUNICATION_DELAY
+     * @return the next landing location on Mars, in the format {@code (row << 16) | column}
+     */
+    public static int getNextLandingLocation() {
+        Veci32 landingLocations = gc.getTeamArray(Planet.Mars);
+        int numLandingLocations = landingLocations.get(0);
+        int nextLandingLocation = landingLocations.get(1 + landingLocationIndex);
+        landingLocationIndex = (landingLocationIndex + 1) % numLandingLocations;
+        return nextLandingLocation;
+    }
 }
