@@ -82,6 +82,8 @@ public class Main {
 
             } catch (Exception e) {
                 e.printStackTrace();
+            } catch (Error e) { // uh oh ¯\_(ツ)_/¯
+                e.printStackTrace();
             }
             gc.nextTurn();
         }

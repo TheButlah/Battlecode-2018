@@ -146,8 +146,7 @@ public class Worker extends AWorker {
             for (MyUnit unit : nearbyStructures) {
                 MyStructure structure = (MyStructure) unit;
                 if (!structure.isBuilt()
-                        || structure.getHealth() < structure.getMaxHealth() * 3 / 4
-                        || workersPerStructure.get(structure.getID()) < 3) {
+                        || structure.getHealth() < structure.getMaxHealth()) {
                     long distance = structure.getMapLocation().distanceSquaredTo(myMapLoc);
                     if (distance < closestStructureDist) {
                         closestStructure = structure;
@@ -247,10 +246,8 @@ public class Worker extends AWorker {
             }
             else {
                 // De-assign worker from factory so he can explore the map
-                if (workersPerStructure.get(targetStructure.getID()) > 3) {
-                    deassignStructure();
-                    targetStructure = null;
-                }
+                deassignStructure();
+                targetStructure = null;
             }
         }
 
