@@ -16,22 +16,62 @@ public abstract class ARanger extends ARobot implements MyRanger {
         //TODO: Use gc.researchInfo() to do this instead
     }
 
+    @Override
+    public int getAttackRingSize(){
+        return this.getAttackRange() - this.getCannotAttackRange();
+    }
+
+    @Override
+    public boolean canAct() {
+        return this.getAsUnit().rangerIsSniping() == 0;
+    }
+
+    @Override
+    public boolean isSnipeReady() {
+        return gc.isBeginSnipeReady(this.getID());
+    }
+
+
     /**
-     * Begins the countdown to snipe a given location.
-     * Maximizes the units attack and movement heats until the ranger has sniped.
-     * The ranger may begin the countdown at any time,
-     * including resetting the countdown to snipe a different location.
-     * @param loc the MapLocation to begin snipping
-     * @return true if snipping was successful, false otherwise
+     * Determines if the ranger can snipe a unit, taking in to account
+     * if the ability is unlocked, ability heat, and whatever their beginsnipe does :3
+     * @param target The unit to attack
+     * @return True if can snipe, else false
      */
-    /*public boolean beginSnipe(MapLocation loc) {
-        if (gc.isBeginSnipeReady(this.id) &&
-                gc.canBeginSnipe(this.id, loc)) {
-            gc.beginSnipe(this.id, loc);
+    @Override
+    public boolean canSnipe(Unit target) {
+        return isAbilityUnlocked() && this.isSnipeReady() && gc.canBeginSnipe(this.getID(), target.rangerTargetLocation());
+    }
+
+    /**
+     * checks if the ranger can snipe the target, if so, begins the countdown.
+     * @param target The target unit to snipe
+     * @return true if countdown started, else false
+     */
+    @Override
+    public boolean snipe(Unit target) {
+        if (canSnipe(target)) {
+            gc.beginSnipe(this.getID(), target.rangerTargetLocation());
             return true;
         }
         return false;
-    }*/
+    }
+
+    @Override
+    public boolean isTargetKindaClose(Unit target) {
+        return target.location().mapLocation().distanceSquaredTo(this.getMapLocation()) < this.getCannotAttackRange() + (0.25*this.getAttackRingSize());
+    }
+
+    @Override
+    public boolean isTargetKindaFar(Unit target) {
+        return target.location().mapLocation().distanceSquaredTo(this.getMapLocation()) > this.getAttackRange() - (0.25*this.getAttackRingSize());
+
+    }
+
+    @Override
+    public boolean isTargetInSweetSpot(Unit target) {
+        return !isTargetKindaClose(target) && !isTargetKindaFar(target);
+    }
 
 
 
