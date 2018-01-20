@@ -33,6 +33,8 @@ public final class Utils {
 
     public static final Direction[] dirs = Direction.values();
     public static final PlanetMap EARTH_START, MARS_START;
+    public static final int EARTH_MAP_WIDTH, EARTH_MAP_HEIGHT;
+    public static final int MARS_MAP_WIDTH, MARS_MAP_HEIGHT;
     public static final int MAP_WIDTH, MAP_HEIGHT;
     public static final Planet PLANET;
     public static final int[][] CONNECTED_COMPONENTS;
@@ -49,8 +51,13 @@ public final class Utils {
         PLANET = gc.planet();
         EARTH_START = gc.startingMap(Planet.Earth);
         MARS_START = gc.startingMap(Planet.Mars);
-        MAP_WIDTH = (int) EARTH_START.getWidth();
-        MAP_HEIGHT = (int) EARTH_START.getHeight();
+        EARTH_MAP_WIDTH = (int) EARTH_START.getWidth();
+        EARTH_MAP_HEIGHT = (int) EARTH_START.getHeight();
+        MARS_MAP_WIDTH = (int) MARS_START.getWidth();
+        MARS_MAP_HEIGHT = (int) MARS_START.getHeight();
+        MAP_WIDTH = PLANET == Planet.Earth ? EARTH_MAP_WIDTH : MARS_MAP_WIDTH;
+        MAP_HEIGHT = PLANET == Planet.Earth ? EARTH_MAP_HEIGHT : MARS_MAP_HEIGHT;
+
         CONNECTED_COMPONENTS = new int[MAP_HEIGHT][MAP_WIDTH];
         CONNECTED_COMPONENT_SIZES = new ArrayList<>();
         CONNECTED_COMPONENT_SIZES.add(0); // Add dummy value so that array is 1-indexed so we can
