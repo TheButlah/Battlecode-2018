@@ -32,7 +32,9 @@ public class Node {
     
     @Override
     public int hashCode() {
-        return Integer.hashCode(r) + Integer.hashCode(c);
+        // Pairing function: http://www.lsi.upc.edu/~alvarez/calculabilitat/enumerabilitat.pdf
+        int t = c + ((r+1)/2);
+        return r + (t * t);
     }
     
     @Override
