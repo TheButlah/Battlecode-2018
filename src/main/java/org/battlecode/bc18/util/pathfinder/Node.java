@@ -1,10 +1,3 @@
-/*
- * Copyright (c) 2018, Jared Junyoung Lim.
- * All rights reserved.
- *
- *
- *
- */
 
 package org.battlecode.bc18.util.pathfinder;
 
