@@ -3,12 +3,10 @@ package org.battlecode.bc18.bots.noobbot;
 import static org.battlecode.bc18.bots.noobbot.Knight.tman;
 import static org.battlecode.bc18.util.Utils.gc;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import bc.*;
-import org.battlecode.bc18.PathFinder;
-import org.battlecode.bc18.TargetManager;
+import org.battlecode.bc18.util.pathfinder.PathFinder;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.util.Utils;
 

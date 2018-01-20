@@ -1,7 +1,7 @@
 package org.battlecode.bc18.bots.noobbot;
 
 import bc.*;
-import org.battlecode.bc18.PathFinder;
+import org.battlecode.bc18.util.pathfinder.PathFinder;
 import org.battlecode.bc18.TargetManager;
 import org.battlecode.bc18.api.ARanger;
 import org.battlecode.bc18.util.Utils;

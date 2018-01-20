@@ -1,6 +1,6 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import org.battlecode.bc18.PathFinder;
+import org.battlecode.bc18.util.pathfinder.PathFinder;
 import org.battlecode.bc18.TargetManager;
 import org.battlecode.bc18.api.AKnight;
 import org.battlecode.bc18.util.Utils;

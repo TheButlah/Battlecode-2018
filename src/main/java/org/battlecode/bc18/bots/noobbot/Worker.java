@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.battlecode.bc18.PathFinder;
+import org.battlecode.bc18.util.pathfinder.PathFinder;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.AWorker;
 import org.battlecode.bc18.api.MyStructure;

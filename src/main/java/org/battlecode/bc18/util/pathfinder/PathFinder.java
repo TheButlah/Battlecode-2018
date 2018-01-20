@@ -1,4 +1,4 @@
-package org.battlecode.bc18;
+package org.battlecode.bc18.util.pathfinder;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -7,7 +7,6 @@ import java.util.PriorityQueue;
 import bc.Direction;
 import bc.MapLocation;
 import bc.Planet;
-import bc.PlanetMap;
 
 import org.battlecode.bc18.util.Utils;
 
@@ -182,25 +181,6 @@ public class PathFinder {
         Node closest = queue.peek();
         int pos = closest.r * cols + closest.c;
         return pos;
-    }
-
-    private class Node {
-        private int r;
-        private int c;
-
-        private Node(int row, int col) {
-            r = row;
-            c = col;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this) return true;
-            if (!(obj instanceof Node)) return false;
-
-            Node n = (Node) obj;
-            return n.r == this.r && n.c == this.c;
-        }
     }
 
     /** Use to find the optimal non-blocked direction to move, given a solved array of distances */
