@@ -20,7 +20,11 @@ public class Node {
         this.r = r;
         this.c = c;
     }
-
+    
+    public MapLocation toMapLocation(Planet planet) {
+        return new MapLocation(planet, c, r);
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (obj == this) return true;

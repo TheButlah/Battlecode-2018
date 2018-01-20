@@ -1,7 +1,12 @@
 
 package org.battlecode.bc18.util.pathfinder;
 
+import static org.battlecode.bc18.util.Utils.gc;
+
 import bc.MapLocation;
+import bc.Planet;
+import bc.PlanetMap;
+import org.battlecode.bc18.util.Utils;
 
 import java.util.*;
 
@@ -12,56 +17,66 @@ import java.util.*;
  * @author Jared Junyoung Lim
  */
 public class AStarSearch {
-    // Planet.getWidth()
+    // Upper bound for x of the map
     private int xLimit;
-    // Planet.getHeight()
+    // Upper bound for y of the map
     private int yLimit;
-
-    private Node goalNode;
+    // current planet
+    private Planet planet;
+    // current planet map
+    private PlanetMap planetMap;
 
     // The set of nodes already evaluated
-    private Set<Node> closedSet = new HashSet<>();
+    private Set<Node> closedSet;
 
     // The set of currently discovered nodes that are not evaluated yet.
     // Initially, only the start node is known.
-    private PriorityQueue<Node> openSet = new PriorityQueue<>(Comparator.comparingInt(this::getFScore));
+    private PriorityQueue<Node> openSet;
 
     // For each node, which node it can most efficiently be reached from.
     // If a node can be reached from many nodes, cameFrom will eventually contain the
     // most efficient previous step.
-    private Map<Node, Node> cameFrom = new HashMap<>();
+    private Map<Node, Node> cameFrom;
 
     // For each node, the cost of getting from the start node to that node.
     // If !contains(), INFINITY
-    private Map<Node, Integer> gScore = new HashMap<>();
+    private Map<Node, Integer> gScore;
 
     // For each node, the total cost of getting from the start node to the goal
     // by passing by that node. That value is partly known, partly heuristic.
-    private Map<Node, Integer> fScore = new HashMap<>();
-    
+    private Map<Node, Integer> fScore;
+
     // For each node, the cost of getting from its neighbor to itself
     // By default, it's one. Different weights can be specified.
-    private Map<Node, Integer> weights = new HashMap<>();
+    private Map<Node, Integer> weights;
 
     /**
      * A* search module.
-     * @param xLimit the upper limit for x axis.
-     * @param yLimit the upper limit for y axis.
-     * @param startNode starting point Node.
-     * @param goalNode end goal Node.
+     * @param planet current planet
      */
-    public AStarSearch(int xLimit, int yLimit, Node startNode, Node goalNode) {
-        this.xLimit = xLimit;
-        this.yLimit = yLimit;
+    public AStarSearch(Planet planet) {
+        updatePlanet(planet);
+    }
 
-        this.goalNode = goalNode;
-        openSet.add(startNode);
+    public void refreshPlanetMap() {
+        updatePlanet(gc.planet());
+    }
 
-        // The cost of going from start to start is zero.
-        gScore.put(startNode, 0);
+    public void updatePlanet(Planet planet) {
+        this.planet = planet;
+        this.planetMap = gc.startingMap(planet);
+        this.xLimit = (int) planetMap.getWidth();
+        this.yLimit = (int) planetMap.getHeight();
+        resetAll();
+    }
 
-        // For the first node, that value is completely heuristic.
-        fScore.put(startNode, heuristicCostEstimate(startNode, goalNode));
+    public void resetAll() {
+        closedSet = new HashSet<>();
+        openSet = new PriorityQueue<>(Comparator.comparingInt(this::getFScore));
+        cameFrom = new HashMap<>();
+        gScore = new HashMap<>();
+        fScore = new HashMap<>();
+        weights = new HashMap<>();
     }
 
     /**
@@ -71,7 +86,7 @@ public class AStarSearch {
     public void addObstacles(MapLocation loc) {
         closedSet.add(new Node(loc.getY(), loc.getX()));
     }
-    
+
     public void addObstacles(Node node) {
         closedSet.add(node);
     }
@@ -84,18 +99,18 @@ public class AStarSearch {
     public void addLocationWeight(MapLocation loc, int weight) {
         weights.put(new Node(loc.getY(), loc.getX()), weight);
     }
-    
+
     public void addLocationWeight(Node node, int weight) {
         weights.put(node, weight);
     }
-    
+
     private int heuristicCostEstimate(Node fromNode, Node endNode) {
         // double a = Math.pow(fromNode.r - endNode.r, 2);
         // double b = Math.pow(fromNode.c - endNode.c, 2);
         // return (int) Math.round(Math.sqrt(a + b));
         return Math.max(fromNode.r - endNode.r, fromNode.c - endNode.c);
     }
-    
+
     private int getWeightOf(Node node) {
         return weights.getOrDefault(node, 1);
     }
@@ -114,8 +129,14 @@ public class AStarSearch {
      * Returns the most efficient path from the starting node to the goal node
      * The list starts with the starting node and ends with the goal node.
      * @return the list of nodes
+     * @param goalNode destination node
      */
-    public List<Node> getShortestPath() {
+    public List<Node> getShortestPath(Node startNode, Node goalNode) {
+
+        openSet.add(startNode);
+        gScore.put(startNode, 0);
+        fScore.put(startNode, heuristicCostEstimate(startNode, goalNode));
+
         while (!openSet.isEmpty()) {
             Node current = openSet.poll();
             if (current.equals(goalNode)) {
@@ -126,6 +147,12 @@ public class AStarSearch {
             closedSet.add(current);
 
             for (Node neighbor : getNeighborsOf(current)) {
+
+                if (!Utils.toBool(planetMap.isPassableTerrainAt(neighbor.toMapLocation(planet))))
+                    continue;
+
+                if (gc.senseUnitAtLocation(neighbor.toMapLocation(planet)) != null)
+                    continue;
 
                 if (closedSet.contains(neighbor))
                     continue;
