@@ -44,6 +44,8 @@ public final class Utils {
     public static final Team TEAM;
     public static final Team OTHER_TEAM;
 
+    public static final int COMMUNICATION_ARRAY_LENGTH = 100; // TODO: this doesn't seem to be available via the API?
+
     private static int landingLocationIndex = 0;
 
     static {
@@ -157,6 +159,10 @@ public final class Utils {
         }
         if (Utils.PLANET == Planet.Mars) {
             broadcastLandingLocations();
+            //System.out.println("Num landing locations: " + gc.getTeamArray(Planet.Mars).get(0));
+            //for (int i = 0; i < COMMUNICATION_ARRAY_LENGTH; ++i) {
+            //    System.out.println(getNextLandingLocation());
+            //}
         }
 
         TEAM = gc.team();
@@ -403,31 +409,42 @@ public final class Utils {
             }
         }
         //System.out.println(Arrays.deepToString(locationsWithinCC));
-        int totalNumCoords = 0;
-        // Choose (cc size)^(1/4) locations in each cc
-        for (int cc = 1; cc < CONNECTED_COMPONENT_SIZES.size(); ++cc) {
-            HashSet<Integer> chosenCoords = landingCoordinates.get(cc);
-            int numDesiredCoords = (int) Math.pow(CONNECTED_COMPONENT_SIZES.get(cc), 1d/4d);
-            int[] locations = locationsWithinCC[cc];
-            for (; chosenCoords.size() < numDesiredCoords;) {
-                int randCoord = locations[rand.nextInt(locations.length)];
-                chosenCoords.add(randCoord);
-            }
-            totalNumCoords += numDesiredCoords;
-        }
-        //for (int cc = 1; cc < CONNECTED_COMPONENT_SIZES.size(); ++cc) {
-        //    System.out.println(landingCoordinates.get(cc));
-        //}
-        gc.writeTeamArray(0, totalNumCoords);
         int communicationArrayIndex = 1;
-        // Write landing locations to communication array in decreasing order of connected component size
-        for (Pair<Integer, Integer> ccSizePair : ccBySize) {
-            int cc = ccSizePair.getFirst();
-            for (Integer coord : landingCoordinates.get(cc)) {
-                gc.writeTeamArray(communicationArrayIndex, coord);
-                ++communicationArrayIndex;
+        int totalNumCoords = 0; // Keep track of the size of a set of landing coordinates that spans all connected components
+        // Fill communication array until we can no longer fit a set of totalNumCoords into the array
+        while (COMMUNICATION_ARRAY_LENGTH - communicationArrayIndex >= totalNumCoords) {
+            totalNumCoords = 0;
+            // Choose (cc size)^(1/4) locations in each cc
+            for (int cc = 1; cc < CONNECTED_COMPONENT_SIZES.size(); ++cc) {
+                HashSet<Integer> chosenCoords = landingCoordinates.get(cc);
+                // Clear any previously generated landing locations for each connected component
+                chosenCoords.clear();
+                // Generate new unique landing locations (not necessarily distinct from previously generated locations)
+                int numDesiredCoords = (int) Math.pow(CONNECTED_COMPONENT_SIZES.get(cc), 1d/4d);
+                int[] locations = locationsWithinCC[cc];
+                for (; chosenCoords.size() < numDesiredCoords;) {
+                    int randCoord = locations[rand.nextInt(locations.length)];
+                    chosenCoords.add(randCoord);
+                }
+                totalNumCoords += numDesiredCoords;
+            }
+            if (totalNumCoords > COMMUNICATION_ARRAY_LENGTH - communicationArrayIndex) {
+                // Prevent overflow of communication array
+                break;
+            }
+            //for (int cc = 1; cc < CONNECTED_COMPONENT_SIZES.size(); ++cc) {
+            //    System.out.println(landingCoordinates.get(cc));
+            //}
+            // Write landing locations to communication array in decreasing order of connected component size
+            for (Pair<Integer, Integer> ccSizePair : ccBySize) {
+                int cc = ccSizePair.getFirst();
+                for (Integer coord : landingCoordinates.get(cc)) {
+                    gc.writeTeamArray(communicationArrayIndex, coord);
+                    ++communicationArrayIndex;
+                }
             }
         }
+        gc.writeTeamArray(0, communicationArrayIndex - 1); // write number of generated landing locations
     }
 
     /**
