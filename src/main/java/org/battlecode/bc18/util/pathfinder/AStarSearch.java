@@ -1,6 +1,8 @@
 
 package org.battlecode.bc18.util.pathfinder;
 
+import bc.MapLocation;
+
 import java.util.*;
 
 /**
@@ -18,7 +20,7 @@ public class AStarSearch {
     private Node goalNode;
 
     // The set of nodes already evaluated
-    private List<Node> closedSet = new ArrayList<>();
+    private Set<Node> closedSet = new HashSet<>();
 
     // The set of currently discovered nodes that are not evaluated yet.
     // Initially, only the start node is known.
@@ -36,6 +38,10 @@ public class AStarSearch {
     // For each node, the total cost of getting from the start node to the goal
     // by passing by that node. That value is partly known, partly heuristic.
     private Map<Node, Integer> fScore = new HashMap<>();
+    
+    // For each node, the cost of getting from its neighbor to itself
+    // By default, it's one. Different weights can be specified.
+    private Map<Node, Integer> weights = new HashMap<>();
 
     /**
      * A* search module.
@@ -58,14 +64,40 @@ public class AStarSearch {
         fScore.put(startNode, heuristicCostEstimate(startNode, goalNode));
     }
 
+    /**
+     * Add an obstacle to the search map.
+     * @param loc map location of an obstacle
+     */
+    public void addObstacles(MapLocation loc) {
+        closedSet.add(new Node(loc.getY(), loc.getX()));
+    }
+    
     public void addObstacles(Node node) {
         closedSet.add(node);
     }
 
+    /**
+     * Add weight to a location
+     * @param loc a map location
+     * @param weight added weight
+     */
+    public void addLocationWeight(MapLocation loc, int weight) {
+        weights.put(new Node(loc.getY(), loc.getX()), weight);
+    }
+    
+    public void addLocationWeight(Node node, int weight) {
+        weights.put(node, weight);
+    }
+    
     private int heuristicCostEstimate(Node fromNode, Node endNode) {
-        double a = Math.pow(fromNode.r - endNode.r, 2);
-        double b = Math.pow(fromNode.c - endNode.c, 2);
-        return (int) Math.round(Math.sqrt(a + b));
+        // double a = Math.pow(fromNode.r - endNode.r, 2);
+        // double b = Math.pow(fromNode.c - endNode.c, 2);
+        // return (int) Math.round(Math.sqrt(a + b));
+        return Math.max(fromNode.r - endNode.r, fromNode.c - endNode.c);
+    }
+    
+    private int getWeightOf(Node node) {
+        return weights.getOrDefault(node, 1);
     }
 
     private List<Node> reconstructPath(Node current) {
@@ -73,11 +105,16 @@ public class AStarSearch {
         totalPath.add(current);
         while (cameFrom.containsKey(current)) {
             current = cameFrom.get(current);
-            totalPath.add(current);
+            totalPath.add(0, current);
         }
         return totalPath;
     }
 
+    /**
+     * Returns the most efficient path from the starting node to the goal node
+     * The list starts with the starting node and ends with the goal node.
+     * @return the list of nodes
+     */
     public List<Node> getShortestPath() {
         while (!openSet.isEmpty()) {
             Node current = openSet.poll();
@@ -96,22 +133,16 @@ public class AStarSearch {
                 if (!openSet.contains(neighbor))
                     openSet.add(neighbor);
 
-                int newG = gScore.get(current) + 1;
+                int newG = gScore.get(current) + getWeightOf(neighbor);
                 if (newG >= getGScore(neighbor))
                     continue;
 
-                if (cameFrom.replace(neighbor, current) == null) {
-                    cameFrom.put(neighbor, current);
-                }
+                cameFrom.put(neighbor, current);
 
-                if (gScore.replace(neighbor, newG) == null) {
-                    gScore.put(neighbor, newG);
-                }
+                gScore.put(neighbor, newG);
 
                 int newF = gScore.get(neighbor) + heuristicCostEstimate(neighbor, goalNode);
-                if (fScore.replace(neighbor, newF) == null) {
-                    fScore.put(neighbor, newF);
-                }
+                fScore.put(neighbor, newF);
             }
         }
 
@@ -119,13 +150,19 @@ public class AStarSearch {
     }
 
     private int getFScore(Node node) {
-        return gScore.getOrDefault(node, Integer.MAX_VALUE);
+        return fScore.getOrDefault(node, Integer.MAX_VALUE);
     }
 
     private int getGScore(Node node) {
         return gScore.getOrDefault(node, Integer.MAX_VALUE);
     }
 
+    /**
+     * Gets a list of all adjacent nodes.
+     * Includes the four cardinal directions and the four diagonals.
+     * @param current specified node
+     * @return a list of neighbor nodes
+     */
     private List<Node> getNeighborsOf(Node current) {
         int r = current.r;
         int c= current.c;
