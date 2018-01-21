@@ -53,13 +53,14 @@ public class Main {
         }
 
         while (true) {
-            System.out.println("Current round: " + gc.round());
+            long round = gc.round();
+            System.out.println("Current round: " + round);
             try{
                 // Don't trigger timeout!!
                 // We want to stay alive for as long as possible, in case the opponent times out
                 // and we can steal the victory
                 int timeLeft = gc.getTimeLeftMs();
-                if (timeLeft < 300) {
+                if (round < 995 && timeLeft < AUnit.getNumUnits() * 5) {
                     System.out.println("Time Left: " + timeLeft + ", skipping turn...");
                     gc.nextTurn();
                     continue;
@@ -75,7 +76,7 @@ public class Main {
                     MapLocation mapLoc = loc.mapLocation();
                     tman.updateCentroids(mapLoc.getX(), mapLoc.getY());
                 }
-                if (Utils.gc.round() % 10 == 0) System.out.println(Arrays.toString(Knight.tman.centroids));
+                if (round % 10 == 0) System.out.println(Arrays.toString(Knight.tman.centroids));
                 AUnit.doTurn();
 
             } catch (Exception e) {

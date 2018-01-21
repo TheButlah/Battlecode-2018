@@ -29,8 +29,6 @@ import bc.bc;
 @SuppressWarnings("unused")
 public abstract class AUnit implements MyUnit {
 
-
-
     /** Sets the UnitBuilder that will be used to make units. Should be run at very start. */
     public static void init(UnitBuilder builder) {
         AUnit.builder = builder;
