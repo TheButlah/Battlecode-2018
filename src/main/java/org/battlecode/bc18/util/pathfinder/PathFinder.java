@@ -2,15 +2,19 @@ package org.battlecode.bc18.util.pathfinder;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
+import java.util.Queue;
+
+import org.battlecode.bc18.util.Pair;
+import org.battlecode.bc18.util.Utils;
+
+import com.lodborg.cache.LRUCache;
 
 import bc.Direction;
 import bc.MapLocation;
 import bc.Planet;
-
-import org.battlecode.bc18.util.Utils;
-
-import com.lodborg.cache.LRUCache;
 
 
 /**
@@ -70,11 +74,124 @@ public class PathFinder {
         if (weights == null) {
             weights = new int[rows][cols];
         }
+        Queue<Pair<Integer, Integer>> q = new LinkedList<>();
+        HashSet<Integer> visited = new HashSet<>();
         for (int r = 0; r < rows; ++r) {
             for (int c = 0; c < cols; ++c) {
-                weights[r][c] =
-                     Utils.CONNECTED_COMPONENTS[r][c] != Utils.IMPASSIBLE_TERRAIN
-                     ? 1 : INFINITY;
+                boolean isWall = Utils.CONNECTED_COMPONENTS[r][c] == Utils.IMPASSIBLE_TERRAIN;
+                if (isWall) {
+                    weights[r][c] = INFINITY;
+                    int coord = (r << 16) | c ;
+                    q.add(new Pair<Integer, Integer>(0, coord));
+                    visited.add(coord);
+                }
+            }
+        }
+        // Note that we use 0xFFFF to represent a -1 value for row/column in the int representation of a coordinate
+        // Add walls on left and right
+        for (int r = 0; r < rows; ++r) {
+            int coord = (r << 16) | 0xFFFF;
+            q.add(new Pair<Integer, Integer>(0, coord));
+            coord = (r << 16) | Utils.MAP_WIDTH;
+            q.add(new Pair<Integer, Integer>(0, coord));
+        }
+        // Add walls on top and bottom
+        for (int c = 0; c < cols; ++c) {
+            int coord = 0xFFFF0000 | c;
+            q.add(new Pair<Integer, Integer>(0, coord));
+            coord = (Utils.MAP_HEIGHT << 16) | c;
+            q.add(new Pair<Integer, Integer>(0, coord));
+        }
+        // Assign weights for passable terrain by calculating distance to the nearest wall
+        while (!q.isEmpty()) {
+            Pair<Integer, Integer> distCoordPair = q.poll();
+            int distanceToWall = distCoordPair.getFirst();
+            int coord = distCoordPair.getSecond();
+            int row = coord >>> 16;
+            if (row == 0xFFFF) {
+                row = -1;
+            }
+            int col = coord & 0x0000FFFF;
+            if (col == 0xFFFF) {
+                col = -1;
+            }
+            if (distanceToWall != 0) {
+                // Weight node inversely to the distance from the nearest wall
+                weights[row][col] = Math.max(1, 5 - distanceToWall);
+            }
+            int newRow = row;
+            int newCol = col - 1;
+            int newCoord;
+            if (0 <= newRow && newRow < Utils.MAP_HEIGHT) {
+                if (newCol >= 0) {
+                    newCoord = (newRow << 16) | newCol;
+                    if (!visited.contains(newCoord)) {
+                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        visited.add(newCoord);
+                    }
+                }
+                newCol = col + 1;
+                if (newCol < Utils.MAP_WIDTH) {
+                    newCoord = (newRow << 16) | newCol;
+                    if (!visited.contains(newCoord)) {
+                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        visited.add(newCoord);
+                    }
+                }
+            }
+            newRow = row - 1;
+            if (newRow >= 0) {
+                newCol = col;
+                if (0 <= newCol && newCol < Utils.MAP_WIDTH) {
+                    newCoord = (newRow << 16) | newCol;
+                    if (!visited.contains(newCoord)) {
+                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        visited.add(newCoord);
+                    }
+                }
+                newCol = col - 1;
+                if (newCol >= 0) {
+                    newCoord = (newRow << 16) | newCol;
+                    if (!visited.contains(newCoord)) {
+                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        visited.add(newCoord);
+                    }
+                }
+                newCol = col + 1;
+                if (newCol < Utils.MAP_WIDTH) {
+                    newCoord = (newRow << 16) | newCol;
+                    if (!visited.contains(newCoord)) {
+                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        visited.add(newCoord);
+                    }
+                }
+            }
+            newRow = row + 1;
+            if (newRow < Utils.MAP_HEIGHT) {
+                newCol = col;
+                if (0 <= newCol && newCol < Utils.MAP_WIDTH) {
+                    newCoord = (newRow << 16) | newCol;
+                    if (!visited.contains(newCoord)) {
+                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        visited.add(newCoord);
+                    }
+                }
+                newCol = col - 1;
+                if (newCol >= 0) {
+                    newCoord = (newRow << 16) | newCol;
+                    if (!visited.contains(newCoord)) {
+                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        visited.add(newCoord);
+                    }
+                }
+                newCol = col + 1;
+                if (newCol < Utils.MAP_WIDTH) {
+                    newCoord = (newRow << 16) | newCol;
+                    if (!visited.contains(newCoord)) {
+                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        visited.add(newCoord);
+                    }
+                }
             }
         }
         cache.evictAll();
