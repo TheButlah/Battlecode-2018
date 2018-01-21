@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.battlecode.bc18.util.pathfinder.PathFinder;
+import org.battlecode.bc18.ProductionManager;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.AWorker;
 import org.battlecode.bc18.api.MyStructure;
@@ -99,7 +100,8 @@ public class Worker extends AWorker {
             targetStructure = null;
         }
 
-        if ((turn == 1 && getID() == Main.initializingWorkerId) || gc.karbonite() >= 300) {
+        UnitType nextDesiredProduction = ProductionManager.getNextProductionType();
+        if ((turn == 1 && getID() == Main.initializingWorkerId) || nextDesiredProduction == UnitType.Factory) {
             //startTime = System.currentTimeMillis();
             List<MyStructure> nearbyStructures = getNearbyStructures();
             ArrayList<MapLocation> nearbyStructuresLoc = new ArrayList<>();
@@ -118,7 +120,7 @@ public class Worker extends AWorker {
             //System.out.println("time 1: " + time1);
         }
 
-        if (!hasActed() && turn >= 200 && gc.karbonite() >= 200) { // TODO: balance number of factories and rockets
+        if (!hasActed() && nextDesiredProduction == UnitType.Rocket) {
             //startTime = System.currentTimeMillis();
             List<MyStructure> nearbyStructures = getNearbyStructures();
             ArrayList<MapLocation> nearbyStructuresLoc = new ArrayList<>();
@@ -217,7 +219,7 @@ public class Worker extends AWorker {
                 //startTime = System.currentTimeMillis();
                 // replicate if factory not yet built or factory damaged
                 List<MyUnit> nearbyWorkers = senseNearbyFriendlies(UnitType.Worker);
-                if (nearbyWorkers.size() < 7) {
+                if (nearbyWorkers.size() < 4) {
                     for (Direction dir : Utils.dirs) {
                         if (canReplicate(dir)) {
                             //println("Replicating");

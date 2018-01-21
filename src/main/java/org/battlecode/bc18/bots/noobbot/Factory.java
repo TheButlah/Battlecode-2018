@@ -1,6 +1,8 @@
 package org.battlecode.bc18.bots.noobbot;
 
 import bc.*;
+
+import org.battlecode.bc18.ProductionManager;
 import org.battlecode.bc18.api.AFactory;
 import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Utils;
@@ -24,18 +26,26 @@ public class Factory extends AFactory {
         //System.out.println("Workers assigned to me: " + workersPerFactory.get(getID()));
         // Since we cant maintain the invariant for the units HashMap, manually add in units to ensure invariant.
 
-        // make and place knights until you can't :D
         //startTime = System.currentTimeMillis();
-        List<MyUnit> nearbyWorkers = senseNearbyFriendlies(UnitType.Worker);
-        boolean hasNearbyWorker = (nearbyWorkers.size() >=1);
         //time1 += System.currentTimeMillis() - startTime;
         //System.out.println("time1: " + time1);
 
         //startTime = System.currentTimeMillis();
-        if (!hasNearbyWorker && canProduceRobot(UnitType.Worker)) {
+        UnitType nextDesiredProduction = ProductionManager.getNextProductionType();
+        if (getHealth() < getMaxHealth() && canProduceRobot(UnitType.Worker) && senseNearbyFriendlies(UnitType.Worker).size() == 0) {
             produceRobot(UnitType.Worker);
-        } else if (canProduceRobot(UnitType.Knight)) {
+        }
+        else if (nextDesiredProduction == UnitType.Knight && canProduceRobot(UnitType.Knight)) {
             produceRobot(UnitType.Knight);
+        }
+        else if (nextDesiredProduction == UnitType.Ranger && canProduceRobot(UnitType.Ranger)) {
+            produceRobot(UnitType.Ranger);
+        }
+        else if (nextDesiredProduction == UnitType.Mage && canProduceRobot(UnitType.Mage)) {
+            produceRobot(UnitType.Mage);
+        }
+        else if (nextDesiredProduction == UnitType.Healer && canProduceRobot(UnitType.Healer)) {
+            produceRobot(UnitType.Healer);
         }
         //time2 += System.currentTimeMillis() - startTime;
         //System.out.println("time2: " + time2);

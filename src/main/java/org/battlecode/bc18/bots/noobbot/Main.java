@@ -21,9 +21,9 @@ public class Main {
         AUnit.init(new UnitBuilder());
 
         gc.queueResearch(UnitType.Knight);
-        gc.queueResearch(UnitType.Knight);
-        gc.queueResearch(UnitType.Knight);
         gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Knight);
+        gc.queueResearch(UnitType.Knight);
         gc.queueResearch(UnitType.Rocket);
         gc.queueResearch(UnitType.Rocket);
         gc.queueResearch(UnitType.Worker);
