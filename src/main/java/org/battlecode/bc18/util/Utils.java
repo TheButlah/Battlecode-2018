@@ -28,8 +28,8 @@ public final class Utils {
 
     public static final GameController gc;
 
-    public static final long SEED = 8675309;
-    public static final Random rand = new Random(SEED);
+    public static final long SEED;
+    public static final Random rand;
 
     public static final Direction[] dirs = Direction.values();
     public static final PlanetMap EARTH_START, MARS_START;
@@ -50,6 +50,10 @@ public final class Utils {
 
     static {
         gc = new GameController();
+        TEAM = gc.team();
+        OTHER_TEAM = TEAM == Team.Red ? Team.Blue : Team.Red;
+        SEED = TEAM == Team.Red ? 8675309 : 8675310;
+        rand = new Random(SEED);
         PLANET = gc.planet();
         EARTH_START = gc.startingMap(Planet.Earth);
         MARS_START = gc.startingMap(Planet.Mars);
@@ -164,9 +168,6 @@ public final class Utils {
             //    System.out.println(getNextLandingLocation());
             //}
         }
-
-        TEAM = gc.team();
-        OTHER_TEAM = TEAM == Team.Red ? Team.Blue : Team.Red;
     }
 
     public static boolean toBool(short x) {

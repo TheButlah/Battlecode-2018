@@ -31,9 +31,10 @@ public class Main {
         gc.queueResearch(UnitType.Worker);
         gc.queueResearch(UnitType.Worker);
 
+        // Initialize Pathfinder
+        PathFinder.myPlanetPathfinder = new PathFinder();
+
         if (gc.planet() == Planet.Earth) {
-            // Initialize Pathfinder
-            PathFinder.myPlanetPathfinder = new PathFinder();
             // Determine initializer worker
             VecUnit startingWorkers = gc.myUnits();
             Unit optimalInitializingWorker = null;

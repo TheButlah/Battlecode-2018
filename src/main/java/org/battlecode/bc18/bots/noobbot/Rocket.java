@@ -36,7 +36,6 @@ public class Rocket extends ARocket {
                     if (unit instanceof MyRobot) {
                         MyRobot robot = (MyRobot) unit;
                         if (canLoad(robot)) {
-                            println("Loading: " + robot);
                             load(robot);
                         }
                         // TODO: Move nearby robots towards factory

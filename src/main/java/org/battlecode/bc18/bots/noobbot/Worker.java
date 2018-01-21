@@ -18,6 +18,7 @@ import org.battlecode.bc18.util.Utils;
 
 import bc.Direction;
 import bc.MapLocation;
+import bc.Planet;
 import bc.Unit;
 import bc.UnitType;
 
@@ -85,6 +86,18 @@ public class Worker extends AWorker {
             return;
         }
         long turn = gc.round();
+        if (Utils.PLANET == Planet.Mars && turn >= 750) {
+            // Spam replicate after Earth is wiped out
+            for (Direction dir : Utils.dirs) {
+                if (canReplicate(dir)) {
+                    //println("Replicating");
+                    MyUnit newWorker = replicate(dir);
+                    if (newWorker != null) {
+                        break;
+                    }
+                }
+            }
+        }
         //We already checked that we were on the map
         MapLocation myMapLoc = getMapLocation();
 
@@ -95,52 +108,47 @@ public class Worker extends AWorker {
             targetStructure = null;
         }
 
-        UnitType nextDesiredProduction = ProductionManager.getNextProductionType();
-        if ((turn == 1 && getID() == Main.initializingWorkerId) || nextDesiredProduction == UnitType.Factory) {
-            //startTime = System.currentTimeMillis();
-            List<MyStructure> nearbyStructures = getNearbyStructures();
-            ArrayList<MapLocation> nearbyStructuresLoc = new ArrayList<>();
-            for (MyStructure structure : nearbyStructures) {
-                nearbyStructuresLoc.add(structure.getMapLocation());
-            }
-            for (Direction dir : preferredDirections(myMapLoc)) {
-                if (canBlueprint(UnitType.Factory, dir)
-                        && !Utils.isAnyWithinDistance(nearbyStructuresLoc, myMapLoc.add(dir), 4)) {
-                    targetStructure = (Factory) blueprint(UnitType.Factory, dir);
-                    assignStructure(targetStructure);
-                    break;
-                }
-            }
-            //time1 += System.currentTimeMillis() - startTime;
-            //System.out.println("time 1: " + time1);
-        }
-        try {
-            hasActed();
-        }
-        catch (Exception e) {
-            System.out.println("is dead: " + isDead());
-            System.out.println("map location: " + getMapLocation());
-        }
-        if (!hasActed() && nextDesiredProduction == UnitType.Rocket) {
-            //startTime = System.currentTimeMillis();
-            List<MyStructure> nearbyStructures = getNearbyStructures();
-            ArrayList<MapLocation> nearbyStructuresLoc = new ArrayList<>();
-            for (MyStructure structure : nearbyStructures) {
-                nearbyStructuresLoc.add(structure.getMapLocation());
-            }
-            for (Direction dir : preferredDirections(myMapLoc)) {
-                if (canBlueprint(UnitType.Rocket, dir)
-                        && !Utils.isAnyWithinDistance(nearbyStructuresLoc, myMapLoc.add(dir), 4)) {
-                    targetStructure = (Rocket) blueprint(UnitType.Rocket, dir);
-                    assignStructure(targetStructure);
-                    break;
-                }
-            }
-            //time2 += System.currentTimeMillis() - startTime;
-            //System.out.println("time 2: " + time2);
-        }
-
         if (targetStructure == null) {
+            if (Utils.PLANET == Planet.Earth) {
+                UnitType nextDesiredProduction = ProductionManager.getNextProductionType();
+                if ((turn == 1 && getID() == Main.initializingWorkerId) || nextDesiredProduction == UnitType.Factory) {
+                    //startTime = System.currentTimeMillis();
+                    List<MyStructure> nearbyStructures = getNearbyStructures();
+                    ArrayList<MapLocation> nearbyStructuresLoc = new ArrayList<>();
+                    for (MyStructure structure : nearbyStructures) {
+                        nearbyStructuresLoc.add(structure.getMapLocation());
+                    }
+                    for (Direction dir : preferredDirections(myMapLoc)) {
+                        if (canBlueprint(UnitType.Factory, dir)
+                                && !Utils.isAnyWithinDistance(nearbyStructuresLoc, myMapLoc.add(dir), 4)) {
+                            targetStructure = (Factory) blueprint(UnitType.Factory, dir);
+                            assignStructure(targetStructure);
+                            break;
+                        }
+                    }
+                    //time1 += System.currentTimeMillis() - startTime;
+                    //System.out.println("time 1: " + time1);
+                }
+                if (!hasActed() && nextDesiredProduction == UnitType.Rocket) {
+                    //startTime = System.currentTimeMillis();
+                    List<MyStructure> nearbyStructures = getNearbyStructures();
+                    ArrayList<MapLocation> nearbyStructuresLoc = new ArrayList<>();
+                    for (MyStructure structure : nearbyStructures) {
+                        nearbyStructuresLoc.add(structure.getMapLocation());
+                    }
+                    for (Direction dir : preferredDirections(myMapLoc)) {
+                        if (canBlueprint(UnitType.Rocket, dir)
+                                && !Utils.isAnyWithinDistance(nearbyStructuresLoc, myMapLoc.add(dir), 4)) {
+                            targetStructure = (Rocket) blueprint(UnitType.Rocket, dir);
+                            assignStructure(targetStructure);
+                            break;
+                        }
+                    }
+                    //time2 += System.currentTimeMillis() - startTime;
+                    //System.out.println("time 2: " + time2);
+                }
+            }
+            // Search for target structures
             //startTime = System.currentTimeMillis();
             List<MyUnit> nearbyStructures = senseNearbyFriendlies(UnitType.Factory);
             nearbyStructures.addAll(senseNearbyFriendlies(UnitType.Rocket));
@@ -150,6 +158,12 @@ public class Worker extends AWorker {
                 MyStructure structure = (MyStructure) unit;
                 if (!structure.isBuilt()
                         || structure.getHealth() < structure.getMaxHealth()) {
+                    // Ignore empty rockets on mars
+                    if (Utils.PLANET == Planet.Mars && structure.getType() == UnitType.Rocket) {
+                        if (((AUnit)structure).getAsUnit().structureGarrison().size() == 0) {
+                            continue;
+                        }
+                    }
                     long distance = structure.getMapLocation().distanceSquaredTo(myMapLoc);
                     if (distance < closestStructureDist) {
                         closestStructure = structure;

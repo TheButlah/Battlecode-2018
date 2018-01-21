@@ -7,17 +7,20 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 
 import org.battlecode.bc18.util.Pair;
 import org.battlecode.bc18.util.Utils;
 
 import bc.Location;
 import bc.MapLocation;
+import bc.Planet;
+import bc.RocketLanding;
+import bc.RocketLandingInfo;
 import bc.Team;
 import bc.Unit;
 import bc.UnitType;
 import bc.VecMapLocation;
+import bc.VecRocketLanding;
 import bc.VecUnit;
 import bc.VecUnitID;
 import bc.bc;
@@ -55,6 +58,28 @@ public abstract class AUnit implements MyUnit {
         //TODO: keeping a Queue of the turn numbers at which units should be ready.
         //TODO: Peek the queue to see if the turn matches this one, and if it does call makeUnit()
         //TODO: on last member of garrison
+        if (Utils.PLANET == Planet.Mars) {
+            // Create MyUnit wrappers for imminently landing units
+            RocketLandingInfo landingInfo = gc.rocketLandings();
+            VecRocketLanding landingsThisRound = landingInfo.landingsOn(gc.round());
+            for (int i = 0; i < landingsThisRound.size(); ++i) {
+                RocketLanding rocketLanding = landingsThisRound.get(i);
+                int rocketId = rocketLanding.getRocket_id();
+                if (!gc.canSenseUnit(rocketId)) {
+                    continue;
+                }
+                Unit rocketUnit = gc.unit(rocketId);
+                if (rocketUnit.team() == Utils.OTHER_TEAM) {
+                    continue;
+                }
+                AUnit rocket = (AUnit) getUnit(rocketUnit);
+                rocket.setLocation(rocketLanding.getDestination());
+                VecUnitID garrisonedUnits = rocket.getAsUnit().structureGarrison();
+                for (int j = 0; j < garrisonedUnits.size(); ++j) {
+                    getUnit(garrisonedUnits.get(j));
+                }
+            }
+        }
         filterDeadUnits();
         // Perform all structure actions
         for (int i = 0; i < unitList.size(); ++i) {

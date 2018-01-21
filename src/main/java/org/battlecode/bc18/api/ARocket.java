@@ -23,6 +23,7 @@ public abstract class ARocket extends AStructure implements MyRocket {
         for (MyRobot robot : garrisonRobots) {
             ((AUnit)robot).informOfDeath(); // Units launched into space are now considered to be dead
         }
+        informOfDeath();
     }
 
     //////////END OF API//////////

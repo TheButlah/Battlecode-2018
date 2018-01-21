@@ -32,7 +32,6 @@ public class Factory extends AFactory {
 
         //startTime = System.currentTimeMillis();
         UnitType nextDesiredProduction = ProductionManager.getNextProductionType();
-        println("Next prod: " + nextDesiredProduction);
         if (getHealth() < getMaxHealth() && canProduceRobot(UnitType.Worker) && senseNearbyFriendlies(UnitType.Worker).size() == 0) {
             produceRobot(UnitType.Worker);
         }
