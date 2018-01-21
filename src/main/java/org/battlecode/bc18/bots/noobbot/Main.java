@@ -75,7 +75,6 @@ public class Main {
                     tman.updateCentroids(mapLoc.getX(), mapLoc.getY());
                 }
                 if (Utils.gc.round() % 10 == 0) System.out.println(Arrays.toString(Knight.tman.centroids));
-                AUnit.initTurn();
                 AUnit.doTurn();
 
             } catch (Exception e) {

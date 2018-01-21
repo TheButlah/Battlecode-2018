@@ -33,6 +33,14 @@ public interface MyRobot extends MyUnit {
      */
     MapLocation move(Direction dir);
 
+    /**
+     * Tries to move the robot in the given direction. If it is not possible, then alternate nearby
+     * directions are considered.
+     * @param dir The direction to move in.
+     * @return The new location on the map that the robot moved to.
+     */
+    MapLocation fuzzyMove(Direction dir);
+
     /** Gets the current active ability heat for this robot. */
     int getAbilityHeat();
 

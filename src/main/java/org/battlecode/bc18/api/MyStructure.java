@@ -25,4 +25,16 @@ public interface MyStructure extends MyUnit {
      * @return The robot that was unloaded.
      */
     MyRobot unload(Direction direction);
+
+    /**
+     * @param robot
+     * @return Whether the given robot can be loaded into this structure's garrison
+     */
+    boolean canLoad(MyRobot robot);
+
+    /**
+     * Loads a robot into this structure's garrison
+     * @param robot The robot to load
+     */
+    void load(MyRobot robot);
 }

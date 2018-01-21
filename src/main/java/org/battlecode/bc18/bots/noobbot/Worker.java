@@ -80,16 +80,11 @@ public class Worker extends AWorker {
 
     @Override
     public void act() {
-        // first turn, build a targetFactory [by one unit].
-        // if the targetFactory has not been built, replicate if can and help building a targetFactory.
-        // else, move randomly.
-        // try mining if walked over the Karbonite.
-        long turn = gc.round();
         if (!isOnMap()) {
-            //TODO: Handle worker in space/garrison/dead?
-            println("TODO: handle worker not on map");
+            // println("TODO: handle worker not on map");
             return;
         }
+        long turn = gc.round();
         //We already checked that we were on the map
         MapLocation myMapLoc = getMapLocation();
 
@@ -119,7 +114,13 @@ public class Worker extends AWorker {
             //time1 += System.currentTimeMillis() - startTime;
             //System.out.println("time 1: " + time1);
         }
-
+        try {
+            hasActed();
+        }
+        catch (Exception e) {
+            System.out.println("is dead: " + isDead());
+            System.out.println("map location: " + getMapLocation());
+        }
         if (!hasActed() && nextDesiredProduction == UnitType.Rocket) {
             //startTime = System.currentTimeMillis();
             List<MyStructure> nearbyStructures = getNearbyStructures();

@@ -13,7 +13,7 @@ public class ProductionManager {
         if (AUnit.getNumUnits(UnitType.Worker) == 0) {
             return UnitType.Worker;
         }
-        if (AUnit.getNumUnits() < 10 || (karbonite >= 200 && AUnit.getNumUnits(UnitType.Factory) < 10)) {
+        if ((round > 100 && AUnit.getNumUnits() < 10) || (karbonite >= 200 && AUnit.getNumUnits(UnitType.Factory) < 10)) {
             return UnitType.Factory;
         }
         else if (AUnit.getNumUnits(UnitType.Rocket) < desiredNumRockets) {

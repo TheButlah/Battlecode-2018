@@ -161,6 +161,9 @@ public interface MyUnit {
     /** Gets the health of the unit */
     int getHealth();
 
+    /** Whether the structure's garrision is full */
+    boolean isGarrisonFull();
+
     /**
      * Gets the locations that contain karbonite within some radius.
      * NOTE: Requires that this unit is on the map first, and that radius <= getVisionRange().

@@ -41,6 +41,18 @@ public abstract class AStructure extends AUnit implements MyStructure {
         return unloadedUnit;
     }
 
+    @Override
+    public boolean canLoad(MyRobot robot) {
+        return gc.canLoad(getID(), robot.getID());
+    }
+
+    @Override
+    public void load(MyRobot robot) {
+        assert canLoad(robot);
+        gc.load(getID(), robot.getID());
+        ((AUnit)robot).setLocation(gc.unit(robot.getID()).location());
+    }
+
     //////////END OF API//////////
 
     /**

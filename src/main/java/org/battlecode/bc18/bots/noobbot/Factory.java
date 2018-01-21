@@ -32,7 +32,11 @@ public class Factory extends AFactory {
 
         //startTime = System.currentTimeMillis();
         UnitType nextDesiredProduction = ProductionManager.getNextProductionType();
+        println("Next prod: " + nextDesiredProduction);
         if (getHealth() < getMaxHealth() && canProduceRobot(UnitType.Worker) && senseNearbyFriendlies(UnitType.Worker).size() == 0) {
+            produceRobot(UnitType.Worker);
+        }
+        else if (nextDesiredProduction == UnitType.Worker && canProduceRobot(UnitType.Worker)) {
             produceRobot(UnitType.Worker);
         }
         else if (nextDesiredProduction == UnitType.Knight && canProduceRobot(UnitType.Knight)) {
@@ -51,7 +55,7 @@ public class Factory extends AFactory {
         //System.out.println("time2: " + time2);
         //startTime = System.currentTimeMillis();
         // Unload units
-        if (getGarrison().size() != 0) {
+        if (getAsUnit().structureGarrison().size() != 0) {
             for (Direction dir : Utils.dirs) {
                 if (canUnload(dir)) {
                     unload(dir);

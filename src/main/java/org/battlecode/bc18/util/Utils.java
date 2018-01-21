@@ -453,9 +453,63 @@ public final class Utils {
      */
     public static int getNextLandingLocation() {
         Veci32 landingLocations = gc.getTeamArray(Planet.Mars);
-        int numLandingLocations = landingLocations.get(0);
         int nextLandingLocation = landingLocations.get(1 + landingLocationIndex);
-        landingLocationIndex = (landingLocationIndex + 1) % numLandingLocations;
         return nextLandingLocation;
+    }
+
+    public static void advanceLandingLocation() {
+        Veci32 landingLocations = gc.getTeamArray(Planet.Mars);
+        int numLandingLocations = landingLocations.get(0);
+        landingLocationIndex = (landingLocationIndex + 1) % numLandingLocations;
+    }
+
+    public static Direction rotateDirClockwise(Direction dir) {
+        switch (dir) {
+            case Center:
+                return Direction.Center;
+            case East:
+                return Direction.Southeast;
+            case North:
+                return Direction.Northeast;
+            case Northeast:
+                return Direction.East;
+            case Northwest:
+                return Direction.North;
+            case South:
+                return Direction.Southwest;
+            case Southeast:
+                return Direction.South;
+            case Southwest:
+                return Direction.West;
+            case West:
+                return Direction.Northwest;
+            default:
+                return dir;
+        }
+    }
+
+    public static Direction rotateDirCounterClockwise(Direction dir) {
+        switch(dir) {
+            case Center:
+                return Direction.Center;
+            case East:
+                return Direction.Northeast;
+            case North:
+                return Direction.Northwest;
+            case Northeast:
+                return Direction.North;
+            case Northwest:
+                return Direction.West;
+            case South:
+                return Direction.Southeast;
+            case Southeast:
+                return Direction.East;
+            case Southwest:
+                return Direction.South;
+            case West:
+                return Direction.Southwest;
+            default:
+                return dir;
+        }
     }
 }

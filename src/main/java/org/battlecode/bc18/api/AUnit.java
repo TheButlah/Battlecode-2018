@@ -1,21 +1,26 @@
 package org.battlecode.bc18.api;
 
-import java.util.*;
+import static org.battlecode.bc18.util.Utils.gc;
 
-import bc.Location;
-import bc.MapLocation;
-import bc.Team;
-import bc.UnitType;
-import bc.VecMapLocation;
-import bc.VecUnit;
-import bc.VecUnitID;
-import bc.Unit;
-import bc.bc;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
 
 import org.battlecode.bc18.util.Pair;
 import org.battlecode.bc18.util.Utils;
 
-import static org.battlecode.bc18.util.Utils.gc;
+import bc.Location;
+import bc.MapLocation;
+import bc.Team;
+import bc.Unit;
+import bc.UnitType;
+import bc.VecMapLocation;
+import bc.VecUnit;
+import bc.VecUnitID;
+import bc.bc;
 
 /** Superclass for the different types of units able to be controlled by our player. */
 @SuppressWarnings("unused")
@@ -34,7 +39,7 @@ public abstract class AUnit implements MyUnit {
     }
 
     /** Prepares the MyUnit objects for their logic this turn. */
-    public static void initTurn() {
+    private static void filterDeadUnits() {
         //Clean out all dead units from unitList. This is
         unitList.forEach((unit) -> {
             if (!gc.canSenseUnit(unit.id)) {
@@ -46,13 +51,31 @@ public abstract class AUnit implements MyUnit {
 
     /** Goes through all our player's units and has them act. Requires `initTurn()` to run first. */
     public static void doTurn() {
-        //TODO: Structures should go first
         //TODO: before calling act() for structure, call makeUnit() on its newly produced units by
         //TODO: keeping a Queue of the turn numbers at which units should be ready.
         //TODO: Peek the queue to see if the turn matches this one, and if it does call makeUnit()
         //TODO: on last member of garrison
+        filterDeadUnits();
+        // Perform all structure actions
         for (int i = 0; i < unitList.size(); ++i) {
             MyUnit unit = unitList.get(i);
+            UnitType unitType = unit.getType();
+            if (unitType != UnitType.Factory && unitType != UnitType.Rocket) continue;
+            try { //Avoid breaking the loop leading to instant loss
+                if (unit.isDead()) continue; //Don't act on dead units
+                //long startTime = System.currentTimeMillis();
+                unit.act();
+                //System.out.println("Took: " + (System.currentTimeMillis() - startTime));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        filterDeadUnits();
+        // Perform all robot actions
+        for (int i = 0; i < unitList.size(); ++i) {
+            MyUnit unit = unitList.get(i);
+            UnitType unitType = unit.getType();
+            if (unitType == UnitType.Factory || unitType == UnitType.Rocket) continue;
             try { //Avoid breaking the loop leading to instant loss
                 if (unit.isDead()) continue; //Don't act on dead units
                 //long startTime = System.currentTimeMillis();
@@ -298,6 +321,11 @@ public abstract class AUnit implements MyUnit {
         return (int) getAsUnit().health();
     }
 
+    @Override
+    public boolean isGarrisonFull() {
+        Unit unit = getAsUnit();
+        return unit.structureGarrison().size() == unit.structureMaxCapacity();
+    }
 
     @Override
     public ArrayList<Pair<MapLocation, Integer>> senseNearbyKarbonite(int radius) {
@@ -455,7 +483,6 @@ public abstract class AUnit implements MyUnit {
      * NOTE: The unit must actually be dead.
      */
     void informOfDeath() {
-        assert !gc.canSenseUnit(getID()); //Test to see if its dead
         UnitType type = getType();
         isDead = true;
         units.remove(getID());

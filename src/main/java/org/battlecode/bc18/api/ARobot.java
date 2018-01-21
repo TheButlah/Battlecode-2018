@@ -31,6 +31,30 @@ public abstract class ARobot extends AUnit implements MyRobot {
         return newLoc;
     }
 
+    @Override
+    public MapLocation fuzzyMove(Direction dir) {
+        assert isMoveReady();
+        Direction moveDir = dir;
+        boolean canMove = false;
+        if (isAccessible(moveDir)) {
+            canMove = true;
+        }
+        if (!canMove && isAccessible(Utils.rotateDirClockwise(moveDir))) {
+            moveDir = Utils.rotateDirClockwise(moveDir);
+            canMove = true;
+        }
+        if (!canMove && isAccessible(Utils.rotateDirCounterClockwise(moveDir))) {
+            moveDir = Utils.rotateDirCounterClockwise(moveDir);
+            canMove = true;
+        }
+        if (canMove) {
+            gc.moveRobot(getID(), moveDir);
+            MapLocation newLoc = getMapLocation().add(moveDir);
+            setLocation(newLoc);
+            return newLoc;
+        }
+        return null;
+    }
 
     @Override
     public int getAbilityHeat() {
