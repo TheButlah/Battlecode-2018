@@ -1,13 +1,12 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import bc.*;
-
 import org.battlecode.bc18.ProductionManager;
 import org.battlecode.bc18.api.AFactory;
-import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Utils;
 
-import java.util.List;
+import bc.Direction;
+import bc.Unit;
+import bc.UnitType;
 
 public class Factory extends AFactory {
     //static int time1, time2, time3;

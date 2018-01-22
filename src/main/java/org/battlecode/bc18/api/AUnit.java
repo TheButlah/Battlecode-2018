@@ -5,8 +5,10 @@ import static org.battlecode.bc18.util.Utils.gc;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 import org.battlecode.bc18.util.Pair;
 import org.battlecode.bc18.util.Utils;
@@ -77,6 +79,10 @@ public abstract class AUnit implements MyUnit {
                     getUnit(garrisonedUnits.get(j));
                 }
             }
+        }
+        else {
+            // Update factory production queue counts
+            updateFactoryProductionQueue();
         }
         filterDeadUnits();
         // Perform all structure actions
@@ -184,6 +190,38 @@ public abstract class AUnit implements MyUnit {
     /** Gets the number of friendly units of the given type */
     public static int getNumUnits(UnitType type) {
         return unitCounts[type.swigValue()];
+    }
+
+    public static void updateFactoryProductionQueue() {
+        int round = (int) gc.round();
+        while (!factoryProductionQueue.isEmpty()) {
+            if (factoryProductionQueue.peek().getFirst() <= round) {
+                UnitType type = factoryProductionQueue.poll().getSecond();
+                factoryProductionQueueCounts.put(type, factoryProductionQueueCounts.get(type) - 1);
+            }
+            else {
+                return;
+            }
+        }
+    }
+
+    public static int getNumQueuedUnits() {
+        return factoryProductionQueue.size();
+    }
+
+    public static int getNumQueuedUnits(UnitType type) {
+        Integer count = factoryProductionQueueCounts.get(type);
+        return count != null ? count : 0;
+    }
+
+    public static void factoryProductionQueueAdd(UnitType type) {
+        factoryProductionQueue.add(new Pair<Integer, UnitType>((int)gc.round() + FACTORY_PRODUCTION_ROUNDS, type));
+        if (!factoryProductionQueueCounts.containsKey(type)) {
+            factoryProductionQueueCounts.put(type, 1);
+        }
+        else {
+            factoryProductionQueueCounts.put(type, factoryProductionQueueCounts.get(type) + 1);
+        }
     }
 
     @Override
@@ -434,6 +472,7 @@ public abstract class AUnit implements MyUnit {
      * Must only contain alive units belonging to our player, i.e. on our planet under our team.
      * NOTE: Do not attempt to iterate through this map unless you're sure you won't modify it.
      */
+    public static final int FACTORY_PRODUCTION_ROUNDS = 5; // How many rounds it takes to produce a robot
     private static final Map<Integer, AUnit> units = new HashMap<>();
     private static final List<AUnit> unitList = new ArrayList<>();
 
@@ -447,6 +486,8 @@ public abstract class AUnit implements MyUnit {
 
     private static final int[] unitCounts = new int[UnitType.values().length];
     private static int totalUnitCount;
+    private static final Queue<Pair<Integer, UnitType>> factoryProductionQueue = new LinkedList<>();
+    private static final HashMap<UnitType, Integer> factoryProductionQueueCounts = new HashMap<>();
 
     /**
      * Constructor for AUnit.

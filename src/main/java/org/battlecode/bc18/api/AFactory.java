@@ -4,6 +4,7 @@ import static org.battlecode.bc18.util.Utils.gc;
 
 import bc.Unit;
 import bc.UnitType;
+import bc.VecUnitID;
 
 public abstract class AFactory extends AStructure implements MyFactory {
 
@@ -16,6 +17,7 @@ public abstract class AFactory extends AStructure implements MyFactory {
     public void produceRobot(UnitType type) {
         assert canProduceRobot(type);
         gc.produceRobot(getID(), type);
+        AUnit.factoryProductionQueueAdd(type);
     }
 
 
