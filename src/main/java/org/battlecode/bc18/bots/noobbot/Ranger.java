@@ -1,7 +1,7 @@
 package org.battlecode.bc18.bots.noobbot;
 
 import bc.*;
-import org.battlecode.bc18.util.pathfinder.PathFinder;
+import org.battlecode.bc18.util.pathfinder.AStarSearch;
 import org.battlecode.bc18.TargetManager;
 import org.battlecode.bc18.api.ARanger;
 import org.battlecode.bc18.util.Utils;
@@ -82,8 +82,8 @@ public class Ranger extends ARanger {
             // If we have a target, check and fix spacing
             if (hasTarget()) {
                 MapLocation targetLoc = target.location().mapLocation();
-                int[][] distances = PathFinder.myPlanetPathfinder.search(targetLoc.getY(), targetLoc.getX());
-                Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
+                AStarSearch pathfinder = new AStarSearch(Utils.PLANET);
+                Direction towardsEnemy = pathfinder.getNextDirectionFrom(myMapLoc, targetLoc, false);
                 //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
                 if (this.isTargetKindaFar(this.target)) {
                     if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
@@ -134,8 +134,8 @@ public class Ranger extends ARanger {
                 //System.out.println("time 2: " + time2);
             } else if (hasMacroTarget()) {
                 //Attack our macro target
-                int[][] distances = PathFinder.myPlanetPathfinder.search(macroLoc.getY(), macroLoc.getX());
-                Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
+                AStarSearch pathfinder = new AStarSearch(Utils.PLANET);
+                Direction towardsEnemy = pathfinder.getNextDirectionFrom(myMapLoc, macroLoc, false);
                 //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
                 if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
                     move(towardsEnemy);

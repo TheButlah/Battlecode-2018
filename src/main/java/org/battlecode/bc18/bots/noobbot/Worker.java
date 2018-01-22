@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.battlecode.bc18.util.pathfinder.PathFinder;
+import org.battlecode.bc18.util.pathfinder.AStarSearch;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.AWorker;
 import org.battlecode.bc18.api.MyStructure;
@@ -167,9 +167,8 @@ public class Worker extends AWorker {
                 //startTime = System.currentTimeMillis();
                 // Move towards target structure
                 MapLocation structureLoc = targetStructure.getMapLocation();
-                int[][] distances = PathFinder.myPlanetPathfinder.search(structureLoc.getY(),
-                        structureLoc.getX());
-                Direction towardsStructure = PathFinder.directionToDestination(distances, myMapLoc);
+                AStarSearch pathfinder = new AStarSearch(Utils.PLANET);
+                Direction towardsStructure = pathfinder.getNextDirectionFrom(myMapLoc, structureLoc, false);
                 if (towardsStructure != Direction.Center && isAccessible(towardsStructure)) {
                     move(towardsStructure);
                 }
@@ -182,10 +181,8 @@ public class Worker extends AWorker {
                 if (deposits.size() != 0) {
                     Pair<MapLocation, Integer> targetDeposit = Utils.closestPair(deposits, myMapLoc);
                     MapLocation targetLoc = targetDeposit.getFirst();
-                    int[][] distances = PathFinder.myPlanetPathfinder.search(
-                        targetLoc.getY(),
-                        targetLoc.getX());
-                    Direction towardsKarbonite = PathFinder.directionToDestination(distances, myMapLoc);
+                    AStarSearch pathfinder = new AStarSearch(Utils.PLANET);
+                    Direction towardsKarbonite = pathfinder.getNextDirectionFrom(myMapLoc, targetLoc, false);
                     if (towardsKarbonite != Direction.Center && isAccessible(towardsKarbonite)) {
                         move(towardsKarbonite);
                     }

@@ -32,6 +32,10 @@ public final class Utils {
     public static final Random rand = new Random(SEED);
 
     public static final Direction[] dirs = Direction.values();
+    public static final Direction[][] dirGrid = {
+            {Direction.Southwest, Direction.South, Direction.Southeast},
+            {Direction.West, Direction.Center, Direction.East},
+            {Direction.Northwest, Direction.North, Direction.Northeast}};
     public static final PlanetMap EARTH_START, MARS_START;
     public static final int EARTH_MAP_WIDTH, EARTH_MAP_HEIGHT;
     public static final int MARS_MAP_WIDTH, MARS_MAP_HEIGHT;

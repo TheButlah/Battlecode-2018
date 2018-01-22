@@ -3,6 +3,7 @@ package org.battlecode.bc18.util.pathfinder;
 
 import static org.battlecode.bc18.util.Utils.gc;
 
+import bc.Direction;
 import bc.MapLocation;
 import bc.Planet;
 import bc.PlanetMap;
@@ -13,6 +14,14 @@ import java.util.*;
 /**
  * AStarSearch.java
  * A* search algorithm implementation.
+ * 
+ * [Manual]
+ * Create the search module. You need to specify the planet.
+ * The created module will have a grid of dimension (planet.x, planet.y)
+ * You may optionally add obstacles into the map by calling addObstacles(),
+ * or a specified weight to a specific map location by calling addLocationWeight().
+ * 
+ * 
  *
  * @author Jared Junyoung Lim
  */
@@ -27,28 +36,28 @@ public class AStarSearch {
     private PlanetMap planetMap;
 
     // The set of nodes already evaluated
-    private Set<Node> closedSet;
+    private Set<Node> closedSet = new HashSet<>();
 
     // The set of currently discovered nodes that are not evaluated yet.
     // Initially, only the start node is known.
-    private PriorityQueue<Node> openSet;
+    private PriorityQueue<Node> openSet = new PriorityQueue<>(Comparator.comparingInt(this::getFScore));
 
     // For each node, which node it can most efficiently be reached from.
     // If a node can be reached from many nodes, cameFrom will eventually contain the
     // most efficient previous step.
-    private Map<Node, Node> cameFrom;
+    private Map<Node, Node> cameFrom = new HashMap<>();
 
     // For each node, the cost of getting from the start node to that node.
     // If !contains(), INFINITY
-    private Map<Node, Integer> gScore;
+    private Map<Node, Integer> gScore = new HashMap<>();;
 
     // For each node, the total cost of getting from the start node to the goal
     // by passing by that node. That value is partly known, partly heuristic.
-    private Map<Node, Integer> fScore;
+    private Map<Node, Integer> fScore = new HashMap<>();;
 
     // For each node, the cost of getting from its neighbor to itself
     // By default, it's one. Different weights can be specified.
-    private Map<Node, Integer> weights;
+    private Map<Node, Integer> weights = new HashMap<>();;
 
     /**
      * A* search module.
@@ -71,12 +80,12 @@ public class AStarSearch {
     }
 
     public void resetAll() {
-        closedSet = new HashSet<>();
-        openSet = new PriorityQueue<>(Comparator.comparingInt(this::getFScore));
-        cameFrom = new HashMap<>();
-        gScore = new HashMap<>();
-        fScore = new HashMap<>();
-        weights = new HashMap<>();
+        closedSet.clear();
+        openSet.clear();
+        cameFrom.clear();
+        gScore.clear();
+        fScore.clear();
+        weights.clear();
     }
 
     /**
@@ -115,6 +124,16 @@ public class AStarSearch {
         return weights.getOrDefault(node, 1);
     }
 
+    public Direction getNextDirectionFrom(MapLocation startLoc, MapLocation endLoc, boolean ignoreUnits) {
+        List<Node> path = getShortestPath(new Node(startLoc), new Node(endLoc), ignoreUnits);
+        if (path.size() < 2)
+            return Direction.Center;
+        
+        Node cur = path.get(0);
+        Node next = path.get(1);
+        return Utils.dirGrid[next.r - cur.r + 1][next.c - cur.c + 1];
+    }
+
     private List<Node> reconstructPath(Node current) {
         List<Node> totalPath = new ArrayList<>();
         totalPath.add(current);
@@ -129,9 +148,12 @@ public class AStarSearch {
      * Returns the most efficient path from the starting node to the goal node
      * The list starts with the starting node and ends with the goal node.
      * @return the list of nodes
+     * @param startNode starting node
      * @param goalNode destination node
+     * @param ignoreUnits true if we want to ignore units while finding a path,
+     *                    false if we want to treat them as obstacles
      */
-    public List<Node> getShortestPath(Node startNode, Node goalNode) {
+    public List<Node> getShortestPath(Node startNode, Node goalNode, boolean ignoreUnits) {
 
         openSet.add(startNode);
         gScore.put(startNode, 0);
@@ -151,8 +173,10 @@ public class AStarSearch {
                 if (!Utils.toBool(planetMap.isPassableTerrainAt(neighbor.toMapLocation(planet))))
                     continue;
 
-                if (gc.senseUnitAtLocation(neighbor.toMapLocation(planet)) != null)
-                    continue;
+                if (!ignoreUnits) {
+                    if (gc.senseUnitAtLocation(neighbor.toMapLocation(planet)) != null)
+                        continue;
+                }
 
                 if (closedSet.contains(neighbor))
                     continue;

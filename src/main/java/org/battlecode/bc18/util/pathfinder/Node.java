@@ -21,6 +21,11 @@ public class Node {
         this.c = c;
     }
     
+    Node(MapLocation loc) {
+        this.r = loc.getY();
+        this.c = loc.getX();
+    }
+    
     public MapLocation toMapLocation(Planet planet) {
         return new MapLocation(planet, c, r);
     }
