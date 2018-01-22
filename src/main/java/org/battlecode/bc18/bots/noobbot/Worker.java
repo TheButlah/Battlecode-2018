@@ -181,20 +181,29 @@ public class Worker extends AWorker {
         }
 
         if (isMoveReady()) {
+            boolean cannotReachStructure = false;
             if (targetStructure != null) {
                 //startTime = System.currentTimeMillis();
                 // Move towards target structure
                 MapLocation structureLoc = targetStructure.getMapLocation();
                 int[][] distances = PathFinder.myPlanetPathfinder.search(structureLoc.getY(),
                         structureLoc.getX());
-                Direction towardsStructure = PathFinder.directionToDestination(distances, myMapLoc);
-                if (towardsStructure != Direction.Center && isAccessible(towardsStructure)) {
-                    move(towardsStructure);
+                if (distances[myMapLoc.getY()][myMapLoc.getX()] > PathFinder.INFINITY) {
+                    // Deassign structure if it is unreachable
+                    cannotReachStructure = true;
+                    deassignStructure();
+                    targetStructure = null;
+                }
+                else {
+                    Direction towardsStructure = PathFinder.directionToDestination(distances, myMapLoc);
+                    if (towardsStructure != Direction.Center && isAccessible(towardsStructure)) {
+                        move(towardsStructure);
+                    }
                 }
                 //time4 += System.currentTimeMillis() - startTime;
                 //System.out.println("time 4: " + time4);
             }
-            else {
+            if (targetStructure == null || cannotReachStructure) {
                 boolean moved = false;
                 //startTime = System.currentTimeMillis();
                 int numCloseEnemies = 0;
