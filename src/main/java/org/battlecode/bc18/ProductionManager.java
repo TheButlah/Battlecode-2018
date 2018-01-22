@@ -12,6 +12,7 @@ public class ProductionManager {
         long round = Utils.gc.round();
         long karbonite = Utils.gc.karbonite();
         int desiredNumRockets = round >= 100 ? Math.min(10, AUnit.getNumUnits() / 20) : 0;
+        int desiredNumHealers = AUnit.getNumUnits(UnitType.Knight) / 5;
         if (AUnit.getNumUnits(UnitType.Worker) == 0) {
             return UnitType.Worker;
         }
@@ -20,6 +21,9 @@ public class ProductionManager {
         }
         else if (AUnit.getNumUnits(UnitType.Rocket) < desiredNumRockets) {
             return UnitType.Rocket;
+        }
+        else if (AUnit.getNumUnits(UnitType.Healer) < desiredNumHealers){
+            return UnitType.Healer;
         }
         else {
             return UnitType.Knight;

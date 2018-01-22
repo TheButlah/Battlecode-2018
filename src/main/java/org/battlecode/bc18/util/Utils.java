@@ -1,7 +1,6 @@
 package org.battlecode.bc18.util;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -512,5 +511,33 @@ public final class Utils {
             default:
                 return dir;
         }
+    }
+
+    public static Direction angleToDirection(double angle) {
+        if (-22.5 * Math.PI / 180 < angle && angle <= 22.5 * Math.PI / 180) {
+            return Direction.East;
+        }
+        if (22.5 * Math.PI / 180 < angle && angle <= 67.5 * Math.PI / 180) {
+            return Direction.Northeast;
+        }
+        if (67.5 * Math.PI / 180 < angle && angle <= 112.5 * Math.PI / 180) {
+            return Direction.North;
+        }
+        if (112.5 * Math.PI / 180 < angle && angle <= 157.5 * Math.PI / 180) {
+            return Direction.Northwest;
+        }
+        if (157.5 * Math.PI / 180 < angle || angle < -157.5 * Math.PI / 180) {
+            return Direction.West;
+        }
+        if (-157.5 * Math.PI / 180 < angle && angle < -112.5 * Math.PI / 180) {
+            return Direction.Southwest;
+        }
+        if (-112.5 * Math.PI / 180 < angle && angle < -67.5 * Math.PI / 180) {
+            return Direction.South;
+        }
+        if (-67.5 * Math.PI / 180 < angle && angle < -22.5 * Math.PI / 180) {
+            return Direction.Southeast;
+        }
+        return Direction.Center;
     }
 }

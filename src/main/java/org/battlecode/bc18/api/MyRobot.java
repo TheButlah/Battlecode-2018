@@ -37,7 +37,7 @@ public interface MyRobot extends MyUnit {
      * Tries to move the robot in the given direction. If it is not possible, then alternate nearby
      * directions are considered.
      * @param dir The direction to move in.
-     * @return The new location on the map that the robot moved to.
+     * @return The new location on the map that the robot moved to; null if no movement is possible.
      */
     MapLocation fuzzyMove(Direction dir);
 

@@ -14,8 +14,8 @@ public class Main {
     public static int initializingWorkerId;
 
     public static void main(String[] args) {
-        System.out.println("INITIALIZING MUSK THE DESTROYER - \"MEME MACHINE\" CLASS.");
-        System.out.println("YOUR INFERIOR PROGRAMMING WILL BE TERMINATED.");
+        System.out.println("INITIALIZING MUSK THE DESTROYER - \"MEME MACHINE\" CLASS.\n" +
+                           "YOUR INFERIOR PROGRAMMING WILL BE TERMINATED.");
 
         //Without this, MyUnit cannot form new units
         AUnit.init(new UnitBuilder());
@@ -24,9 +24,11 @@ public class Main {
         gc.queueResearch(UnitType.Rocket);
         gc.queueResearch(UnitType.Knight);
         gc.queueResearch(UnitType.Knight);
-        gc.queueResearch(UnitType.Rocket);
-        gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Healer);
+        gc.queueResearch(UnitType.Healer);
         gc.queueResearch(UnitType.Worker);
+        gc.queueResearch(UnitType.Rocket);
+        gc.queueResearch(UnitType.Rocket);
         gc.queueResearch(UnitType.Worker);
         gc.queueResearch(UnitType.Worker);
         gc.queueResearch(UnitType.Worker);

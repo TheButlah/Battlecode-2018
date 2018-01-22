@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.battlecode.bc18.util.pathfinder.PathFinder;
 import org.battlecode.bc18.ProductionManager;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.AWorker;
@@ -15,12 +14,14 @@ import org.battlecode.bc18.api.MyStructure;
 import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Pair;
 import org.battlecode.bc18.util.Utils;
+import org.battlecode.bc18.util.pathfinder.PathFinder;
 
 import bc.Direction;
 import bc.MapLocation;
 import bc.Planet;
 import bc.Unit;
 import bc.UnitType;
+import bc.VecUnit;
 
 public class Worker extends AWorker {
     //static int time1, time2, time3, time4, time5, time6, time7;
@@ -192,21 +193,51 @@ public class Worker extends AWorker {
                 }
                 //time4 += System.currentTimeMillis() - startTime;
                 //System.out.println("time 4: " + time4);
-            } else {
+            }
+            else {
+                boolean moved = false;
                 //startTime = System.currentTimeMillis();
-                //No target structure, so look for nearby karbonite
-                List<Pair<MapLocation, Integer>> deposits = senseNearbyKarbonite();
-                if (deposits.size() != 0) {
-                    Pair<MapLocation, Integer> targetDeposit = Utils.closestPair(deposits, myMapLoc);
-                    MapLocation targetLoc = targetDeposit.getFirst();
-                    int[][] distances = PathFinder.myPlanetPathfinder.search(
-                        targetLoc.getY(),
-                        targetLoc.getX());
-                    Direction towardsKarbonite = PathFinder.directionToDestination(distances, myMapLoc);
-                    if (towardsKarbonite != Direction.Center && isAccessible(towardsKarbonite)) {
-                        move(towardsKarbonite);
+                int numCloseEnemies = 0;
+                double closeEnemyAvgX = 0;
+                double closeEnemyAvgY = 0;
+                VecUnit nearbyEnemies = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, getVisionRange(), Utils.OTHER_TEAM);
+                for (int i = 0; i < nearbyEnemies.size(); ++i) {
+                    Unit enemy = nearbyEnemies.get(i);
+                    UnitType enemyType = enemy.unitType();
+                    if (enemyType == UnitType.Knight || enemyType == UnitType.Ranger || enemyType == UnitType.Mage) {
+                        MapLocation enemyLoc = enemy.location().mapLocation();
+                        ++numCloseEnemies;
+                        closeEnemyAvgX += (enemyLoc.getX() - closeEnemyAvgX) / numCloseEnemies;
+                        closeEnemyAvgY += (enemyLoc.getY() - closeEnemyAvgY) / numCloseEnemies;
                     }
-                } else {
+                }
+                if (numCloseEnemies != 0) {
+                    double deltaX = myMapLoc.getX() - closeEnemyAvgX;
+                    double deltaY = myMapLoc.getY() - closeEnemyAvgY;
+                    double angleAwayFromEnemy = Math.atan2(deltaY, deltaX);
+                    Direction directionAwayFromEnemy = Utils.angleToDirection(angleAwayFromEnemy);
+                    if (fuzzyMove(directionAwayFromEnemy) != null) {
+                        moved = true;
+                    }
+                }
+
+                if (!moved) {
+                    //No target structure, so look for nearby karbonite
+                    List<Pair<MapLocation, Integer>> deposits = senseNearbyKarbonite();
+                    if (deposits.size() != 0) {
+                        Pair<MapLocation, Integer> targetDeposit = Utils.closestPair(deposits, myMapLoc);
+                        MapLocation targetLoc = targetDeposit.getFirst();
+                        int[][] distances = PathFinder.myPlanetPathfinder.search(
+                            targetLoc.getY(),
+                            targetLoc.getX());
+                        Direction towardsKarbonite = PathFinder.directionToDestination(distances, myMapLoc);
+                        if (towardsKarbonite != Direction.Center && isAccessible(towardsKarbonite)) {
+                            move(towardsKarbonite);
+                            moved = true;
+                        }
+                    }
+                }
+                if (!moved) {
                     //Move randomly
                     int offset = Utils.rand.nextInt(Utils.dirs.length);
                     for (int i = 0; i < Utils.dirs.length; i++) {
