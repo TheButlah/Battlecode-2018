@@ -8,8 +8,8 @@
 #javac $(find . -name '*.java') -classpath ../battlecode/java
 
 # Run our code.
-#echo java -classpath .:../battlecode/java Player
-#java -classpath .:../battlecode/java Player
+#echo java -Xmx40m -classpath .:../battlecode/java Player
+#java -Xmx40m -classpath .:../battlecode/java Player
 
 #remember to disable assertions by removing the -ea flag when not debugging!
-java -ea -jar Battlecode-2018-0.1-all.jar
+java -Xmx40m -ea -jar Battlecode-2018-0.1-all.jar
