@@ -29,80 +29,104 @@ public class PathFinder {
 
     public static final int UNREACHABLE = 999999;
     public static final int INFINITY = 1_000; //Weight for impassible tile; this is longer than the longest path through the grid
-    private final int rows;
-    private final int cols;
-    private final boolean[][] visited;
-    private int[][] distance;
+    private final int ROWS;
+    private final int COLS;
+    private final boolean[] visited;
+    private int[] cost;
     private final PriorityQueue<Node> queue;
-    private int[][] weights;
-    private final LRUCache<Integer, int[][]> cache;
+    private int[] weights;
+    private final LRUCache<Integer, int[]> cache;
     private final int MAX_CACHE_SIZE = 100;
+    private int target; //First 16 bits row, second 16 col
 
-    public static PathFinder myPlanetPathfinder;
+    public static PathFinder pf;
 
-    /** Constructs a PathFinder with the provided weights */
+    /** Constructs a PathFinder with the provided weights. Index argument by (y,x). */
     public PathFinder(int[][] weights) {
-        this.rows = weights.length;
-        this.cols = weights[0].length;
+        this.ROWS = weights.length;
+        this.COLS = weights[0].length;
         cache = new LRUCache<>(MAX_CACHE_SIZE);
-        visited = new boolean[rows][cols];
-        queue = new PriorityQueue<>(Comparator.comparingInt(node -> distance[node.r][node.c]));
+        visited = new boolean[ROWS * COLS];
+        queue = new PriorityQueue<>(Comparator.comparingInt(node -> cost[toIndex(node.r, node.c)]));
         setWeights(weights);
     }
 
     /** Constructs a PathFinder for the provided map and its terrain */
     public PathFinder() {
-        this.rows = Utils.MAP_HEIGHT;
-        this.cols = Utils.MAP_WIDTH;
+        this.ROWS = Utils.MAP_HEIGHT;
+        this.COLS = Utils.MAP_WIDTH;
         cache = new LRUCache<>(MAX_CACHE_SIZE);
-        visited = new boolean[rows][cols];
-        queue = new PriorityQueue<>(Comparator.comparingInt(node -> distance[node.r][node.c]));
+        visited = new boolean[ROWS * COLS];
+        queue = new PriorityQueue<>(Comparator.comparingInt(node -> cost[toIndex(node.r, node.c)]));
         setWeights();
+    }
+
+    private int toIndex(int r, int c) {
+        return c + r * ROWS;
+    }
+
+    /**
+     * Flattens the given 2D array to a 1D column-major array.
+     * Matrix should be indexed as (r,c).
+     */
+    private int[] toFlatArray(int[][] matrix) {
+        int width = matrix.length;
+        int height = matrix[0].length;
+        int[] result = new int[width * height];
+        int counter = 0;
+        for (int[] row : matrix) {
+            for (int element : row) {
+                result[counter++] = element;
+            }
+        }
+        return result;
     }
 
     /**
      * Precondition: All weights should be at most {@value #INFINITY}}, otherwise integer overflow may occur
      */
     public void setWeights(int[][] weights) {
-        assert weights.length == rows;
-        assert weights[0].length == cols;
-        this.weights = weights;
+        assert weights.length == ROWS;
+        assert weights[0].length == COLS;
+        this.weights = toFlatArray(weights);
         cache.evictAll();
     }
 
     private void setWeights() {
         if (weights == null) {
-            weights = new int[rows][cols];
+            weights = new int[ROWS * COLS];
         }
         Queue<Pair<Integer, Integer>> q = new LinkedList<>();
         HashSet<Integer> visited = new HashSet<>();
-        for (int r = 0; r < rows; ++r) {
-            for (int c = 0; c < cols; ++c) {
+        int counter = 0;
+        for (int r = 0; r< ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
                 boolean isWall = Utils.CONNECTED_COMPONENTS[r][c] == Utils.IMPASSIBLE_TERRAIN;
                 if (isWall) {
-                    weights[r][c] = INFINITY;
+                    weights[counter] = INFINITY;
                     int coord = (r << 16) | c ;
-                    q.add(new Pair<Integer, Integer>(0, coord));
+                    q.add(new Pair<>(0, coord));
                     visited.add(coord);
                 }
             }
+            counter++;
         }
         // Note that we use 0xFFFF to represent a -1 value for row/column in the int representation of a coordinate
         // Add walls on left and right
-        for (int r = 0; r < rows; ++r) {
+        for (int r = 0; r < ROWS; ++r) {
             int coord = (r << 16) | 0xFFFF;
-            q.add(new Pair<Integer, Integer>(0, coord));
+            q.add(new Pair<>(0, coord));
             coord = (r << 16) | Utils.MAP_WIDTH;
-            q.add(new Pair<Integer, Integer>(0, coord));
+            q.add(new Pair<>(0, coord));
         }
         // Add walls on top and bottom
-        for (int c = 0; c < cols; ++c) {
+        for (int c = 0; c < COLS; ++c) {
             int coord = 0xFFFF0000 | c;
-            q.add(new Pair<Integer, Integer>(0, coord));
+            q.add(new Pair<>(0, coord));
             coord = (Utils.MAP_HEIGHT << 16) | c;
-            q.add(new Pair<Integer, Integer>(0, coord));
+            q.add(new Pair<>(0, coord));
         }
-        // Assign weights for passable terrain by calculating distance to the nearest wall
+        // Assign weights for passable terrain by calculating cost to the nearest wall
         while (!q.isEmpty()) {
             Pair<Integer, Integer> distCoordPair = q.poll();
             int distanceToWall = distCoordPair.getFirst();
@@ -116,8 +140,8 @@ public class PathFinder {
                 col = -1;
             }
             if (distanceToWall != 0) {
-                // Weight node inversely to the distance from the nearest wall
-                weights[row][col] = Math.max(1, 5 - distanceToWall);
+                // Weight node inversely to the cost from the nearest wall
+                weights[toIndex(row, col)] = Math.max(1, 5 - distanceToWall);
             }
             int newRow = row;
             int newCol = col - 1;
@@ -126,7 +150,7 @@ public class PathFinder {
                 if (newCol >= 0) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        q.add(new Pair<>(distanceToWall + 1, newCoord));
                         visited.add(newCoord);
                     }
                 }
@@ -134,7 +158,7 @@ public class PathFinder {
                 if (newCol < Utils.MAP_WIDTH) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        q.add(new Pair<>(distanceToWall + 1, newCoord));
                         visited.add(newCoord);
                     }
                 }
@@ -145,7 +169,7 @@ public class PathFinder {
                 if (0 <= newCol && newCol < Utils.MAP_WIDTH) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        q.add(new Pair<>(distanceToWall + 1, newCoord));
                         visited.add(newCoord);
                     }
                 }
@@ -153,7 +177,7 @@ public class PathFinder {
                 if (newCol >= 0) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        q.add(new Pair<>(distanceToWall + 1, newCoord));
                         visited.add(newCoord);
                     }
                 }
@@ -161,7 +185,7 @@ public class PathFinder {
                 if (newCol < Utils.MAP_WIDTH) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        q.add(new Pair<>(distanceToWall + 1, newCoord));
                         visited.add(newCoord);
                     }
                 }
@@ -172,7 +196,7 @@ public class PathFinder {
                 if (0 <= newCol && newCol < Utils.MAP_WIDTH) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        q.add(new Pair<>(distanceToWall + 1, newCoord));
                         visited.add(newCoord);
                     }
                 }
@@ -180,7 +204,7 @@ public class PathFinder {
                 if (newCol >= 0) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        q.add(new Pair<>(distanceToWall + 1, newCoord));
                         visited.add(newCoord);
                     }
                 }
@@ -188,7 +212,7 @@ public class PathFinder {
                 if (newCol < Utils.MAP_WIDTH) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<Integer, Integer>(distanceToWall + 1, newCoord));
+                        q.add(new Pair<>(distanceToWall + 1, newCoord));
                         visited.add(newCoord);
                     }
                 }
@@ -197,59 +221,105 @@ public class PathFinder {
         cache.evictAll();
     }
 
+    private static String flatToString(int[] flat, int rows, int cols) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        int counter = 0;
+        for (int r = 0; r < rows; r++) {
+            sb.append("[");
+            for (int c = 0; c < cols; c++) {
+                sb.append(flat[counter]);
+                sb.append(",");
+                counter++;
+            }
+            sb.append("]");
+            if (r < rows - 1) sb.append("\n");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
     public static void main(String[] args) {
         // execution time calculation
         int[][] testWeights = WEIGHT2;
+        int height = testWeights.length;
+        int width = testWeights[0].length;
         PathFinder pf = new PathFinder(testWeights);
         long start = System.nanoTime();
-        int[][] distances = pf.search(testWeights.length - 1, 0);
-        System.out.println(Arrays.deepToString(distances)); // search
-        System.out.println(PathFinder.directionToDestination(distances, new MapLocation(Planet.Earth, testWeights[0].length - 1, 0)));
+        pf.setTarget(0, height - 1);
+        System.out.println(flatToString(pf.cost, height, width));
+        System.out.println(pf.directionToTargetFrom(new MapLocation(Planet.Earth, width - 1, 0)));
         long end = System.nanoTime();
         System.out.println("exe time is " + (end - start) / 1000000d + " ms");
     }
 
-    /** Returns grid of distances to target location */
-    public int[][] search(int targetRow, int targetCol) {
-        int key = targetRow << 16 | targetCol; //Bit-pack a key.
-        int[][] cachedResult = cache.get(key);
+    /**
+     * Updates the cost to get to the location provided.
+     * @return Whether recomputing the cost was necessary.
+     */
+    public boolean setTarget(MapLocation target) {
+        return setTarget(target.getY(), target.getX());
+    }
+
+    /**
+     * Updates the cost to get to the location provided.
+     * @return Whether recomputing the cost was necessary.
+     */
+    private boolean setTarget(int row, int col) {
+        target = row << 16 | col; //Bit-pack a target.
+        int[] cachedResult = cache.get(target);
         if (cachedResult != null) {
-            return cachedResult;
+            cost = cachedResult;
+            return false;
+        } else {
+            int[] solution = computeCost();
+            cache.put(target, solution);
+            cost = solution;
+            return true;
         }
+    }
+
+    /** Gets the target of this pathfinder */
+    public MapLocation getTarget() {
+        int targetCol = target & 0xFFFF;
+        int targetRow = (target >>> 16);
+        return new MapLocation(Utils.PLANET, targetCol, targetRow);
+    }
+
+    /** Computes cost grid to target location. Does not use cache. */
+    private int[] computeCost() {
+        int targetCol = target & 0xFFFF;
+        int targetRow = (target >>> 16);
         queue.clear();
 
-        //Fill distance array with UNREACHABLE
-        distance = new int[rows][cols];
-        for (int[] row : distance) {
-            Arrays.fill(row, UNREACHABLE);
-        }
-        for (boolean[] row : visited) {
-            Arrays.fill(row, false);
-        }
+        //Fill cost array with UNREACHABLE
+        cost = new int[ROWS * COLS];
+        Arrays.fill(cost, UNREACHABLE);
+        //Filling visited array is unnecessary, its false by default.
 
         //Add starting position to queue
-        distance[targetRow][targetCol] = weights[targetRow][targetCol];
+        cost[toIndex(targetRow, targetCol)] = weights[toIndex(targetRow, targetCol)];
         queue.add(new Node(targetRow, targetCol));
 
-        int total = rows * cols;
-        int position = targetRow * cols + targetCol;
+        int total = ROWS * COLS;
+        int position = targetRow * ROWS + targetCol;
         int visit = 0;
 
         while (visit < total) {
-            int row = position / cols;
-            int col = position % cols;
+            int row = position / ROWS;
+            int col = position % ROWS;
 
-            visited[row][col] = true;
+            visited[toIndex(row, col)] = true;
             queue.remove(new Node(row, col));
 
             int r, c;
             r = row;
             c = col - 1;
             if (c >= 0) operate(r, c, row, col);
-            
+
             c = col + 1;
-            if (c != cols) operate(r, c, row, col);
-            
+            if (c != COLS) operate(r, c, row, col);
+
             r = row - 1;
             if (r >= 0) {
                 c = col - 1;
@@ -257,30 +327,31 @@ public class PathFinder {
                 c = col;
                 operate(r, c, row, col);
                 c = col + 1;
-                if (c != cols) operate(r, c, row, col);
+                if (c != COLS) operate(r, c, row, col);
             }
-            
+
             r = row + 1;
-            if (r != rows) {
+            if (r != ROWS) {
                 c = col - 1;
                 if (c >= 0) operate(r, c, row, col);
                 c = col;
                 operate(r, c, row, col);
                 c = col + 1;
-                if (c != cols) operate(r, c, row, col);
+                if (c != COLS) operate(r, c, row, col);
             }
 
             position = nextPosition();
 
             visit++;
         }
-        cache.put(key, distance);
-        return distance;
+        return cost;
     }
 
     private void operate(int r, int c, int row, int col) {
-        if (!visited[r][c]) {
-            distance[r][c] = Math.min(distance[r][c], distance[row][col] + weights[r][c]);
+        int littleIndex = toIndex(r, c);
+        int bigIndex = toIndex(row, col);
+        if (!visited[littleIndex]) {
+            cost[littleIndex] = Math.min(cost[littleIndex], cost[bigIndex] + weights[littleIndex]);
             if (!queue.contains(new Node(r, c))) {
                 queue.add(new Node(r, c));
             }
@@ -291,34 +362,43 @@ public class PathFinder {
         }
     }
 
+    /** Gets the cost from the location provided to the target location */
+    public int getCostFrom(MapLocation from) {
+        return getCostFrom(from.getY(), from.getX());
+    }
+
+    /** Gets the cost from the location provided to the target location */
+    private int getCostFrom(int row, int col) {
+        return cost[toIndex(row, col)];
+    }
+
     private int nextPosition() {
         if (queue.isEmpty()) {
             return 0;
         }
         Node closest = queue.peek();
-        int pos = closest.r * cols + closest.c;
+        int pos = closest.r * COLS + closest.c;
         return pos;
     }
 
     /** Use to find the optimal non-blocked direction to move, given a solved array of distances */
-    public static Direction directionToDestination(int[][] distances, MapLocation myLoc) {
+    public Direction directionToTargetFrom(MapLocation from) {
         Direction optimalDirection = Direction.Center;
         int optimalDist = UNREACHABLE;
-        int rows = distances.length;
-        int cols = distances[0].length;
         for (Direction dir : Utils.dirs) {
-            MapLocation location = myLoc.add(dir);
-            int x = location.getX();
-            int y = location.getY();
-            if (x >= 0 && x < cols && y >= 0 && y < rows) {
+            MapLocation location = from.add(dir);
+            int c = location.getX();
+            int r = location.getY();
+            if (c >= 0 && c < COLS && r >= 0 && r < ROWS) {
                 // Allow movement to starting location (i.e. no movement)
-                if (!location.equals(myLoc)){
+                if (!location.equals(from)){
                     // Disallow movement to any occupied coordinate
                     assert Utils.gc.canSenseLocation(location);
                     if (Utils.gc.hasUnitAtLocation(location)) continue;
                 }
-                if (distances[y][x] < optimalDist) {
-                    optimalDist = distances[y][x];
+                int index = toIndex(r, c);
+                if (cost[index] < optimalDist) {
+                    optimalDist = cost[index];
                     optimalDirection = dir;
                 }
             }
@@ -417,4 +497,3 @@ public class PathFinder {
 
 
 }
-

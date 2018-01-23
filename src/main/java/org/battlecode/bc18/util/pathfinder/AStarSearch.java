@@ -7,7 +7,7 @@ import java.util.*;
 
 /**
  * AStarSearch.java
- * A* search algorithm implementation.
+ * A* update algorithm implementation.
  *
  * @author Jared Junyoung Lim
  */
@@ -44,7 +44,7 @@ public class AStarSearch {
     private Map<Node, Integer> weights = new HashMap<>();
 
     /**
-     * A* search module.
+     * A* update module.
      * @param xLimit the upper limit for x axis.
      * @param yLimit the upper limit for y axis.
      * @param startNode starting point Node.
@@ -65,7 +65,7 @@ public class AStarSearch {
     }
 
     /**
-     * Add an obstacle to the search map.
+     * Add an obstacle to the update map.
      * @param loc map location of an obstacle
      */
     public void addObstacles(MapLocation loc) {

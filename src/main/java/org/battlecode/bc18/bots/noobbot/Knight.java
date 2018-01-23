@@ -95,8 +95,8 @@ public class Knight extends AKnight {
             // If we have a target, move towards it
             if (hasTarget()) {
                 MapLocation targetLoc = target.location().mapLocation();
-                int[][] distances = PathFinder.myPlanetPathfinder.search(targetLoc.getY(), targetLoc.getX());
-                Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
+                PathFinder.pf.setTarget(targetLoc);
+                Direction towardsEnemy = PathFinder.pf.directionToTargetFrom(myMapLoc);
                 //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
                 if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
                     move(towardsEnemy);
@@ -106,8 +106,8 @@ public class Knight extends AKnight {
                 //System.out.println("time 2: " + time2);
             } else if (hasMacroTarget()) {
                 //Attack our macro target
-                int[][] distances = PathFinder.myPlanetPathfinder.search(macroLoc.getY(), macroLoc.getX());
-                Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
+                PathFinder.pf.setTarget(macroLoc);
+                Direction towardsEnemy = PathFinder.pf.directionToTargetFrom(myMapLoc);
                 //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
                 if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
                     move(towardsEnemy);

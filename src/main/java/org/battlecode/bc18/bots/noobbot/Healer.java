@@ -89,9 +89,8 @@ public class Healer extends AHealer {
                     macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
                 }
                 //Move towards our macro target
-                int[][] distances = PathFinder.myPlanetPathfinder.search(macroLoc.getY(),
-                        macroLoc.getX());
-                Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
+                PathFinder.pf.setTarget(macroLoc);
+                Direction towardsEnemy = PathFinder.pf.directionToTargetFrom(myMapLoc);
                 //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
                 if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
                     move(towardsEnemy);

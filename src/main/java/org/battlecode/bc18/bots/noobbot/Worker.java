@@ -186,16 +186,15 @@ public class Worker extends AWorker {
                 //startTime = System.currentTimeMillis();
                 // Move towards target structure
                 MapLocation structureLoc = targetStructure.getMapLocation();
-                int[][] distances = PathFinder.myPlanetPathfinder.search(structureLoc.getY(),
-                        structureLoc.getX());
-                if (distances[myMapLoc.getY()][myMapLoc.getX()] > PathFinder.INFINITY) {
+                PathFinder.pf.setTarget(structureLoc);
+                if (PathFinder.pf.getCostFrom(myMapLoc) > PathFinder.INFINITY) {
                     // Deassign structure if it is unreachable
                     cannotReachStructure = true;
                     deassignStructure();
                     targetStructure = null;
                 }
                 else {
-                    Direction towardsStructure = PathFinder.directionToDestination(distances, myMapLoc);
+                    Direction towardsStructure = PathFinder.pf.directionToTargetFrom(myMapLoc);
                     if (towardsStructure != Direction.Center && isAccessible(towardsStructure)) {
                         move(towardsStructure);
                     }
@@ -236,10 +235,8 @@ public class Worker extends AWorker {
                     if (deposits.size() != 0) {
                         Pair<MapLocation, Integer> targetDeposit = Utils.closestPair(deposits, myMapLoc);
                         MapLocation targetLoc = targetDeposit.getFirst();
-                        int[][] distances = PathFinder.myPlanetPathfinder.search(
-                            targetLoc.getY(),
-                            targetLoc.getX());
-                        Direction towardsKarbonite = PathFinder.directionToDestination(distances, myMapLoc);
+                        PathFinder.pf.setTarget(targetLoc);
+                        Direction towardsKarbonite = PathFinder.pf.directionToTargetFrom(myMapLoc);
                         if (towardsKarbonite != Direction.Center && isAccessible(towardsKarbonite)) {
                             move(towardsKarbonite);
                             moved = true;

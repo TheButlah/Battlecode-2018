@@ -13,12 +13,12 @@ import bc.Planet;
  * @since 1/20/18
  */
 public class Node {
-    int r;
     int c;
+    int r;
     
     Node(int r, int c) {
-        this.r = r;
         this.c = c;
+        this.r = r;
     }
 
     @Override
@@ -34,8 +34,8 @@ public class Node {
     public int hashCode() {
         // Pairing function
         // http://www.lsi.upc.edu/~alvarez/calculabilitat/enumerabilitat.pdf
-        int t = c + ((r+1)/2);
-        return r + (t * t);
+        int t = r + ((c+1)/2);
+        return c + (t * t);
     }
     
     @Override

@@ -35,7 +35,7 @@ public class Main {
         gc.queueResearch(UnitType.Worker);
 
         // Initialize Pathfinder
-        PathFinder.myPlanetPathfinder = new PathFinder();
+        PathFinder.pf = new PathFinder();
 
         if (gc.planet() == Planet.Earth) {
             // Determine initializer worker

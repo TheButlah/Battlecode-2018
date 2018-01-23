@@ -21,12 +21,10 @@ public class Mage extends AMage {
 
     @Override
     public void act() {
-        if (isDead()) return;
-
         long turn = gc.round();
         if (!isOnMap()) {
-            //TODO: Handle worker in space/garrison/dead?
-            println("TODO: handle worker not on map");
+            //TODO: Handle mage in space/garrison?
+            println("TODO: handle mage not on map");
             return;
         }
 
