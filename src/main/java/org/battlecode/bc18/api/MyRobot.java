@@ -41,6 +41,13 @@ public interface MyRobot extends MyUnit {
      */
     MapLocation fuzzyMove(Direction dir);
 
+    /**
+     * Tries to move the robot perpendicular to the given direction.
+     * @param dir The direction to move perpendicular to
+     * @return The new location on the map that the robot moved to; null if no movement is possible.
+     */
+    MapLocation movePerpendicular(Direction dir);
+
     /** Gets the current active ability heat for this robot. */
     int getAbilityHeat();
 

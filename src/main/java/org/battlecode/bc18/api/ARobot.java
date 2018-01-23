@@ -57,6 +57,30 @@ public abstract class ARobot extends AUnit implements MyRobot {
     }
 
     @Override
+    public MapLocation movePerpendicular(Direction dir) {
+        assert isMoveReady();
+        Direction perpendicular1 = Utils.rotateDirClockwise(Utils.rotateDirClockwise(dir));
+        Direction perpendicular2 = Utils.rotateDirCounterClockwise(Utils.rotateDirCounterClockwise(dir));
+        Direction moveDir = dir;
+        boolean canMove = false;
+        if (isAccessible(perpendicular1)) {
+            moveDir = perpendicular1;
+            canMove = true;
+        }
+        if (!canMove && isAccessible(perpendicular2)) {
+            moveDir = perpendicular2;
+            canMove = true;
+        }
+        if (canMove) {
+            gc.moveRobot(getID(), moveDir);
+            MapLocation newLoc = getMapLocation().add(moveDir);
+            setLocation(newLoc);
+            return newLoc;
+        }
+        return null;
+    }
+
+    @Override
     public int getAbilityHeat() {
         return (int) getAsUnit().abilityHeat();
     }

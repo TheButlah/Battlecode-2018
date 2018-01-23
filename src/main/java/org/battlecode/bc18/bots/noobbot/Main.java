@@ -26,6 +26,7 @@ public class Main {
         gc.queueResearch(UnitType.Knight);
         gc.queueResearch(UnitType.Healer);
         gc.queueResearch(UnitType.Healer);
+        gc.queueResearch(UnitType.Ranger);
         gc.queueResearch(UnitType.Worker);
         gc.queueResearch(UnitType.Rocket);
         gc.queueResearch(UnitType.Rocket);
@@ -62,7 +63,7 @@ public class Main {
                 // We want to stay alive for as long as possible, in case the opponent times out
                 // and we can steal the victory
                 int timeLeft = gc.getTimeLeftMs();
-                if (round < 995 && timeLeft < AUnit.getNumUnits() * 5) {
+                if (round < 995 && timeLeft < AUnit.getNumUnits() * 6) {
                     System.out.println("Time Left: " + timeLeft + ", skipping turn...");
                     gc.nextTurn();
                     continue;
