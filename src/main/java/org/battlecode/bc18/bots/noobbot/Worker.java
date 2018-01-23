@@ -245,6 +245,17 @@ public class Worker extends AWorker {
                             moved = true;
                         }
                     }
+                    if (AUnit.getNumUnits(UnitType.Worker) < gc.round() / 5 && (deposits.size() > 5 || sumDeposits(deposits) > 100)) {
+                        for (Direction dir : Utils.dirs) {
+                            if (canReplicate(dir)) {
+                                //println("Replicating");
+                                MyUnit newWorker = replicate(dir);
+                                if (newWorker != null) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
                 if (!moved) {
                     //Move randomly
@@ -424,5 +435,13 @@ public class Worker extends AWorker {
         else {
             return dirsNoPrefs;
         }
+    }
+
+    private int sumDeposits(List<Pair<MapLocation, Integer>> karboniteDeposits) {
+        int total = 0;
+        for (int i = 0; i < karboniteDeposits.size(); ++i) {
+            total += karboniteDeposits.get(i).getSecond();
+        }
+        return total;
     }
 }
