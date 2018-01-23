@@ -315,7 +315,7 @@ public final class Utils {
      * @param shouldPrioritize A function. When it returns true, these units are prioritized. If null, don't prioritize.
      * @return The closest unit found, or null if none were found.
      */
-    public static Unit getNearest(VecUnit units, MapLocation loc, Predicate<Unit> shouldPrioritize) {
+    public static Unit getNearest(List<Unit> units, MapLocation loc, Predicate<Unit> shouldPrioritize) {
         if (units == null) return null;
         int numUnits = (int) units.size();
         if (numUnits == 0) return null;
@@ -349,7 +349,7 @@ public final class Utils {
      * @param loc The location to test proximity to.
      * @return The closest unit found.
      */
-    public static Unit getNearest(VecUnit units, MapLocation loc) {
+    public static Unit getNearest(List<Unit> units, MapLocation loc) {
         return getNearest(units, loc, null);
     }
 

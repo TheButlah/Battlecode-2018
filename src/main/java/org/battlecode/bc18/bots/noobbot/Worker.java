@@ -21,7 +21,6 @@ import bc.MapLocation;
 import bc.Planet;
 import bc.Unit;
 import bc.UnitType;
-import bc.VecUnit;
 
 public class Worker extends AWorker {
     //static int time1, time2, time3, time4, time5, time6, time7;
@@ -151,8 +150,8 @@ public class Worker extends AWorker {
             }
             // Search for target structures
             //startTime = System.currentTimeMillis();
-            List<MyUnit> nearbyStructures = senseNearbyFriendlies(UnitType.Factory);
-            nearbyStructures.addAll(senseNearbyFriendlies(UnitType.Rocket));
+            List<AUnit> nearbyStructures = fastSenseNearbyFriendlies(UnitType.Factory);
+            nearbyStructures.addAll(fastSenseNearbyFriendlies(UnitType.Rocket));
             MyStructure closestStructure = null;
             long closestStructureDist = Long.MAX_VALUE;
             for (MyUnit unit : nearbyStructures) {
@@ -209,7 +208,7 @@ public class Worker extends AWorker {
                 int numCloseEnemies = 0;
                 double closeEnemyAvgX = 0;
                 double closeEnemyAvgY = 0;
-                VecUnit nearbyEnemies = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, getVisionRange(), Utils.OTHER_TEAM);
+                List<Unit> nearbyEnemies = fastSenseNearbyEnemies();
                 for (int i = 0; i < nearbyEnemies.size(); ++i) {
                     Unit enemy = nearbyEnemies.get(i);
                     UnitType enemyType = enemy.unitType();
@@ -284,7 +283,7 @@ public class Worker extends AWorker {
             if (!structureBuilt || needsRepair) {
                 //startTime = System.currentTimeMillis();
                 // replicate if factory not yet built or factory damaged
-                List<MyUnit> nearbyWorkers = senseNearbyFriendlies(UnitType.Worker);
+                List<AUnit> nearbyWorkers = fastSenseNearbyFriendlies(getVisionRange(), UnitType.Worker);
                 if (nearbyWorkers.size() < 4) {
                     for (Direction dir : Utils.dirs) {
                         if (canReplicate(dir)) {

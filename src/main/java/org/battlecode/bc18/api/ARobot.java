@@ -19,7 +19,7 @@ public abstract class ARobot extends AUnit implements MyRobot {
 
     @Override
     public boolean canMove(Direction dir) {
-        return isAccessible(dir) && isMoveReady();
+        return isMoveReady() && isAccessible(dir);
     }
 
     @Override

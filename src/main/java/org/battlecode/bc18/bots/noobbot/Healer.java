@@ -2,9 +2,11 @@ package org.battlecode.bc18.bots.noobbot;
 
 import static org.battlecode.bc18.bots.noobbot.Knight.tman;
 
+import java.util.List;
+
 import org.battlecode.bc18.api.AHealer;
+import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.MyRobot;
-import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Utils;
 import org.battlecode.bc18.util.pathfinder.PathFinder;
 
@@ -12,10 +14,11 @@ import bc.Direction;
 import bc.MapLocation;
 import bc.Unit;
 import bc.UnitType;
-import bc.VecUnit;
 
 public class Healer extends AHealer {
 
+    //private static long startTime;
+    //private static long time1, time2, time3;
     private float[] macroTarget = null;
     private int macroTargetSeed;
     /**
@@ -31,15 +34,17 @@ public class Healer extends AHealer {
         if (!isOnMap()) {
             return;
         }
+        //startTime = System.currentTimeMillis();
         MapLocation myMapLoc = getMapLocation();
         // heals weakest ally in heal range, if possible. Else, moves randomly.
         MyRobot target = null;
+        int healRange = getHealRange();
         int healthLeft = Integer.MAX_VALUE;
         if (getHealth() < getMaxHealth()) {
             target = this;
             healthLeft = getHealth();
         }
-        for (MyUnit u : senseNearbyFriendlies(getHealRange())) {
+        for (AUnit u : fastSenseNearbyFriendlies(healRange)) {
             if (!(u instanceof MyRobot)) continue;
             int health = u.getHealth();
             if (health < u.getMaxHealth() && health < healthLeft) {
@@ -47,17 +52,20 @@ public class Healer extends AHealer {
                 healthLeft = health;
             }
         }
+        //time1 += (System.currentTimeMillis() - startTime);
+        //println("time1: " + time1);
 
         if (target != null && canHeal(target)) {
             heal(target);
         }
 
         if (isMoveReady()) {
+            //startTime = System.currentTimeMillis();
             // Update macro target
             boolean moved = false;
             macroTarget = tman.getTarget(macroTargetSeed % tman.numTargets());
             MapLocation macroLoc = null;
-            VecUnit nearbyEnemies = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, getVisionRange(), Utils.OTHER_TEAM);
+            List<Unit> nearbyEnemies = fastSenseNearbyEnemies();
             int numCloseEnemies = 0;
             double closeEnemyAvgX = 0;
             double closeEnemyAvgY = 0;
@@ -71,6 +79,8 @@ public class Healer extends AHealer {
                     closeEnemyAvgY += (enemyLoc.getY() - closeEnemyAvgY) / numCloseEnemies;
                 }
             }
+            //time2 += (System.currentTimeMillis() - startTime);
+            //println("time2: " + time2);
             if (numCloseEnemies != 0) {
                 double deltaX = myMapLoc.getX() - closeEnemyAvgX;
                 double deltaY = myMapLoc.getY() - closeEnemyAvgY;
@@ -80,7 +90,13 @@ public class Healer extends AHealer {
                     moved = true;
                 }
             }
+            if (!moved && target != null) {
+                if (fuzzyMove(myMapLoc.directionTo(target.getMapLocation())) != null) {
+                    moved = true;
+                }
+            }
             if (!moved && hasMacroTarget()) {
+                //startTime = System.currentTimeMillis();
                 //If we are very close to the macro target and there are no enemies, mark it as eliminated
                 macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
                 if (nearbyEnemies.size() == 0 && macroLoc.distanceSquaredTo(myMapLoc) <= 4) {
@@ -97,6 +113,8 @@ public class Healer extends AHealer {
                     move(towardsEnemy);
                     moved = true;
                 }
+                //time3 += (System.currentTimeMillis() - startTime);
+                //println("time3: " + time3);
             }
 
             if (!moved) {

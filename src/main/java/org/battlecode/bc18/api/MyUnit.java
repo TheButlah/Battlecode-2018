@@ -1,13 +1,15 @@
 package org.battlecode.bc18.api;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.battlecode.bc18.util.Pair;
+
 import bc.Location;
 import bc.MapLocation;
 import bc.Team;
+import bc.Unit;
 import bc.UnitType;
-import org.battlecode.bc18.util.Pair;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public interface MyUnit {
 
@@ -26,7 +28,6 @@ public interface MyUnit {
     /**
      * Senses all units (friendly and enemy) within the given radius (inclusive, distance squared) by type.
      * Both elements of the Pair are guaranteed to not be null.
-     * The radius must be within the vision range.
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @param type The type of unit to sense. If null, sense all units.
      * @return A Pair of lists. First list is friendlies, second is enemies.
@@ -95,6 +96,14 @@ public interface MyUnit {
      */
     List<bc.Unit> senseNearbyEnemies();
 
+    List<Unit> fastSenseNearbyEnemies(int radius, UnitType unitType);
+
+    List<Unit> fastSenseNearbyEnemies(int radius);
+
+    List<Unit> fastSenseNearbyEnemies(UnitType unitType);
+
+    List<Unit> fastSenseNearbyEnemies();
+
     /**
      * Senses all friendly units within the given radius (inclusive, distance squared) by type.
      * Returned list is guaranteed to not be null.
@@ -132,6 +141,14 @@ public interface MyUnit {
      * @return A list of friendly units.
      */
     List<MyUnit> senseNearbyFriendlies();
+
+    List<AUnit> fastSenseNearbyFriendlies(int radius, UnitType unitType);
+
+    List<AUnit> fastSenseNearbyFriendlies(int radius);
+
+    List<AUnit> fastSenseNearbyFriendlies(UnitType unitType);
+
+    List<AUnit> fastSenseNearbyFriendlies();
 
     /** Gets the id of the unit */
     int getID();

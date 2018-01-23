@@ -1,5 +1,9 @@
 package org.battlecode.bc18.bots.noobbot;
 
+import static org.battlecode.bc18.bots.noobbot.Knight.tman;
+
+import java.util.List;
+
 import org.battlecode.bc18.api.ARanger;
 import org.battlecode.bc18.util.Utils;
 import org.battlecode.bc18.util.pathfinder.PathFinder;
@@ -8,13 +12,12 @@ import bc.Direction;
 import bc.MapLocation;
 import bc.Unit;
 import bc.UnitType;
-import bc.VecUnit;
-import static org.battlecode.bc18.bots.noobbot.Knight.tman;
 
 public class Ranger extends ARanger {
 
 
-
+    //private static long startTime;
+    //private static long time1, time2, time3, time4, time5;
     private static short MAX_TURNS_STUCK = 5;
 
     private int turnsMissingEnemies = 0;
@@ -22,8 +25,6 @@ public class Ranger extends ARanger {
     /** The number of turns we have been unable to move */
     private short turnsStuck = 0;
 
-    //static int time1, time2, time3, time4;
-    //static long startTime;
     private Unit target = null; //Although this doesn't update, it will allow us to go to last seen spot.
     /** The macro-strategy (long-term) target. First index is x, second is y. If null, no target. */
     private float[] macroTarget = null;
@@ -50,7 +51,8 @@ public class Ranger extends ARanger {
         MapLocation myMapLoc = getMapLocation();
 
         MapLocation macroLoc = null;
-        VecUnit nearbyEnemies = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, getVisionRange(), Utils.OTHER_TEAM);
+        //startTime = System.currentTimeMillis();
+        List<Unit> nearbyEnemies = fastSenseNearbyEnemies();
 
         // Update macro target
         macroTarget = tman.getTarget(macroTargetSeed % tman.numTargets());
@@ -68,6 +70,8 @@ public class Ranger extends ARanger {
                 }
             }
         }
+        //time1 += (System.currentTimeMillis() - startTime);
+        //println("time1: " + time1);
 
         //Drop targets we can't sense
         if (hasTarget() && !Utils.gc.canSenseUnit(target.id())) {
@@ -81,14 +85,15 @@ public class Ranger extends ARanger {
             //target = Utils.getNearest(nearbyEnemies, myMapLoc, u -> u.unitType() != UnitType.Worker);
             // TODO: Workers don't necessarily need to target the nearest enemy!
             target = Utils.getNearest(nearbyEnemies, myMapLoc, u -> u.unitType() == UnitType.Rocket);
-            //time1 += System.currentTimeMillis() - startTime;
-            //System.out.println("time 1: " + time1);
+            //time2 += (System.currentTimeMillis() - startTime);
+            //println("time2: " + time2);
         }
 
         if (isMoveReady()) {
             boolean moved = false;
             // If we have a target, check and fix spacing
             if (hasTarget()) {
+                //startTime = System.currentTimeMillis();
                 MapLocation targetLoc = target.location().mapLocation();
                 if (this.isTargetKindaFar(this.target)) {
                     int[][] distances = PathFinder.myPlanetPathfinder.search(targetLoc.getY(), targetLoc.getX());
@@ -112,9 +117,10 @@ public class Ranger extends ARanger {
                         moved = true;
                     }
                 }
-                //time2 += System.currentTimeMillis() - startTime;
-                //System.out.println("time 2: " + time2);
+                //time3 += System.currentTimeMillis() - startTime;
+                //System.out.println("time 3: " + time3);
             } else if (hasMacroTarget()) {
+                //startTime = System.currentTimeMillis();
                 //Attack our macro target
                 int[][] distances = PathFinder.myPlanetPathfinder.search(macroLoc.getY(), macroLoc.getX());
                 Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
@@ -123,8 +129,8 @@ public class Ranger extends ARanger {
                     move(towardsEnemy);
                     moved = true;
                 }
-                //time3 += System.currentTimeMillis() - startTime;
-                //System.out.println("time 3: " + time3);
+                //time4 += System.currentTimeMillis() - startTime;
+                //System.out.println("time 4: " + time4);
             }
             // If we haven't yet moved and don't have a target, move randomly
             if (!moved && !hasTarget()) {
@@ -140,8 +146,8 @@ public class Ranger extends ARanger {
                         break;
                     }
                 }
-                //time4 += System.currentTimeMillis() - startTime;
-                //System.out.println("time 4: " + time4);
+                //time5 += System.currentTimeMillis() - startTime;
+                //System.out.println("time 5: " + time5);
             }
             if (!moved) {
                 turnsStuck++;
