@@ -1,10 +1,15 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import bc.*;
-import org.battlecode.bc18.util.pathfinder.PathFinder;
-import org.battlecode.bc18.TargetManager;
 import org.battlecode.bc18.api.ARanger;
 import org.battlecode.bc18.util.Utils;
+import org.battlecode.bc18.util.pathfinder.PathFinder;
+
+import bc.Direction;
+import bc.MapLocation;
+import bc.Unit;
+import bc.UnitType;
+import bc.VecUnit;
+import static org.battlecode.bc18.bots.noobbot.Knight.tman;
 
 public class Ranger extends ARanger {
 
@@ -12,12 +17,8 @@ public class Ranger extends ARanger {
 
     private static short MAX_TURNS_STUCK = 5;
 
-    static TargetManager tman;
-    static {
-        PlanetMap myMap = (Utils.PLANET == Planet.Earth) ? Utils.EARTH_START : Utils.MARS_START;
-        tman = new TargetManager(myMap.getInitial_units(), 3);
-    }
-
+    private int turnsMissingEnemies = 0;
+    private static final int MAX_TURNS_MISSING_ENEMIES = 10;
     /** The number of turns we have been unable to move */
     private short turnsStuck = 0;
 
@@ -43,7 +44,9 @@ public class Ranger extends ARanger {
     public void act() {
         //we want rangers to keep targets in the middle of their range
         //move if target tries to run away/toward (maybe with 1/4 of way from inner/outer edge of target?)
-
+        if (!isOnMap()) {
+            return;
+        }
         MapLocation myMapLoc = getMapLocation();
 
         MapLocation macroLoc = null;
@@ -53,11 +56,16 @@ public class Ranger extends ARanger {
         macroTarget = tman.getTarget(macroTargetSeed % tman.numTargets());
         //If we are very close to the macro target and there are no enemies, mark it as eliminated
         if (hasMacroTarget()) {
-            macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
-            if (nearbyEnemies.size() == 0 && macroLoc.distanceSquaredTo(myMapLoc) <= 4) {
-                tman.markTargetEliminated(macroTarget);
-                //Macro target location will change when eliminated so update its MapLocation
+            if (nearbyEnemies.size() == 0) {
                 macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
+                ++turnsMissingEnemies;
+                int distanceToTarget = (int) macroLoc.distanceSquaredTo(myMapLoc);
+                if (distanceToTarget <= 4 || (distanceToTarget <= 30 && turnsMissingEnemies >= MAX_TURNS_MISSING_ENEMIES)) {
+                    turnsMissingEnemies = 0;
+                    tman.markTargetEliminated(macroTarget);
+                    //Macro target location will change when eliminated so update its MapLocation
+                    macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
+                }
             }
         }
 
@@ -71,8 +79,8 @@ public class Ranger extends ARanger {
             // Direct API access to GameController for performance
             //Find nearest unit, prioritize all but workers
             //target = Utils.getNearest(nearbyEnemies, myMapLoc, u -> u.unitType() != UnitType.Worker);
-            // TODO: we probably need a finer ranking system rather than just excluding workers
-            target = Utils.getNearest(nearbyEnemies, myMapLoc);
+            // TODO: Workers don't necessarily need to target the nearest enemy!
+            target = Utils.getNearest(nearbyEnemies, myMapLoc, u -> u.unitType() == UnitType.Rocket);
             //time1 += System.currentTimeMillis() - startTime;
             //System.out.println("time 1: " + time1);
         }
@@ -82,53 +90,27 @@ public class Ranger extends ARanger {
             // If we have a target, check and fix spacing
             if (hasTarget()) {
                 MapLocation targetLoc = target.location().mapLocation();
-                int[][] distances = PathFinder.myPlanetPathfinder.search(targetLoc.getY(), targetLoc.getX());
-                Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
-                //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
                 if (this.isTargetKindaFar(this.target)) {
+                    int[][] distances = PathFinder.myPlanetPathfinder.search(targetLoc.getY(), targetLoc.getX());
+                    Direction towardsEnemy = PathFinder.directionToDestination(distances, myMapLoc);
+                    //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
                     if (towardsEnemy != Direction.Center && isAccessible(towardsEnemy)) {
                         move(towardsEnemy);
                         moved = true;
                     }
                 }
                 else if (this.isTargetKindaClose(this.target)) {
-                    Direction awayEnemy;
-                    //pls ignore
-                    switch (towardsEnemy){
-                        case East:
-                            awayEnemy = Direction.West;
-                            return;
-                        case West:
-                            awayEnemy = Direction.East;
-                            return;
-                        case North:
-                            awayEnemy = Direction.North;
-                            return;
-                        case South:
-                            awayEnemy = Direction.North;
-                            return;
-                        case Northeast:
-                            awayEnemy = Direction.Southwest;
-                            return;
-                        case Northwest:
-                            awayEnemy = Direction.Southeast;
-                            return;
-                        case Southeast:
-                            awayEnemy = Direction.Northwest;
-                            return;
-                        case Southwest:
-                            awayEnemy = Direction.Northeast;
-                            return;
-                        default:
-                            awayEnemy = Direction.Center;
-                    }
-                    if (awayEnemy != Direction.Center && isAccessible(awayEnemy)) {
-                        move(awayEnemy);
-                        moved = true;
+                    Direction awayEnemy = targetLoc.directionTo(myMapLoc);
+                    if (isAccessible(awayEnemy)) {
+                        if (fuzzyMove(awayEnemy) != null) {
+                            moved = true;
+                        }
                     }
                 }
                 else {
-                    moved = true; //bc we're in a good place
+                    if (movePerpendicular(myMapLoc.directionTo(targetLoc)) != null) {
+                        moved = true;
+                    }
                 }
                 //time2 += System.currentTimeMillis() - startTime;
                 //System.out.println("time 2: " + time2);
@@ -154,6 +136,7 @@ public class Ranger extends ARanger {
                     if (isAccessible(dir)) {
                         //println("Moving");
                         move(dir);
+                        moved = true;
                         break;
                     }
                 }
