@@ -36,15 +36,16 @@ public interface MyUnit {
     /**
      * Senses all units (friendly and enemy) within the given radius (inclusive, distance squared).
      * Both elements of the Pair are guaranteed to not be null.
-     * The radius must be within the vision range.
+     * Does not sense self.
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @return A Pair of lists. First list is friendlies, second is enemies.
      */
     Pair<List<MyUnit>, List<bc.Unit>> senseNearbyUnits(int radius);
 
     /**
-     * Senses all units (friendly and enemy) within vision by type.
+     * Senses all units (friendly and enemy) within this unit's vision radius by type.
      * Both elements of the Pair are guaranteed to not be null.
+     * Does not sense self.
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @param type The type of unit to sense. If null, sense all units.
      * @return A Pair of lists. First list is friendlies, second is enemies.
@@ -52,8 +53,9 @@ public interface MyUnit {
     Pair<List<MyUnit>, List<bc.Unit>> senseNearbyUnits(UnitType type);
 
     /**
-     * Senses all units (friendly and enemy) within vision.
+     * Senses all units (friendly and enemy) within this unit's vision radius.
      * Both elements of the Pair are guaranteed to not be null.
+     * Does not sense self.
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @return A Pair of lists. First list is friendlies, second is enemies.
      */
@@ -62,7 +64,6 @@ public interface MyUnit {
     /**
      * Senses all enemy units within the given radius (inclusive, distance squared) by type.
      * Returned list is guaranteed to not be null.
-     * The radius must be within the vision range.
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @param type The type of unit to sense. If null, sense all units.
      * @return A list of enemies.
@@ -72,14 +73,13 @@ public interface MyUnit {
     /**
      * Senses all enemy units within the given radius (inclusive, distance squared).
      * Returned list is guaranteed to not be null.
-     * The radius must be within the vision range.
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @return A list of enemy units.
      */
     List<bc.Unit> senseNearbyEnemies(int radius);
 
     /**
-     * Senses all enemy units within vision by type.
+     * Senses all enemy units within this unit's vision radius by type.
      * Returned list is guaranteed to not be null.
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @param type The type of unit to sense. If null, sense all units.
@@ -88,7 +88,7 @@ public interface MyUnit {
     List<bc.Unit> senseNearbyEnemies(UnitType type);
 
     /**
-     * Senses all enemy units within vision.
+     * Senses all enemy units within this unit's vision radius.
      * Returned list is guaranteed to not be null.
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @return A list of enemy units.
@@ -98,7 +98,7 @@ public interface MyUnit {
     /**
      * Senses all friendly units within the given radius (inclusive, distance squared) by type.
      * Returned list is guaranteed to not be null.
-     * The radius must be within the vision range.
+     * Does not sense self.
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @param type The type of unit to sense. If null, sense all units.
      * @return A list of friendly units.
@@ -108,15 +108,16 @@ public interface MyUnit {
     /**
      * Senses all friendly units within the given radius (inclusive, distance squared).
      * Returned list is guaranteed to not be null.
-     * The radius must be within the vision range.
+     * Does not sense self.
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @return A list of friendly units.
      */
     List<MyUnit> senseNearbyFriendlies(int radius);
 
     /**
-     * Senses all friendly units within vision by type.
+     * Senses all friendly units within this unit's vision radius by type.
      * Returned list is guaranteed to not be null.
+     * Does not sense self.
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @param type The type of unit to sense. If null, sense all units.
      * @return A list of friendly units.
@@ -124,8 +125,9 @@ public interface MyUnit {
     List<MyUnit> senseNearbyFriendlies(UnitType type);
 
     /**
-     * Senses all friendly units within vision.
+     * Senses all friendly units within this unit's vision radius.
      * Returned list is guaranteed to not be null.
+     * Does not sense self
      * NOTE: Does not check to ensure that this unit is on the map first.
      * @return A list of friendly units.
      */

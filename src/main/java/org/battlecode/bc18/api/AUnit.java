@@ -267,7 +267,6 @@ public abstract class AUnit implements MyUnit {
     @Override
     public List<Unit> senseNearbyEnemies(int radius, UnitType type) {
         assert isOnMap();
-        assert radius <= getVisionRange();
 
         VecUnit vec = (type == null) ?
             gc.senseNearbyUnitsByTeam(getMapLocation(), radius, Utils.OTHER_TEAM) :
@@ -299,7 +298,6 @@ public abstract class AUnit implements MyUnit {
     @Override
     public List<MyUnit> senseNearbyFriendlies(int radius, UnitType type) {
         assert isOnMap();
-        assert radius <= getVisionRange();
 
         VecUnit vec = (type == null) ?
             gc.senseNearbyUnitsByTeam(getMapLocation(), radius, Utils.TEAM) :
@@ -308,6 +306,8 @@ public abstract class AUnit implements MyUnit {
         ArrayList<MyUnit> myUnits = new ArrayList<>((int) vec.size());
         for (int i=0; i<vec.size(); i++) {
             Unit unit = vec.get(i);
+            //Don't return ourselves
+            if (unit.id() == this.id) continue;
             if (unit.team() == Utils.TEAM) myUnits.add(getUnit(unit));
         }
         return myUnits;
