@@ -1,12 +1,19 @@
 package org.battlecode.bc18.bots.noobbot;
 
+import bc.MapLocation;
 import org.battlecode.bc18.ProductionManager;
 import org.battlecode.bc18.api.AFactory;
+import org.battlecode.bc18.api.AUnit;
+import org.battlecode.bc18.api.MyRobot;
+import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Utils;
 
 import bc.Direction;
 import bc.Unit;
 import bc.UnitType;
+
+import java.util.HashMap;
+import java.util.List;
 
 public class Factory extends AFactory {
     //static int time1, time2, time3;
@@ -22,6 +29,7 @@ public class Factory extends AFactory {
 
     @Override
     public void act() {
+        MapLocation myLoc = getMapLocation();
         //System.out.println("Workers assigned to me: " + workersPerFactory.get(getID()));
         // Since we cant maintain the invariant for the units HashMap, manually add in units to ensure invariant.
 
@@ -53,11 +61,52 @@ public class Factory extends AFactory {
         //System.out.println("time2: " + time2);
         //startTime = System.currentTimeMillis();
         // Unload units
-        if (getAsUnit().structureGarrison().size() != 0) {
+        List<MyRobot> garrison = getGarrison();
+        if (garrison.size() != 0) {
+            boolean hasUnloaded = false;
             for (Direction dir : Utils.dirs) {
                 if (canUnload(dir)) {
                     unload(dir);
+                    hasUnloaded = true;
                     break;
+                }
+            }
+            // Self destruct adjacent unit if blocked
+            if (!hasUnloaded) {
+                int totalCount = 0;
+                HashMap<UnitType, Integer> unitCounts = new HashMap<>();
+                for (Direction dir : Utils.dirs) {
+                    MapLocation loc = myLoc.add(dir);
+                    //Skip dirs that dont have units
+                    if (!Utils.gc.hasUnitAtLocation(loc)) continue;
+                    Unit unit = Utils.gc.senseUnitAtLocation(loc);
+                    //Only our units
+                    if (unit.team() != Utils.TEAM) continue;
+                    MyUnit myUnit = AUnit.getUnit(unit);
+                    UnitType type = myUnit.getType();
+                    int count = unitCounts.computeIfAbsent(type, (K) -> 0);
+                    unitCounts.put(type, count++);
+                    totalCount++;
+                }
+                //Decide which unit to destroy
+                UnitType selectedType = null;
+                int workers = unitCounts.getOrDefault(UnitType.Worker, 0);
+                int healers = unitCounts.getOrDefault(UnitType.Healer, 0);
+                int knights = unitCounts.getOrDefault(UnitType.Knight, 0);
+
+                if (workers > 1) {
+                    selectedType = UnitType.Worker;
+                } else if (healers > 0) {
+                    selectedType = UnitType.Healer;
+                } else if (knights > 0) {
+                    selectedType = UnitType.Knight;
+                }
+                // Destruct and unload
+                MyUnit sacrificeOffering = senseNearbyFriendlies(2, selectedType).get(0);
+                if (sacrificeOffering != null) {
+                    Direction dir = getMapLocation().directionTo(sacrificeOffering.getMapLocation());
+                    sacrificeOffering.selfDestruct();
+                    unload(dir);
                 }
             }
         }
