@@ -58,6 +58,14 @@ public abstract class AUnit implements MyUnit {
         //TODO: keeping a Queue of the turn numbers at which units should be ready.
         //TODO: Peek the queue to see if the turn matches this one, and if it does call makeUnit()
         //TODO: on last member of garrison
+        enemyUnitList.clear();
+        VecUnit units = gc.units();
+        for (int i = 0; i < units.size(); ++i) {
+            Unit u = units.get(i);
+            if (u.team() == Utils.OTHER_TEAM) {
+                enemyUnitList.add(u);
+            }
+        }
         if (Utils.PLANET == Planet.Mars) {
             // Create MyUnit wrappers for imminently landing units
             RocketLandingInfo landingInfo = gc.rocketLandings();
@@ -225,6 +233,10 @@ public abstract class AUnit implements MyUnit {
         }
     }
 
+    public List<Unit> senseNearbyEnemies() {
+        return senseNearbyEnemies(getVisionRange());
+    }
+
     @Override
     public void selfDestruct() {
         gc.disintegrateUnit(id);
@@ -234,7 +246,6 @@ public abstract class AUnit implements MyUnit {
     @Override
     public Pair<List<MyUnit>, List<Unit>> senseNearbyUnits(int radius, UnitType type) {
         assert isOnMap();
-        assert radius <= getVisionRange();
 
         VecUnit vec = (type == null) ?
             gc.senseNearbyUnits(getMapLocation(), radius) :
@@ -292,8 +303,40 @@ public abstract class AUnit implements MyUnit {
     }
 
     @Override
-    public List<Unit> senseNearbyEnemies() {
-        return senseNearbyEnemies(getVisionRange(), null);
+    public List<Unit> fastSenseNearbyEnemies(int radius, UnitType unitType) {
+        MapLocation myMapLoc = getMapLocation();
+        ArrayList<Unit> nearbyUnits = new ArrayList<>();
+        for (Unit u : enemyUnitList) {
+            if (u.health() < 0 || !u.location().isOnMap()) {
+                continue;
+            }
+            if (unitType != null && u.unitType() != unitType) {
+                continue;
+            }
+            if (u.location().mapLocation().distanceSquaredTo(myMapLoc) > radius) {
+                continue;
+            }
+            if (!gc.canSenseUnit(u.id())) {
+                continue;
+            }
+            nearbyUnits.add(u);
+        }
+        return nearbyUnits;
+    }
+
+    @Override
+    public List<Unit> fastSenseNearbyEnemies(int radius) {
+        return fastSenseNearbyEnemies(radius, null);
+    }
+
+    @Override
+    public List<Unit> fastSenseNearbyEnemies(UnitType unitType) {
+        return fastSenseNearbyEnemies(getVisionRange(), unitType);
+    }
+
+    @Override
+    public List<Unit> fastSenseNearbyEnemies() {
+        return fastSenseNearbyEnemies(getVisionRange(), null);
     }
 
     @Override
@@ -327,6 +370,40 @@ public abstract class AUnit implements MyUnit {
     @Override
     public List<MyUnit> senseNearbyFriendlies() {
         return senseNearbyFriendlies(getVisionRange(), null);
+    }
+
+    @Override
+    public List<AUnit> fastSenseNearbyFriendlies(int radius, UnitType unitType) {
+        MapLocation myMapLoc = getMapLocation();
+        ArrayList<AUnit> nearbyUnits = new ArrayList<>();
+        for (AUnit u : unitList) {
+            if (u.isDead() || !u.isOnMap()) {
+                continue;
+            }
+            if (unitType != null && u.getType() != unitType) {
+                continue;
+            }
+            if (u.getMapLocation().distanceSquaredTo(myMapLoc) > radius) {
+                continue;
+            }
+            nearbyUnits.add(u);
+        }
+        return nearbyUnits;
+    }
+
+    @Override
+    public List<AUnit> fastSenseNearbyFriendlies(int radius) {
+        return fastSenseNearbyFriendlies(radius, null);
+    }
+
+    @Override
+    public List<AUnit> fastSenseNearbyFriendlies(UnitType unitType) {
+        return fastSenseNearbyFriendlies(getVisionRange(), unitType);
+    }
+
+    @Override
+    public List<AUnit> fastSenseNearbyFriendlies() {
+        return fastSenseNearbyFriendlies(getVisionRange(), null);
     }
 
     /** Gets the unit as a Unit object */
@@ -476,6 +553,7 @@ public abstract class AUnit implements MyUnit {
     public static final int FACTORY_PRODUCTION_ROUNDS = 5; // How many rounds it takes to produce a robot
     private static final Map<Integer, AUnit> units = new HashMap<>();
     private static final List<AUnit> unitList = new ArrayList<>();
+    private static final List<Unit> enemyUnitList = new ArrayList<>();
 
     private final int id;
     private final Team team;

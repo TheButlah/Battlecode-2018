@@ -3,9 +3,11 @@ package org.battlecode.bc18.bots.noobbot;
 import java.util.List;
 
 import org.battlecode.bc18.api.ARocket;
+import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.MyRobot;
 import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Utils;
+import org.battlecode.bc18.util.pathfinder.PathFinder;
 
 import bc.Direction;
 import bc.MapLocation;
@@ -15,7 +17,9 @@ import bc.UnitType;
 
 public class Rocket extends ARocket {
 
-    private static final int TAKEOFF_DELAY = 10;
+    //private static long startTime;
+    //private static long time1, time2;
+    private static final int TAKEOFF_DELAY = 30;
     private int liveRounds = 0;
     /**
      * Constructor for Rocket.
@@ -30,21 +34,37 @@ public class Rocket extends ARocket {
     public void act() {
         if (isBuilt() && isOnMap()) {
             if (Utils.PLANET == Planet.Earth) {
+                //startTime = System.currentTimeMillis();
                 ++liveRounds;
-                List<MyUnit> nearbyFriendlies = senseNearbyFriendlies();
-                for (MyUnit unit : nearbyFriendlies) {
-                    if (unit instanceof MyRobot) {
-                        MyRobot robot = (MyRobot) unit;
-                        if (canLoad(robot)) {
-                            load(robot);
+                boolean isGarrisonFull = isGarrisonFull();
+                if (!isGarrisonFull) {
+                    // Move nearby robots toward factory and load adjacent robots
+                    List<AUnit> nearbyFriendlies = fastSenseNearbyFriendlies(7);
+                    MapLocation myMapLoc = getMapLocation();
+                    int[][] distances = PathFinder.myPlanetPathfinder.search(
+                        myMapLoc.getY(),
+                        myMapLoc.getX());
+                    for (MyUnit unit : nearbyFriendlies) {
+                        if (unit instanceof MyRobot) {
+                            MyRobot robot = (MyRobot) unit;
+                            Direction towardsRocket = PathFinder
+                                    .directionToDestination(distances, robot.getMapLocation());
+                            if (towardsRocket != Direction.Center && robot.canMove(towardsRocket)) {
+                                robot.move(towardsRocket);
+                            }
+                            if (canLoad(robot)) {
+                                load(robot);
+                            }
                         }
-                        // TODO: Move nearby robots towards factory
                     }
                 }
+                //time1 += (System.currentTimeMillis() - startTime);
+                //println("time1: " + time1);
                 if (liveRounds >= TAKEOFF_DELAY || isGarrisonFull()) {
+                    //startTime = System.currentTimeMillis();
                     // Move adjacent robots away from factory
                     MapLocation myMapLoc = getMapLocation();
-                    List<MyUnit> nearbyFriendliesInBlastRadius = senseNearbyFriendlies(); // Note that this value may have changed from the previous sensed value
+                    List<AUnit> nearbyFriendliesInBlastRadius = fastSenseNearbyFriendlies(); // Note that this value may have changed from the previous sensed value
                     for (MyUnit unit : nearbyFriendliesInBlastRadius) {
                         if (unit instanceof MyRobot) {
                             MyRobot robot = (MyRobot) unit;
@@ -61,6 +81,8 @@ public class Rocket extends ARocket {
                         Utils.advanceLandingLocation();
                         return;
                     }
+                    //time2 += (System.currentTimeMillis() - startTime);
+                    //println("time2: " + time2);
                 }
             }
             else {

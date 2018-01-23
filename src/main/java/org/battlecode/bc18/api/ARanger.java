@@ -40,7 +40,7 @@ public abstract class ARanger extends ARobot implements MyRanger {
      */
     @Override
     public boolean canSnipe(Unit target) {
-        return isAbilityUnlocked() && this.isSnipeReady() && gc.canBeginSnipe(this.getID(), target.rangerTargetLocation());
+        return isAbilityUnlocked() && this.isSnipeReady() && gc.canBeginSnipe(this.getID(), target.location().mapLocation());
     }
 
     /**
@@ -51,7 +51,7 @@ public abstract class ARanger extends ARobot implements MyRanger {
     @Override
     public boolean snipe(Unit target) {
         if (canSnipe(target)) {
-            gc.beginSnipe(this.getID(), target.rangerTargetLocation());
+            gc.beginSnipe(this.getID(), target.location().mapLocation());
             return true;
         }
         return false;

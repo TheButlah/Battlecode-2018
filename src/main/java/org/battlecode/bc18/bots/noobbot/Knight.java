@@ -1,9 +1,11 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import org.battlecode.bc18.util.pathfinder.PathFinder;
+import java.util.List;
+
 import org.battlecode.bc18.TargetManager;
 import org.battlecode.bc18.api.AKnight;
 import org.battlecode.bc18.util.Utils;
+import org.battlecode.bc18.util.pathfinder.PathFinder;
 
 import bc.Direction;
 import bc.MapLocation;
@@ -11,7 +13,6 @@ import bc.Planet;
 import bc.PlanetMap;
 import bc.Unit;
 import bc.UnitType;
-import bc.VecUnit;
 
 public class Knight extends AKnight {
 
@@ -60,7 +61,7 @@ public class Knight extends AKnight {
         MapLocation myMapLoc = getMapLocation();
 
         MapLocation macroLoc = null;
-        VecUnit nearbyEnemies = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, getVisionRange(), Utils.OTHER_TEAM);
+        List<Unit> nearbyEnemies = fastSenseNearbyEnemies();
 
         // Update macro target
         macroTarget = tman.getTarget(macroTargetSeed % tman.numTargets());

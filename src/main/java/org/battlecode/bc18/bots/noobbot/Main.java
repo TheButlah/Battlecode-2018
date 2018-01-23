@@ -20,12 +20,14 @@ public class Main {
         //Without this, MyUnit cannot form new units
         AUnit.init(new UnitBuilder());
 
-        gc.queueResearch(UnitType.Knight);
+        //gc.queueResearch(UnitType.Knight);
+        gc.queueResearch(UnitType.Ranger);
         gc.queueResearch(UnitType.Ranger);
         gc.queueResearch(UnitType.Healer);
-        gc.queueResearch(UnitType.Knight);
+        //gc.queueResearch(UnitType.Knight);
         gc.queueResearch(UnitType.Rocket);
-        gc.queueResearch(UnitType.Knight);
+        //gc.queueResearch(UnitType.Knight);
+        gc.queueResearch(UnitType.Ranger);
         gc.queueResearch(UnitType.Healer);
         gc.queueResearch(UnitType.Worker);
         gc.queueResearch(UnitType.Rocket);
