@@ -122,11 +122,12 @@ public abstract class AUnit implements MyUnit {
      * @return The associated MyUnit object.
      */
     public static MyUnit getUnit(Unit unit) {
-        //`computeIfAbsent` is used to add any unidentified units to the list
-        return units.computeIfAbsent(
-            unit.id(),
-            (k) -> makeUnit(unit)
-        );
+        if (!units.containsKey(unit.id())) {
+            return makeUnit(unit);
+        }
+        else {
+            return units.get(unit.id());
+        }
     }
 
     /**

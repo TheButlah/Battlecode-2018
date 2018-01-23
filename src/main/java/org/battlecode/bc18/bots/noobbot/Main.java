@@ -87,6 +87,9 @@ public class Main {
             } catch (Error e) { // uh oh ¯\_(ツ)_/¯
                 e.printStackTrace();
             }
+            if (round % 100 == 0) {
+                System.gc();
+            }
             gc.nextTurn();
         }
     }
