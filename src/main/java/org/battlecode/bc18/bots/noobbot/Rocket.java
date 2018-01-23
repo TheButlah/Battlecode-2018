@@ -41,14 +41,11 @@ public class Rocket extends ARocket {
                     // Move nearby robots toward factory and load adjacent robots
                     List<AUnit> nearbyFriendlies = fastSenseNearbyFriendlies(7);
                     MapLocation myMapLoc = getMapLocation();
-                    int[][] distances = PathFinder.myPlanetPathfinder.search(
-                        myMapLoc.getY(),
-                        myMapLoc.getX());
+                    PathFinder.pf.setTarget(myMapLoc);
                     for (MyUnit unit : nearbyFriendlies) {
                         if (unit instanceof MyRobot) {
                             MyRobot robot = (MyRobot) unit;
-                            Direction towardsRocket = PathFinder
-                                    .directionToDestination(distances, robot.getMapLocation());
+                            Direction towardsRocket = PathFinder.pf.directionToTargetFrom(robot.getMapLocation());
                             if (towardsRocket != Direction.Center && robot.canMove(towardsRocket)) {
                                 robot.move(towardsRocket);
                             }
