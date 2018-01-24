@@ -59,6 +59,8 @@ public class PathFinder {
         visited = new boolean[ROWS * COLS];
         queue = new PriorityQueue<>(Comparator.comparingInt(node -> cost[toIndex(node.r, node.c)]));
         setWeights();
+        System.out.println("Weights:");
+        System.out.println(flatToString(weights, ROWS, COLS));
     }
 
     private int toIndex(int r, int c) {
@@ -108,8 +110,9 @@ public class PathFinder {
                     q.add(new Pair<>(0, coord));
                     visited.add(coord);
                 }
+                counter++;
             }
-            counter++;
+
         }
         // Note that we use 0xFFFF to represent a -1 value for row/column in the int representation of a coordinate
         // Add walls on left and right
