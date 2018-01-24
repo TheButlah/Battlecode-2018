@@ -1,12 +1,6 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import static org.battlecode.bc18.util.Utils.gc;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import bc.*;
 import org.battlecode.bc18.ProductionManager;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.AWorker;
@@ -16,11 +10,12 @@ import org.battlecode.bc18.util.Pair;
 import org.battlecode.bc18.util.Utils;
 import org.battlecode.bc18.util.pathfinder.PathFinder;
 
-import bc.Direction;
-import bc.MapLocation;
-import bc.Planet;
-import bc.Unit;
-import bc.UnitType;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.battlecode.bc18.util.Utils.gc;
 
 public class Worker extends AWorker {
     //static int time1, time2, time3, time4, time5, time6, time7;
@@ -100,6 +95,21 @@ public class Worker extends AWorker {
         }
         //We already checked that we were on the map
         MapLocation myMapLoc = getMapLocation();
+
+        if (this.nextDestination != null) {
+            if (isMoveReady()) {
+                int[][] distances = PathFinder.myPlanetPathfinder.search(
+                        nextDestination.getY(),
+                        nextDestination.getX());
+                Direction towardsRocket = PathFinder
+                        .directionToDestination(distances, myMapLoc);
+                if (towardsRocket != Direction.Center && isAccessible(towardsRocket)) {
+                    move(towardsRocket);
+                    nextDestination = null;
+                    return;
+                }
+            }
+        }
 
         MyStructure targetStructure = getStructureAssignment();
         if (targetStructure != null && targetStructure.isDead()) {

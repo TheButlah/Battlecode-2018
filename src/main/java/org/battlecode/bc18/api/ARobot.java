@@ -115,6 +115,8 @@ public abstract class ARobot extends AUnit implements MyRobot {
     //We don't know these values yet
     private int abilityCooldown = -1;
     private int abilityRange = -1;
+    
+    public MapLocation nextDestination = null;
 
     /**
      * Constructor for ARobot.
@@ -122,5 +124,9 @@ public abstract class ARobot extends AUnit implements MyRobot {
      */
     ARobot(Unit unit) {
         super(unit);
+    }
+    
+    public void notifyNextDestination(MapLocation mapLoc) {
+        nextDestination = mapLoc;
     }
 }

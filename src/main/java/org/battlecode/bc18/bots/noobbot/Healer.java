@@ -1,19 +1,18 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import static org.battlecode.bc18.bots.noobbot.Knight.tman;
-
-import java.util.List;
-
+import bc.Direction;
+import bc.MapLocation;
+import bc.Unit;
+import bc.UnitType;
 import org.battlecode.bc18.api.AHealer;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.MyRobot;
 import org.battlecode.bc18.util.Utils;
 import org.battlecode.bc18.util.pathfinder.PathFinder;
 
-import bc.Direction;
-import bc.MapLocation;
-import bc.Unit;
-import bc.UnitType;
+import java.util.List;
+
+import static org.battlecode.bc18.bots.noobbot.Knight.tman;
 
 public class Healer extends AHealer {
 
@@ -36,6 +35,22 @@ public class Healer extends AHealer {
         }
         //startTime = System.currentTimeMillis();
         MapLocation myMapLoc = getMapLocation();
+
+        if (this.nextDestination != null) {
+            if (isMoveReady()) {
+                int[][] distances = PathFinder.myPlanetPathfinder.search(
+                        nextDestination.getY(),
+                        nextDestination.getX());
+                Direction towardsRocket = PathFinder
+                        .directionToDestination(distances, myMapLoc);
+                if (towardsRocket != Direction.Center && isAccessible(towardsRocket)) {
+                    move(towardsRocket);
+                    nextDestination = null;
+                    return;
+                }
+            }
+        }
+        
         // heals weakest ally in heal range, if possible. Else, moves randomly.
         MyRobot target = null;
         int healRange = getHealRange();

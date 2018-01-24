@@ -1,18 +1,12 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import java.util.List;
-
+import bc.*;
 import org.battlecode.bc18.TargetManager;
 import org.battlecode.bc18.api.AKnight;
 import org.battlecode.bc18.util.Utils;
 import org.battlecode.bc18.util.pathfinder.PathFinder;
 
-import bc.Direction;
-import bc.MapLocation;
-import bc.Planet;
-import bc.PlanetMap;
-import bc.Unit;
-import bc.UnitType;
+import java.util.List;
 
 public class Knight extends AKnight {
 
@@ -59,6 +53,21 @@ public class Knight extends AKnight {
         }
 
         MapLocation myMapLoc = getMapLocation();
+
+        if (this.nextDestination != null) {
+            if (isMoveReady()) {
+                int[][] distances = PathFinder.myPlanetPathfinder.search(
+                        nextDestination.getY(),
+                        nextDestination.getX());
+                Direction towardsRocket = PathFinder
+                        .directionToDestination(distances, myMapLoc);
+                if (towardsRocket != Direction.Center && isAccessible(towardsRocket)) {
+                    move(towardsRocket);
+                    nextDestination = null;
+                    return;
+                }
+            }
+        }
 
         MapLocation macroLoc = null;
         List<Unit> nearbyEnemies = fastSenseNearbyEnemies();

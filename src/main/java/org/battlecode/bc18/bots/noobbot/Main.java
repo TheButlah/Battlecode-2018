@@ -1,14 +1,14 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import static org.battlecode.bc18.bots.noobbot.Knight.tman;
-import static org.battlecode.bc18.util.Utils.gc;
+import bc.*;
+import org.battlecode.bc18.api.AUnit;
+import org.battlecode.bc18.util.Utils;
+import org.battlecode.bc18.util.pathfinder.PathFinder;
 
 import java.util.Arrays;
 
-import bc.*;
-import org.battlecode.bc18.util.pathfinder.PathFinder;
-import org.battlecode.bc18.api.AUnit;
-import org.battlecode.bc18.util.Utils;
+import static org.battlecode.bc18.bots.noobbot.Knight.tman;
+import static org.battlecode.bc18.util.Utils.gc;
 
 public class Main {
     public static int initializingWorkerId;

@@ -1,7 +1,7 @@
 package org.battlecode.bc18.bots.noobbot;
 
 import bc.UnitType;
-import org.battlecode.bc18.api.*;
+import org.battlecode.bc18.api.AUnit;
 
 public class UnitBuilder implements org.battlecode.bc18.api.UnitBuilder {
     @Override

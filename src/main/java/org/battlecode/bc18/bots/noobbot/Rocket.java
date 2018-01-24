@@ -1,19 +1,15 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import java.util.List;
-
+import bc.*;
 import org.battlecode.bc18.api.ARocket;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.MyRobot;
 import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Utils;
-import org.battlecode.bc18.util.pathfinder.PathFinder;
 
-import bc.Direction;
-import bc.MapLocation;
-import bc.Planet;
-import bc.Unit;
-import bc.UnitType;
+import java.util.List;
+
+import static org.battlecode.bc18.util.Utils.gc;
 
 public class Rocket extends ARocket {
 
@@ -39,19 +35,14 @@ public class Rocket extends ARocket {
                 boolean isGarrisonFull = isGarrisonFull();
                 if (!isGarrisonFull) {
                     // Move nearby robots toward factory and load adjacent robots
-                    List<AUnit> nearbyFriendlies = fastSenseNearbyFriendlies(7);
+                    int radius = Math.min(Utils.MAP_WIDTH, Utils.MAP_HEIGHT);
+                    List<AUnit> nearbyFriendlies = fastSenseNearbyFriendlies(
+                            gc.round() >= Utils.ESCAPE_TO_MARS_TURN ? radius : 7);
                     MapLocation myMapLoc = getMapLocation();
-                    int[][] distances = PathFinder.myPlanetPathfinder.search(
-                        myMapLoc.getY(),
-                        myMapLoc.getX());
                     for (MyUnit unit : nearbyFriendlies) {
                         if (unit instanceof MyRobot) {
                             MyRobot robot = (MyRobot) unit;
-                            Direction towardsRocket = PathFinder
-                                    .directionToDestination(distances, robot.getMapLocation());
-                            if (towardsRocket != Direction.Center && robot.canMove(towardsRocket)) {
-                                robot.move(towardsRocket);
-                            }
+                            robot.notifyNextDestination(myMapLoc);
                             if (canLoad(robot)) {
                                 load(robot);
                             }
@@ -60,7 +51,8 @@ public class Rocket extends ARocket {
                 }
                 //time1 += (System.currentTimeMillis() - startTime);
                 //println("time1: " + time1);
-                if (liveRounds >= TAKEOFF_DELAY || isGarrisonFull()) {
+                int health = getHealth();
+                if (liveRounds >= TAKEOFF_DELAY || isGarrisonFull() || health <= 40) {
                     //startTime = System.currentTimeMillis();
                     // Move adjacent robots away from factory
                     MapLocation myMapLoc = getMapLocation();

@@ -43,6 +43,7 @@ public final class Utils {
     public static final Team TEAM;
     public static final Team OTHER_TEAM;
 
+    public static final int ESCAPE_TO_MARS_TURN = 675;
     public static final int COMMUNICATION_ARRAY_LENGTH = 100; // TODO: this doesn't seem to be available via the API?
 
     private static int landingLocationIndex = 0;

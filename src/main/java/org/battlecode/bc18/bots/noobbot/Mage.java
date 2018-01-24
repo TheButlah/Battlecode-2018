@@ -1,11 +1,12 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import static org.battlecode.bc18.util.Utils.gc;
-
 import bc.*;
 import org.battlecode.bc18.TargetManager;
 import org.battlecode.bc18.api.AMage;
 import org.battlecode.bc18.util.Utils;
+import org.battlecode.bc18.util.pathfinder.PathFinder;
+
+import static org.battlecode.bc18.util.Utils.gc;
 
 public class Mage extends AMage {
 
@@ -32,6 +33,21 @@ public class Mage extends AMage {
 
         //We already checked that we were on the map
         MapLocation myMapLoc = getMapLocation();
+
+        if (this.nextDestination != null) {
+            if (isMoveReady()) {
+                int[][] distances = PathFinder.myPlanetPathfinder.search(
+                        nextDestination.getY(),
+                        nextDestination.getX());
+                Direction towardsRocket = PathFinder
+                        .directionToDestination(distances, myMapLoc);
+                if (towardsRocket != Direction.Center && isAccessible(towardsRocket)) {
+                    move(towardsRocket);
+                    nextDestination = null;
+                    return;
+                }
+            }
+        }
         
         // attack if ready and there is an immediate target
         if (isAttackReady()) {

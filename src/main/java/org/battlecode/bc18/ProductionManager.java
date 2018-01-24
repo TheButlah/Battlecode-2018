@@ -17,7 +17,7 @@ public class ProductionManager {
         if (getTotalUnits(UnitType.Worker) == 0) {
             return UnitType.Worker;
         }
-        else if (AUnit.getNumUnits(UnitType.Rocket) < desiredNumRockets) {
+        else if (AUnit.getNumUnits(UnitType.Rocket) < desiredNumRockets || round >= Utils.ESCAPE_TO_MARS_TURN) {
             return UnitType.Rocket;
         }
         else if (getTotalUnits(UnitType.Healer) < desiredNumHealers){

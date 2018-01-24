@@ -59,4 +59,6 @@ public interface MyRobot extends MyUnit {
 
     /** Gets the range of this unit's active ability */
     int getAbililtyRange();
+
+    public void notifyNextDestination(MapLocation mapLoc);
 }
