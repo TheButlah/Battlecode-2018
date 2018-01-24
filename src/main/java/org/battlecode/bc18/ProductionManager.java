@@ -30,7 +30,7 @@ public class ProductionManager {
             return UnitType.Factory;
         }
         else {
-            return UnitType.Ranger;
+            return UnitType.Knight;
         }
     }
 
