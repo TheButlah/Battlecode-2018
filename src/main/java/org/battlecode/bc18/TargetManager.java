@@ -95,7 +95,7 @@ public class TargetManager {
         }
         //This is when numUnits == K == i, which means we are finished!
 
-        System.out.println(Arrays.deepToString(centroids) + "\n");
+        System.out.println(Arrays.deepToString(centroids));
     }
 
     /**

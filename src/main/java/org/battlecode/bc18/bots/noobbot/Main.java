@@ -81,7 +81,7 @@ public class Main {
                     MapLocation mapLoc = loc.mapLocation();
                     tman.updateCentroids(mapLoc.getX(), mapLoc.getY());
                 }
-                if (round % 10 == 0) System.out.println(Arrays.toString(Knight.tman.centroids));
+                if (round % 10 == 0) System.out.println(Arrays.deepToString(tman.centroids));
                 AUnit.doTurn();
 
             } catch (Exception e) {
