@@ -62,7 +62,7 @@ public class PathFinder {
     }
 
     private int toIndex(int r, int c) {
-        return c + r * ROWS;
+        return c + r * COLS;
     }
 
     /**
