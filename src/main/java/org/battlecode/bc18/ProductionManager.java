@@ -1,5 +1,6 @@
 package org.battlecode.bc18;
 
+import org.battlecode.bc18.api.AKnight;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.util.Utils;
 
@@ -12,27 +13,31 @@ public class ProductionManager {
         assert Utils.PLANET == Planet.Earth;
         long round = Utils.gc.round();
         long karbonite = Utils.gc.karbonite();
-        int desiredNumRockets = round >= 200 ? Math.min(10, AUnit.getNumUnits() / 20) : 0;
+        int desiredNumRockets = round >= 200 ? Math.min(10, AUnit.getNumUnits() / (rushRockets() ? 10 : 20)) : 0;
         int desiredNumHealers = AUnit.getNumUnits(UnitType.Ranger);
-        //int desiredNumRangers = AUnit.getNumUnits(UnitType.Knight);
+        int desiredNumRangers = AUnit.getNumUnits(UnitType.Knight);
         if (getTotalUnits(UnitType.Worker) == 0) {
             return UnitType.Worker;
         }
-        else if (AUnit.getNumUnits(UnitType.Rocket) < desiredNumRockets || round >= Utils.ESCAPE_MARS) {
+        else if (AUnit.getNumUnits(UnitType.Rocket) < desiredNumRockets) {
             return UnitType.Rocket;
         }
         else if (getTotalUnits(UnitType.Healer) < desiredNumHealers){
             return UnitType.Healer;
         }
-        //else if (getTotalUnits(UnitType.Ranger) < desiredNumRangers){
-        //    return UnitType.Ranger;
-        //}
+        else if (getTotalUnits(UnitType.Ranger) < desiredNumRangers){
+            return UnitType.Ranger;
+        }
         else if ((round > 100 && getTotalUnits() < 15) || (karbonite >= 200 && AUnit.getNumUnits(UnitType.Factory) < 10)) {
             return UnitType.Factory;
         }
         else {
             return UnitType.Knight;
         }
+    }
+
+    public static boolean rushRockets() {
+        return Utils.gc.round() > 650 || AKnight.tman.hasEliminatedAll();
     }
 
     private static int getTotalUnits() {

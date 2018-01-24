@@ -9,6 +9,7 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.function.Predicate;
 
+import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.MyUnit;
 
 import bc.Direction;
@@ -44,7 +45,6 @@ public final class Utils {
     public static final Team OTHER_TEAM;
 
     public static final int COMMUNICATION_ARRAY_LENGTH = 100; // TODO: this doesn't seem to be available via the API?
-    public static final int ESCAPE_MARS = 675;
     
     private static int landingLocationIndex = 0;
 
@@ -260,6 +260,13 @@ public final class Utils {
     /** Gets all units that match the filter. Does not modify `units` array.*/
     public static ArrayList<Unit> filterUnitsBy(ArrayList<Unit> units, Predicate<Unit> filter) {
         ArrayList<Unit> result = new ArrayList<>(units);
+        result.removeIf(filter.negate());
+        return result;
+    }
+
+    /** Gets all units that match the filter. Does not modify `units` array.*/
+    public static ArrayList<AUnit> filterAUnitsBy(List<AUnit> units, Predicate<AUnit> filter) {
+        ArrayList<AUnit> result = new ArrayList<>(units);
         result.removeIf(filter.negate());
         return result;
     }

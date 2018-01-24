@@ -2,6 +2,7 @@ package org.battlecode.bc18.bots.noobbot;
 
 import static org.battlecode.bc18.TargetManager.tman;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.battlecode.bc18.api.ARanger;
@@ -49,17 +50,7 @@ public class Ranger extends ARanger {
             return;
         }
         MapLocation myMapLoc = getMapLocation();
-
-        if (this.nextDestination != null) {
-            if (isMoveReady()) {
-                Direction towardsRocket = PathFinder.pf.directionToTargetFrom(myMapLoc);
-                if (towardsRocket != Direction.Center && isAccessible(towardsRocket)) {
-                    move(towardsRocket);
-                    nextDestination = null;
-                    return;
-                }
-            }
-        }
+        //if (Utils.gc.round() > 400) println("MyLoc: " + myMapLoc);
 
         MapLocation macroLoc = null;
         //startTime = System.currentTimeMillis();
@@ -95,16 +86,23 @@ public class Ranger extends ARanger {
             //Find nearest unit, prioritize all but workers
             //target = Utils.getNearest(nearbyEnemies, myMapLoc, u -> u.unitType() != UnitType.Worker);
             // TODO: Workers don't necessarily need to target the nearest enemy!
-            target = Utils.getNearest(nearbyEnemies, myMapLoc, u -> u.unitType() == UnitType.Rocket);
+            ArrayList<Unit> canAttack = new ArrayList<>();
+            for (Unit u : nearbyEnemies) {
+                if (u.location().mapLocation().distanceSquaredTo(myMapLoc) > getCannotAttackRange()) {
+                    canAttack.add(u);
+                }
+            }
+            target = Utils.getNearest(canAttack, myMapLoc, u -> u.unitType() == UnitType.Rocket);
             //time2 += (System.currentTimeMillis() - startTime);
             //println("time2: " + time2);
         }
 
         if (isMoveReady()) {
-            System.out.println();
+            //println("move ready");
             boolean moved = false;
             // If we have a target, check and fix spacing
             if (hasTarget()) {
+                //println("target: " + target);
                 //startTime = System.currentTimeMillis();
                 MapLocation targetLoc = target.location().mapLocation();
                 if (this.isTargetKindaFar(this.target)) {
@@ -132,6 +130,7 @@ public class Ranger extends ARanger {
                 //time3 += System.currentTimeMillis() - startTime;
                 //System.out.println("time 3: " + time3);
             } else if (hasMacroTarget()) {
+                //println("macroLoc: " + macroLoc);
                 //startTime = System.currentTimeMillis();
                 //Attack our macro target
                 PathFinder.pf.setTarget(macroLoc);
@@ -146,6 +145,7 @@ public class Ranger extends ARanger {
             }
             // If we haven't yet moved and don't have a target, move randomly
             if (!moved && !hasTarget()) {
+                //println("Moving randomly");
                 //startTime = System.currentTimeMillis();
                 int offset = Utils.rand.nextInt(Utils.dirs.length);
                 for (int i = 0; i < Utils.dirs.length; i++) {
@@ -162,12 +162,29 @@ public class Ranger extends ARanger {
                 //System.out.println("time 5: " + time5);
             }
             if (!moved) {
+                //println("not yet moved");
                 turnsStuck++;
                 if (turnsStuck >= MAX_TURNS_STUCK){
                     //TODO: Tell pathfinders with different macro targets to update weights
                     println("Stuck");
+                    // Move randomly
+                    turnsStuck = 0;
+                    int offset = Utils.rand.nextInt(Utils.dirs.length);
+                    for (int i = 0; i < Utils.dirs.length; i++) {
+                        Direction dir = Utils.dirs[(i + offset) % Utils.dirs.length]; //Cycle through based on random offset
+                        //Already did `isMoveReady()` so instead of doing `canMove()` we just do `isAccessible()`
+                        if (isAccessible(dir)) {
+                            //println("Moving");
+                            move(dir);
+                            moved = true;
+                            break;
+                        }
+                    }
                 }
             }
+        }
+        else {
+            //println("move is not ready");
         }
 
         if (hasTarget() && (isAttackReady() || isSnipeReady())) {

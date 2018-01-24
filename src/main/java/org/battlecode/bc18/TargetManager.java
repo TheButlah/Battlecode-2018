@@ -206,7 +206,7 @@ public class TargetManager {
      */
     public boolean hasEliminatedAll() {
         //if (hasEliminatedAll) System.out.println("Has Eliminated All");
-        if (hasEliminatedAll) System.out.println("HEA");
+        //if (hasEliminatedAll) System.out.println("HEA");
         return hasEliminatedAll;
     }
 

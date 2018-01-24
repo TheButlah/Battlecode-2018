@@ -26,6 +26,9 @@ public abstract class ARobot extends AUnit implements MyRobot {
     public MapLocation move(Direction dir) {
         assert canMove(dir);
         if (dir == Direction.Center) return getMapLocation();
+        //if (getMapLocation().getX() == 9 && getMapLocation().getY() == 12) {
+        //    println("BROKEN: moving to " + dir);
+        //}
         gc.moveRobot(getID(), dir);
         MapLocation newLoc = getMapLocation().add(dir);
         setLocation(newLoc);
@@ -37,6 +40,9 @@ public abstract class ARobot extends AUnit implements MyRobot {
         assert isMoveReady();
         Direction moveDir = dir;
         boolean canMove = false;
+        //if (getMapLocation().getX() == 9 && getMapLocation().getY() == 12) {
+        //    println("BROKEN: moving to " + dir);
+        //}
         if (isAccessible(moveDir)) {
             canMove = true;
         }
@@ -60,6 +66,9 @@ public abstract class ARobot extends AUnit implements MyRobot {
         Direction perpendicular1 = Utils.rotateDirClockwise(Utils.rotateDirClockwise(dir));
         Direction perpendicular2 = Utils.rotateDirCounterClockwise(Utils.rotateDirCounterClockwise(dir));
         Direction moveDir = dir;
+        //if (getMapLocation().getX() == 9 && getMapLocation().getY() == 12) {
+        //    println("BROKEN: moving to " + dir);
+        //}
         boolean canMove = false;
         if (isAccessible(perpendicular1)) {
             moveDir = perpendicular1;
@@ -111,17 +120,11 @@ public abstract class ARobot extends AUnit implements MyRobot {
     private int abilityCooldown = -1;
     private int abilityRange = -1;
     
-    public MapLocation nextDestination = null;
-
     /**
      * Constructor for ARobot.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
      */
     ARobot(Unit unit) {
         super(unit);
-    }
-    
-    public void notifyNextDestination(MapLocation mapLoc) {
-        nextDestination = mapLoc;
     }
 }
