@@ -1,6 +1,6 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import static org.battlecode.bc18.bots.noobbot.Knight.tman;
+import static org.battlecode.bc18.TargetManager.tman;
 
 import java.util.List;
 
@@ -90,6 +90,7 @@ public class Ranger extends ARanger {
         }
 
         if (isMoveReady()) {
+            System.out.println();
             boolean moved = false;
             // If we have a target, check and fix spacing
             if (hasTarget()) {
@@ -106,7 +107,7 @@ public class Ranger extends ARanger {
                 }
                 else if (this.isTargetKindaClose(this.target)) {
                     Direction awayEnemy = targetLoc.directionTo(myMapLoc);
-                    if (isAccessible(awayEnemy)) {
+                    if (awayEnemy != Direction.Center && isAccessible(awayEnemy)) {
                         if (fuzzyMove(awayEnemy) != null) {
                             moved = true;
                         }
@@ -153,6 +154,7 @@ public class Ranger extends ARanger {
                 turnsStuck++;
                 if (turnsStuck >= MAX_TURNS_STUCK){
                     //TODO: Tell pathfinders with different macro targets to update weights
+                    println("Stuck");
                 }
             }
         }

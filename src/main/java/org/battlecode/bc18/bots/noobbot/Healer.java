@@ -1,6 +1,6 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import static org.battlecode.bc18.bots.noobbot.Knight.tman;
+import static org.battlecode.bc18.TargetManager.tman;
 
 import java.util.List;
 

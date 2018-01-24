@@ -1,8 +1,6 @@
 package org.battlecode.bc18;
 
-import bc.MapLocation;
-import bc.Unit;
-import bc.VecUnit;
+import bc.*;
 import org.battlecode.bc18.util.Utils;
 
 import java.util.ArrayList;
@@ -31,6 +29,12 @@ public class TargetManager {
 
     /** The random spread of centroids (as a diameter) when they are set directly to a point. */
     private static final float RAND_SPREAD = 4;
+
+    public static final TargetManager tman;
+    static {
+        PlanetMap myMap = (Utils.PLANET == Planet.Earth) ? Utils.EARTH_START : Utils.MARS_START;
+        tman = new TargetManager(myMap.getInitial_units(), 3);
+    }
 
     /** `K` centers of enemy mass */
     private final int K;

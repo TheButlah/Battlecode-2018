@@ -25,6 +25,7 @@ public abstract class ARobot extends AUnit implements MyRobot {
     @Override
     public MapLocation move(Direction dir) {
         assert canMove(dir);
+        if (dir == Direction.Center) return getMapLocation();
         gc.moveRobot(getID(), dir);
         MapLocation newLoc = getMapLocation().add(dir);
         setLocation(newLoc);
@@ -48,12 +49,9 @@ public abstract class ARobot extends AUnit implements MyRobot {
             canMove = true;
         }
         if (canMove) {
-            gc.moveRobot(getID(), moveDir);
-            MapLocation newLoc = getMapLocation().add(moveDir);
-            setLocation(newLoc);
-            return newLoc;
+            return move(moveDir);
         }
-        return null;
+        return getMapLocation();
     }
 
     @Override
@@ -72,12 +70,9 @@ public abstract class ARobot extends AUnit implements MyRobot {
             canMove = true;
         }
         if (canMove) {
-            gc.moveRobot(getID(), moveDir);
-            MapLocation newLoc = getMapLocation().add(moveDir);
-            setLocation(newLoc);
-            return newLoc;
+            return move(moveDir);
         }
-        return null;
+        return getMapLocation();
     }
 
     @Override

@@ -2,27 +2,20 @@ package org.battlecode.bc18.bots.noobbot;
 
 import java.util.List;
 
-import org.battlecode.bc18.TargetManager;
 import org.battlecode.bc18.api.AKnight;
 import org.battlecode.bc18.util.Utils;
 import org.battlecode.bc18.util.pathfinder.PathFinder;
 
 import bc.Direction;
 import bc.MapLocation;
-import bc.Planet;
-import bc.PlanetMap;
 import bc.Unit;
 import bc.UnitType;
+
+import static org.battlecode.bc18.TargetManager.tman;
 
 public class Knight extends AKnight {
 
     private static short MAX_TURNS_STUCK = 5;
-
-    static TargetManager tman;
-    static {
-        PlanetMap myMap = (Utils.PLANET == Planet.Earth) ? Utils.EARTH_START : Utils.MARS_START;
-        tman = new TargetManager(myMap.getInitial_units(), 3);
-    }
 
     /** The number of turns we have been unable to move */
     private short turnsStuck = 0;
