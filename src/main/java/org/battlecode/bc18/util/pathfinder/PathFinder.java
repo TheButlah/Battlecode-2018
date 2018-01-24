@@ -302,12 +302,12 @@ public class PathFinder {
         queue.add(new Node(targetRow, targetCol));
 
         int total = ROWS * COLS;
-        int position = targetRow * ROWS + targetCol;
+        int position = targetRow * COLS + targetCol;
         int visit = 0;
 
         while (visit < total) {
-            int row = position / ROWS;
-            int col = position % ROWS;
+            int row = position / COLS;
+            int col = position % COLS;
 
             visited[toIndex(row, col)] = true;
             queue.remove(new Node(row, col));
