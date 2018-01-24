@@ -64,7 +64,7 @@ public abstract class ARanger extends ARobot implements MyRanger {
 
     @Override
     public boolean isTargetKindaFar(Unit target) {
-        return target.location().mapLocation().distanceSquaredTo(this.getMapLocation()) > this.getAttackRange() - (0.25*this.getAttackRingSize());
+        return target.location().mapLocation().distanceSquaredTo(this.getMapLocation()) > this.getAttackRange();
 
     }
 

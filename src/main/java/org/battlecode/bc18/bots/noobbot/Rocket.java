@@ -2,6 +2,7 @@ package org.battlecode.bc18.bots.noobbot;
 
 import java.util.List;
 
+import org.battlecode.bc18.ProductionManager;
 import org.battlecode.bc18.api.ARocket;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.MyRobot;
@@ -15,13 +16,16 @@ import bc.Planet;
 import bc.Unit;
 import bc.UnitType;
 import static org.battlecode.bc18.util.Utils.gc;
+import bc.VecUnitID;
 
 public class Rocket extends ARocket {
 
     //private static long startTime;
     //private static long time1, time2;
     private static final int TAKEOFF_DELAY = 30;
+    private static final int MAX_WORKERS = 4;
     private int liveRounds = 0;
+    private int loadedWorkers = 0;
     /**
      * Constructor for Rocket.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
@@ -37,21 +41,45 @@ public class Rocket extends ARocket {
             if (Utils.PLANET == Planet.Earth) {
                 //startTime = System.currentTimeMillis();
                 ++liveRounds;
-                int radius = Math.min(Utils.MAP_WIDTH, Utils.MAP_HEIGHT);
-                boolean isGarrisonFull = isGarrisonFull();
+                Unit myUnit = getAsUnit();
+                VecUnitID myGarrison = myUnit.structureGarrison();
+                boolean isGarrisonFull = myGarrison.size() == myUnit.structureMaxCapacity();
                 if (!isGarrisonFull) {
                     // Move nearby robots toward factory and load adjacent robots
-                    List<AUnit> nearbyFriendlies = fastSenseNearbyFriendlies(
-                            gc.round() >= Utils.ESCAPE_MARS ? radius : 7
-                    );
                     MapLocation myMapLoc = getMapLocation();
-                    PathFinder.pf.setTarget(myMapLoc);
-                    for (MyUnit unit : nearbyFriendlies) {
+                    List<AUnit> adjacentFriendlies = fastSenseNearbyFriendlies();
+                    if (loadedWorkers >= MAX_WORKERS) {
+                        adjacentFriendlies = Utils.filterAUnitsBy(adjacentFriendlies, (u) -> u.getType() != UnitType.Worker);
+                    }
+                    // Do not move units towards rocket when it is close to taking off
+                    if (liveRounds < TAKEOFF_DELAY - 5 && adjacentFriendlies.size() < myUnit.structureMaxCapacity() - myGarrison.size()) {
+                        List<AUnit> nearbyFriendlies = fastSenseNearbyFriendlies(ProductionManager.rushRockets() ? 100 : 30);
+                        PathFinder.pf.setTarget(myMapLoc);
+                        for (MyUnit unit : nearbyFriendlies) {
+                            if (unit instanceof MyRobot) {
+                                MyRobot robot = (MyRobot) unit;
+                                UnitType robotType = robot.getType();
+                                if (robotType == UnitType.Worker && loadedWorkers >= MAX_WORKERS) {
+                                    continue;
+                                }
+                                Direction towardsRocket = PathFinder.pf.directionToTargetFrom(robot.getMapLocation());
+                                if (towardsRocket != Direction.Center && robot.canMove(towardsRocket)) {
+                                    //println("moving unit at " + robot.getMapLocation() + " to rocket");
+                                    robot.move(towardsRocket);
+                                }
+                            }
+                        }
+                    }
+
+                    for (MyUnit unit : adjacentFriendlies) {
                         if (unit instanceof MyRobot) {
                             MyRobot robot = (MyRobot) unit;
-                            robot.notifyNextDestination(myMapLoc);
+                            UnitType robotType = robot.getType();
                             if (canLoad(robot)) {
                                 load(robot);
+                                if (robotType == UnitType.Worker) {
+                                    ++loadedWorkers;
+                                }
                             }
                         }
                     }
@@ -67,6 +95,7 @@ public class Rocket extends ARocket {
                         if (unit instanceof MyRobot) {
                             MyRobot robot = (MyRobot) unit;
                             if (robot.isMoveReady()) {
+                                //println("moving unit at " + robot.getMapLocation() + " away from rocket");
                                 robot.fuzzyMove(myMapLoc.directionTo(robot.getMapLocation()));
                             }
                         }

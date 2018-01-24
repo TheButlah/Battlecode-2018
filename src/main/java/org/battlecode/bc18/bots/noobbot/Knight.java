@@ -53,17 +53,6 @@ public class Knight extends AKnight {
 
         MapLocation myMapLoc = getMapLocation();
 
-        if (this.nextDestination != null) {
-            if (isMoveReady()) {
-                Direction towardsRocket = PathFinder.pf.directionToTargetFrom(myMapLoc);
-                if (towardsRocket != Direction.Center && isAccessible(towardsRocket)) {
-                    move(towardsRocket);
-                    nextDestination = null;
-                    return;
-                }
-            }
-        }
-
         MapLocation macroLoc = null;
         List<Unit> nearbyEnemies = fastSenseNearbyEnemies();
 

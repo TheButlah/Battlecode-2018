@@ -1,8 +1,14 @@
 package org.battlecode.bc18.api;
 
-import bc.*;
-
 import static org.battlecode.bc18.util.Utils.gc;
+
+import org.battlecode.bc18.TargetManager;
+import org.battlecode.bc18.util.Utils;
+
+import bc.Planet;
+import bc.PlanetMap;
+import bc.Unit;
+import bc.UnitType;
 
 public abstract class AKnight extends ARobot implements MyKnight {
 
@@ -37,6 +43,12 @@ public abstract class AKnight extends ARobot implements MyKnight {
     //////////END OF API//////////
 
 
+
+    public static TargetManager tman;
+    static {
+        PlanetMap myMap = (Utils.PLANET == Planet.Earth) ? Utils.EARTH_START : Utils.MARS_START;
+        tman = new TargetManager(myMap.getInitial_units(), 3);
+    }
 
     private final int attackRange;
 
