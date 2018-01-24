@@ -14,6 +14,7 @@ import bc.MapLocation;
 import bc.Planet;
 import bc.Unit;
 import bc.UnitType;
+import static org.battlecode.bc18.util.Utils.gc;
 
 public class Rocket extends ARocket {
 
@@ -36,19 +37,19 @@ public class Rocket extends ARocket {
             if (Utils.PLANET == Planet.Earth) {
                 //startTime = System.currentTimeMillis();
                 ++liveRounds;
+                int radius = Math.min(Utils.MAP_WIDTH, Utils.MAP_HEIGHT);
                 boolean isGarrisonFull = isGarrisonFull();
                 if (!isGarrisonFull) {
                     // Move nearby robots toward factory and load adjacent robots
-                    List<AUnit> nearbyFriendlies = fastSenseNearbyFriendlies(7);
+                    List<AUnit> nearbyFriendlies = fastSenseNearbyFriendlies(
+                            gc.round() >= Utils.ESCAPE_MARS ? radius : 7
+                    );
                     MapLocation myMapLoc = getMapLocation();
                     PathFinder.pf.setTarget(myMapLoc);
                     for (MyUnit unit : nearbyFriendlies) {
                         if (unit instanceof MyRobot) {
                             MyRobot robot = (MyRobot) unit;
-                            Direction towardsRocket = PathFinder.pf.directionToTargetFrom(robot.getMapLocation());
-                            if (towardsRocket != Direction.Center && robot.canMove(towardsRocket)) {
-                                robot.move(towardsRocket);
-                            }
+                            robot.notifyNextDestination(myMapLoc);
                             if (canLoad(robot)) {
                                 load(robot);
                             }

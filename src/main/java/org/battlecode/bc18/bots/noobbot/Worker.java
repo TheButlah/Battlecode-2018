@@ -101,6 +101,17 @@ public class Worker extends AWorker {
         //We already checked that we were on the map
         MapLocation myMapLoc = getMapLocation();
 
+        if (this.nextDestination != null) {
+            if (isMoveReady()) {
+                Direction towardsRocket = PathFinder.pf.directionToTargetFrom(myMapLoc);
+                if (towardsRocket != Direction.Center && isAccessible(towardsRocket)) {
+                    move(towardsRocket);
+                    nextDestination = null;
+                    return;
+                }
+            }
+        }
+
         MyStructure targetStructure = getStructureAssignment();
         if (targetStructure != null && targetStructure.isDead()) {
             println("Assigned to dead factory!");

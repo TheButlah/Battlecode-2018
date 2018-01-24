@@ -6,6 +6,7 @@ import org.battlecode.bc18.util.Utils;
 import bc.Planet;
 import bc.UnitType;
 
+
 public class ProductionManager {
     public static UnitType getNextProductionType() {
         assert Utils.PLANET == Planet.Earth;
@@ -17,7 +18,7 @@ public class ProductionManager {
         if (getTotalUnits(UnitType.Worker) == 0) {
             return UnitType.Worker;
         }
-        else if (AUnit.getNumUnits(UnitType.Rocket) < desiredNumRockets) {
+        else if (AUnit.getNumUnits(UnitType.Rocket) < desiredNumRockets || round >= Utils.ESCAPE_MARS) {
             return UnitType.Rocket;
         }
         else if (getTotalUnits(UnitType.Healer) < desiredNumHealers){

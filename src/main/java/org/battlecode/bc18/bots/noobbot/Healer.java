@@ -36,6 +36,18 @@ public class Healer extends AHealer {
         }
         //startTime = System.currentTimeMillis();
         MapLocation myMapLoc = getMapLocation();
+
+        if (this.nextDestination != null) {
+            if (isMoveReady()) {
+                Direction towardsRocket = PathFinder.pf.directionToTargetFrom(myMapLoc);
+                if (towardsRocket != Direction.Center && isAccessible(towardsRocket)) {
+                    move(towardsRocket);
+                    nextDestination = null;
+                    return;
+                }
+            }
+        }
+        
         // heals weakest ally in heal range, if possible. Else, moves randomly.
         MyRobot target = null;
         int healRange = getHealRange();
