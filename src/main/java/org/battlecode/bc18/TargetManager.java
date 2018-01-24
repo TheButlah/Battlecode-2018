@@ -22,7 +22,7 @@ public class TargetManager {
      * The base amount by which we resist moving centroids.
      * If this is 0, then we would move the centroid to the midpoint of prev loc and new point.
      */
-    public static final float BASE_RESIST = 1f/32;
+    public static final float BASE_RESIST = 1f/4096;
 
     /** The minimum manhattan distance that the total spread between centroids can be */
     public static final float MIN_SEPARATION = 2;
@@ -79,9 +79,9 @@ public class TargetManager {
                 xAvg += centroids[j][0];
                 yAvg += centroids[j][1];
             }
-            //Turn sum into avg. Add 1 because of 0-indexing
-            xAvg /= i+1;
-            yAvg /= i+1;
+            //Turn sum into avg.
+            xAvg /= i;
+            yAvg /= i;
             //Fill in remaining centroids with avg position, plus random spread.
             for (; i<K; i++) {
                 float newX = xAvg + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
@@ -98,7 +98,6 @@ public class TargetManager {
             }
         }
         //This is when numUnits == K == i, which means we are finished!
-
         System.out.println(Arrays.deepToString(centroids));
     }
 
@@ -122,8 +121,8 @@ public class TargetManager {
                 float newX = x + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
                 float newY = y + (Utils.rand.nextFloat() - 0.5f) * RAND_SPREAD;
                 //Clamp it to map boundaries
-                centroids[i][0] = Utils.clamp(0, Utils.MAP_WIDTH-0.001f, x);
-                centroids[i][1] = Utils.clamp(0, Utils.MAP_HEIGHT-0.001f, y);
+                centroids[i][0] = Utils.clamp(0, Utils.MAP_WIDTH-0.01f, x);
+                centroids[i][1] = Utils.clamp(0, Utils.MAP_HEIGHT-0.01f, y);
             }
             hasEliminatedAll = false;
             return; //We just computed the centroids - we are finished.
@@ -147,7 +146,7 @@ public class TargetManager {
 
         //Take closest centroid and move it towards the midpoint to our location.
         //`factor` scales the adjustment to be less than the midpoint distance
-        float factor = 1/(2+closestDistSq*BASE_RESIST); //For 1D, this would be x += dx/(2+dx*dx/constant)
+        float factor = 1/(2+closestDistSq*closestDistSq*BASE_RESIST); //For 1D, this would be x += dx/(2+dx^4/constant)
         centroids[closest][0] += closestDX * factor;
         centroids[closest][1] += closestDY * factor;
     }
@@ -195,6 +194,7 @@ public class TargetManager {
             }
         } else {
             hasEliminatedAll = true;
+            System.out.println("HAE");
         }
         return hasEliminatedAll;
     }

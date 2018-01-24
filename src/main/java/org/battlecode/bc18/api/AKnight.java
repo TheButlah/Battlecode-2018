@@ -44,12 +44,6 @@ public abstract class AKnight extends ARobot implements MyKnight {
 
 
 
-    public static TargetManager tman;
-    static {
-        PlanetMap myMap = (Utils.PLANET == Planet.Earth) ? Utils.EARTH_START : Utils.MARS_START;
-        tman = new TargetManager(myMap.getInitial_units(), 3);
-    }
-
     private final int attackRange;
 
     /**

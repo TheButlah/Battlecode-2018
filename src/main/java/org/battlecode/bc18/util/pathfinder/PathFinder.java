@@ -59,8 +59,6 @@ public class PathFinder {
         visited = new boolean[ROWS * COLS];
         queue = new PriorityQueue<>(Comparator.comparingInt(node -> cost[toIndex(node.r, node.c)]));
         setWeights();
-        System.out.println("Weights:");
-        System.out.println(flatToString(weights, ROWS, COLS));
     }
 
     private int toIndex(int r, int c) {

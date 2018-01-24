@@ -14,8 +14,8 @@ public class ProductionManager {
         long round = Utils.gc.round();
         long karbonite = Utils.gc.karbonite();
         int desiredNumRockets = round >= 200 ? Math.min(10, AUnit.getNumUnits() / (rushRockets() ? 10 : 20)) : 0;
-        int desiredNumHealers = AUnit.getNumUnits(UnitType.Ranger);
-        int desiredNumRangers = AUnit.getNumUnits(UnitType.Knight);
+        int desiredNumHealers = AUnit.getNumUnits(UnitType.Knight) / 2;
+        int desiredNumRangers = 0;
         if (getTotalUnits(UnitType.Worker) == 0) {
             return UnitType.Worker;
         }
@@ -37,7 +37,7 @@ public class ProductionManager {
     }
 
     public static boolean rushRockets() {
-        return Utils.gc.round() > 650 || AKnight.tman.hasEliminatedAll();
+        return Utils.gc.round() > 650 || TargetManager.tman.hasEliminatedAll();
     }
 
     private static int getTotalUnits() {
