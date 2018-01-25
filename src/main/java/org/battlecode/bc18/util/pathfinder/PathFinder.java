@@ -275,7 +275,6 @@ public class PathFinder {
         } else {
             int[] solution = computeCost();
             cache.put(target, solution);
-            cost = solution;
             return true;
         }
     }
@@ -296,7 +295,7 @@ public class PathFinder {
         //Fill cost array with UNREACHABLE
         cost = new int[ROWS * COLS];
         Arrays.fill(cost, UNREACHABLE);
-        //Filling visited array is unnecessary, its false by default.
+        Arrays.fill(visited, false);
 
         //Add starting position to queue
         cost[toIndex(targetRow, targetCol)] = weights[toIndex(targetRow, targetCol)];
