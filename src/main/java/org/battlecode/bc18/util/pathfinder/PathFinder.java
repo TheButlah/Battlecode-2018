@@ -262,6 +262,11 @@ public class PathFinder {
         return setTarget(target.getY(), target.getX());
     }
 
+    /** Resets the LRU cache */
+    public void resetCache() {
+        cache.evictAll();
+    }
+
     /**
      * Updates the cost to get to the location provided.
      * @return Whether recomputing the cost was necessary.

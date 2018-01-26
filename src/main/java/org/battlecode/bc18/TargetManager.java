@@ -22,7 +22,7 @@ public class TargetManager {
      * The base amount by which we resist moving centroids.
      * If this is 0, then we would move the centroid to the midpoint of prev loc and new point.
      */
-    public static final float BASE_RESIST = 1f/4096;
+    public static final float BASE_RESIST = 1f/2048;
 
     /** The minimum manhattan distance that the total spread between centroids can be */
     public static final float MIN_SEPARATION = 2;
