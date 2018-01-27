@@ -17,51 +17,51 @@ public class AStarSearch {
     // Planet.getHeight()
     private int yLimit;
 
-    private Node goalNode;
+    private Cell goalCell;
 
     // The set of nodes already evaluated
-    private Set<Node> closedSet = new HashSet<>();
+    private Set<Cell> closedSet = new HashSet<>();
 
     // The set of currently discovered nodes that are not evaluated yet.
     // Initially, only the start node is known.
-    private PriorityQueue<Node> openSet = new PriorityQueue<>(Comparator.comparingInt(this::getFScore));
+    private PriorityQueue<Cell> openSet = new PriorityQueue<>(Comparator.comparingInt(this::getFScore));
 
     // For each node, which node it can most efficiently be reached from.
     // If a node can be reached from many nodes, cameFrom will eventually contain the
     // most efficient previous step.
-    private Map<Node, Node> cameFrom = new HashMap<>();
+    private Map<Cell, Cell> cameFrom = new HashMap<>();
 
     // For each node, the cost of getting from the start node to that node.
     // If !contains(), INFINITY
-    private Map<Node, Integer> gScore = new HashMap<>();
+    private Map<Cell, Integer> gScore = new HashMap<>();
 
     // For each node, the total cost of getting from the start node to the goal
     // by passing by that node. That value is partly known, partly heuristic.
-    private Map<Node, Integer> fScore = new HashMap<>();
+    private Map<Cell, Integer> fScore = new HashMap<>();
     
     // For each node, the cost of getting from its neighbor to itself
     // By default, it's one. Different weights can be specified.
-    private Map<Node, Integer> weights = new HashMap<>();
+    private Map<Cell, Integer> weights = new HashMap<>();
 
     /**
      * A* update module.
      * @param xLimit the upper limit for x axis.
      * @param yLimit the upper limit for y axis.
-     * @param startNode starting point Node.
-     * @param goalNode end goal Node.
+     * @param startCell starting point Cell.
+     * @param goalCell end goal Cell.
      */
-    public AStarSearch(int xLimit, int yLimit, Node startNode, Node goalNode) {
+    public AStarSearch(int xLimit, int yLimit, Cell startCell, Cell goalCell) {
         this.xLimit = xLimit;
         this.yLimit = yLimit;
 
-        this.goalNode = goalNode;
-        openSet.add(startNode);
+        this.goalCell = goalCell;
+        openSet.add(startCell);
 
         // The cost of going from start to start is zero.
-        gScore.put(startNode, 0);
+        gScore.put(startCell, 0);
 
         // For the first node, that value is completely heuristic.
-        fScore.put(startNode, heuristicCostEstimate(startNode, goalNode));
+        fScore.put(startCell, heuristicCostEstimate(startCell, goalCell));
     }
 
     /**
@@ -69,11 +69,11 @@ public class AStarSearch {
      * @param loc map location of an obstacle
      */
     public void addObstacles(MapLocation loc) {
-        closedSet.add(new Node(loc.getY(), loc.getX()));
+        closedSet.add(new Cell(loc.getY(), loc.getX()));
     }
     
-    public void addObstacles(Node node) {
-        closedSet.add(node);
+    public void addObstacles(Cell cell) {
+        closedSet.add(cell);
     }
 
     /**
@@ -82,26 +82,26 @@ public class AStarSearch {
      * @param weight added weight
      */
     public void addLocationWeight(MapLocation loc, int weight) {
-        weights.put(new Node(loc.getY(), loc.getX()), weight);
+        weights.put(new Cell(loc.getY(), loc.getX()), weight);
     }
     
-    public void addLocationWeight(Node node, int weight) {
-        weights.put(node, weight);
+    public void addLocationWeight(Cell cell, int weight) {
+        weights.put(cell, weight);
     }
     
-    private int heuristicCostEstimate(Node fromNode, Node endNode) {
-        // double a = Math.pow(fromNode.r - endNode.r, 2);
-        // double b = Math.pow(fromNode.c - endNode.c, 2);
+    private int heuristicCostEstimate(Cell fromCell, Cell endCell) {
+        // double a = Math.pow(fromCell.r - endCell.r, 2);
+        // double b = Math.pow(fromCell.c - endCell.c, 2);
         // return (int) Math.round(Math.sqrt(a + b));
-        return Math.max(fromNode.r - endNode.r, fromNode.c - endNode.c);
+        return Math.max(fromCell.r - endCell.r, fromCell.c - endCell.c);
     }
     
-    private int getWeightOf(Node node) {
-        return weights.getOrDefault(node, 1);
+    private int getWeightOf(Cell cell) {
+        return weights.getOrDefault(cell, 1);
     }
 
-    private List<Node> reconstructPath(Node current) {
-        List<Node> totalPath = new ArrayList<>();
+    private List<Cell> reconstructPath(Cell current) {
+        List<Cell> totalPath = new ArrayList<>();
         totalPath.add(current);
         while (cameFrom.containsKey(current)) {
             current = cameFrom.get(current);
@@ -115,17 +115,17 @@ public class AStarSearch {
      * The list starts with the starting node and ends with the goal node.
      * @return the list of nodes
      */
-    public List<Node> getShortestPath() {
+    public List<Cell> getShortestPath() {
         while (!openSet.isEmpty()) {
-            Node current = openSet.poll();
-            if (current.equals(goalNode)) {
+            Cell current = openSet.poll();
+            if (current.equals(goalCell)) {
                 return reconstructPath(current);
             }
 
             openSet.remove(current);
             closedSet.add(current);
 
-            for (Node neighbor : getNeighborsOf(current)) {
+            for (Cell neighbor : getNeighborsOf(current)) {
 
                 if (closedSet.contains(neighbor))
                     continue;
@@ -141,7 +141,7 @@ public class AStarSearch {
 
                 gScore.put(neighbor, newG);
 
-                int newF = gScore.get(neighbor) + heuristicCostEstimate(neighbor, goalNode);
+                int newF = gScore.get(neighbor) + heuristicCostEstimate(neighbor, goalCell);
                 fScore.put(neighbor, newF);
             }
         }
@@ -149,12 +149,12 @@ public class AStarSearch {
         return null;
     }
 
-    private int getFScore(Node node) {
-        return fScore.getOrDefault(node, Integer.MAX_VALUE);
+    private int getFScore(Cell cell) {
+        return fScore.getOrDefault(cell, Integer.MAX_VALUE);
     }
 
-    private int getGScore(Node node) {
-        return gScore.getOrDefault(node, Integer.MAX_VALUE);
+    private int getGScore(Cell cell) {
+        return gScore.getOrDefault(cell, Integer.MAX_VALUE);
     }
 
     /**
@@ -163,24 +163,24 @@ public class AStarSearch {
      * @param current specified node
      * @return a list of neighbor nodes
      */
-    private List<Node> getNeighborsOf(Node current) {
+    private List<Cell> getNeighborsOf(Cell current) {
         int r = current.r;
         int c= current.c;
-        List<Node> neighbors = new ArrayList<>();
+        List<Cell> neighbors = new ArrayList<>();
 
-        if (c > 0) neighbors.add(new Node(r, c-1));
-        if (c < xLimit-1) neighbors.add(new Node(r, c+1));
+        if (c > 0) neighbors.add(new Cell(r, c-1));
+        if (c < xLimit-1) neighbors.add(new Cell(r, c+1));
 
         if (r > 0) {
-            neighbors.add(new Node(r-1, c));
-            if (c > 0) neighbors.add(new Node(r-1, c-1));
-            if (c < xLimit-1) neighbors.add(new Node(r-1, c+1));
+            neighbors.add(new Cell(r-1, c));
+            if (c > 0) neighbors.add(new Cell(r-1, c-1));
+            if (c < xLimit-1) neighbors.add(new Cell(r-1, c+1));
         }
 
         if (r < yLimit-1) {
-            neighbors.add(new Node(r+1, c));
-            if (c > 0) neighbors.add(new Node(r+1, c-1));
-            if (c < xLimit-1) neighbors.add(new Node(r+1, c+1));
+            neighbors.add(new Cell(r+1, c));
+            if (c > 0) neighbors.add(new Cell(r+1, c-1));
+            if (c < xLimit-1) neighbors.add(new Cell(r+1, c+1));
         }
 
         return neighbors;

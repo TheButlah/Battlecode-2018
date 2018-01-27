@@ -33,7 +33,7 @@ public class PathFinder {
     private final int COLS;
     private final boolean[] visited;
     private int[] cost;
-    private final PriorityQueue<Node> queue;
+    private final PriorityQueue<Cell> queue;
     private int[] weights;
     private final LRUCache<Integer, int[]> cache;
     private final int MAX_CACHE_SIZE = 100;
@@ -47,7 +47,7 @@ public class PathFinder {
         this.COLS = weights[0].length;
         cache = new LRUCache<>(MAX_CACHE_SIZE);
         visited = new boolean[ROWS * COLS];
-        queue = new PriorityQueue<>(Comparator.comparingInt(node -> cost[toIndex(node.r, node.c)]));
+        queue = new PriorityQueue<>(Comparator.comparingInt(cell -> cost[toIndex(cell.r, cell.c)]));
         setWeights(weights);
     }
 
@@ -57,7 +57,7 @@ public class PathFinder {
         this.COLS = Utils.MAP_WIDTH;
         cache = new LRUCache<>(MAX_CACHE_SIZE);
         visited = new boolean[ROWS * COLS];
-        queue = new PriorityQueue<>(Comparator.comparingInt(node -> cost[toIndex(node.r, node.c)]));
+        queue = new PriorityQueue<>(Comparator.comparingInt(cell -> cost[toIndex(cell.r, cell.c)]));
         setWeights();
     }
 
@@ -304,7 +304,7 @@ public class PathFinder {
 
         //Add starting position to queue
         cost[toIndex(targetRow, targetCol)] = weights[toIndex(targetRow, targetCol)];
-        queue.add(new Node(targetRow, targetCol));
+        queue.add(new Cell(targetRow, targetCol));
 
         int total = ROWS * COLS;
         int position = targetRow * COLS + targetCol;
@@ -315,7 +315,7 @@ public class PathFinder {
             int col = position % COLS;
 
             visited[toIndex(row, col)] = true;
-            queue.remove(new Node(row, col));
+            queue.remove(new Cell(row, col));
 
             int r, c;
             r = row;
@@ -357,12 +357,12 @@ public class PathFinder {
         int bigIndex = toIndex(row, col);
         if (!visited[littleIndex]) {
             cost[littleIndex] = Math.min(cost[littleIndex], cost[bigIndex] + weights[littleIndex]);
-            if (!queue.contains(new Node(r, c))) {
-                queue.add(new Node(r, c));
+            if (!queue.contains(new Cell(r, c))) {
+                queue.add(new Cell(r, c));
             }
             else {
-                queue.remove(new Node(r, c));
-                queue.add(new Node(r, c));
+                queue.remove(new Cell(r, c));
+                queue.add(new Cell(r, c));
             }
         }
     }
@@ -381,7 +381,7 @@ public class PathFinder {
         if (queue.isEmpty()) {
             return 0;
         }
-        Node closest = queue.peek();
+        Cell closest = queue.peek();
         int pos = closest.r * COLS + closest.c;
         return pos;
     }

@@ -12,4 +12,4 @@
 #java -Xmx40m -classpath .:../battlecode/java Player
 
 #remember to disable assertions by removing the -ea flag when not debugging!
-java -Xmx40m -ea -jar Battlecode-2018-0.1-all.jar
+java -Xmx40m -jar -ea Battlecode-2018-0.1-all.jar
