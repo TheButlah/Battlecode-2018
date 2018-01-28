@@ -29,7 +29,7 @@ public class PathFinder {
     private int[] cost;
     private final PriorityQueue<Cell> queue;
     private int[] weights;
-    private final int MAX_COST_CACHE_SIZE = 100;
+    private final int MAX_COST_CACHE_SIZE = 1000;
     private final int MAX_PATH_CACHE_SIZE = 10;
     private final LRUCache<Integer, int[]> costCache = new LRUCache<>(MAX_COST_CACHE_SIZE);
     private final LRUCache<Integer, Path> pathCache = new LRUCache<>(MAX_PATH_CACHE_SIZE);

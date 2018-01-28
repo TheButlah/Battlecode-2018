@@ -24,7 +24,7 @@ import bc.Unit;
 import bc.UnitType;
 
 public class Worker extends AWorker {
-    //static int time1, time2, time3, time4, time5, time6, time7;
+    //static int time1, time2, time3, time4, time5, time6, time7, time8, time9, time10;
     //static long startTime;
 
     /**
@@ -257,9 +257,12 @@ public class Worker extends AWorker {
                         moved = true;
                     }
                 }
+                //time5 += System.currentTimeMillis() - startTime;
+                //System.out.println("time 5: " + time5);
 
                 if (!moved) {
                     //No target structure, so look for nearby karbonite
+                    //startTime = System.currentTimeMillis();
                     List<Pair<MapLocation, Integer>> deposits = senseNearbyKarbonite();
                     if (targetKarboniteLoc == null) {
                         if (deposits.size() != 0) {
@@ -267,6 +270,9 @@ public class Worker extends AWorker {
                             targetKarboniteLoc = targetDeposit.getFirst();
                         }
                     }
+                    //time8 += System.currentTimeMillis() - startTime;
+                    //System.out.println("time 8: " + time8);
+                    //startTime = System.currentTimeMillis();
                     if (targetKarboniteLoc != null) {
                         PathFinder.pf.setTarget(targetKarboniteLoc);
                         Direction towardsKarbonite = PathFinder.pf.directionToTargetFrom(myMapLoc);
@@ -275,6 +281,9 @@ public class Worker extends AWorker {
                             moved = true;
                         }
                     }
+                    //time9 += System.currentTimeMillis() - startTime;
+                    //System.out.println("time 9: " + time9);
+                    //startTime = System.currentTimeMillis();
                     if (AUnit.getNumUnits(UnitType.Worker) < gc.round() / 5 && (deposits.size() > 5 || sumDeposits(deposits) > 100)) {
                         for (Direction dir : Utils.dirs) {
                             if (canReplicate(dir)) {
@@ -286,6 +295,8 @@ public class Worker extends AWorker {
                             }
                         }
                     }
+                    //time10 += System.currentTimeMillis() - startTime;
+                    //System.out.println("time 10: " + time10);
                 }
                 if (!moved) {
                     //Move randomly
@@ -299,8 +310,6 @@ public class Worker extends AWorker {
                         }
                     }
                 }
-                //time5 += System.currentTimeMillis() - startTime;
-                //System.out.println("time 5: " + time5);
             }
         }
 
@@ -326,6 +335,8 @@ public class Worker extends AWorker {
                         }
                     }
                 }
+                //time6 += System.currentTimeMillis() - startTime;
+                //System.out.println("time 6: " + time6);
                 // building a factory based on the blueprint created.
                 if (!structureBuilt) {
                     if (canBuild(targetStructure)) {
@@ -339,8 +350,6 @@ public class Worker extends AWorker {
                     repair(targetStructure);
                     return;
                 }
-                //time6 += System.currentTimeMillis() - startTime;
-                //System.out.println("time 6: " + time6);
             }
             else {
                 // De-assign worker from factory so he can explore the map
