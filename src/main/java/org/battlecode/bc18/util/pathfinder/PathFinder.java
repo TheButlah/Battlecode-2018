@@ -2,7 +2,6 @@ package org.battlecode.bc18.util.pathfinder;
 
 import java.util.*;
 
-import org.battlecode.bc18.util.Pair;
 import org.battlecode.bc18.util.Utils;
 
 import com.lodborg.cache.LRUCache;
@@ -30,8 +29,11 @@ public class PathFinder {
     private int[] cost;
     private final PriorityQueue<Cell> queue;
     private int[] weights;
-    private final LRUCache<Integer, int[]> cache;
-    private final int MAX_CACHE_SIZE = 100;
+    private final int MAX_COST_CACHE_SIZE = 100;
+    private final int MAX_PATH_CACHE_SIZE = 10;
+    private final LRUCache<Integer, int[]> costCache = new LRUCache<>(MAX_COST_CACHE_SIZE);
+    private final LRUCache<Integer, Path> pathCache = new LRUCache<>(MAX_PATH_CACHE_SIZE);
+
     private int target; //First 16 bits row, second 16 col
 
     public static PathFinder pf;
@@ -40,7 +42,6 @@ public class PathFinder {
     public PathFinder(int[][] weights) {
         this.ROWS = weights.length;
         this.COLS = weights[0].length;
-        cache = new LRUCache<>(MAX_CACHE_SIZE);
         visited = new boolean[ROWS * COLS];
         queue = new PriorityQueue<>(Comparator.comparingInt(cell -> cost[toIndex(cell.r, cell.c)]));
         setWeights(weights);
@@ -50,7 +51,6 @@ public class PathFinder {
     public PathFinder() {
         this.ROWS = Utils.MAP_HEIGHT;
         this.COLS = Utils.MAP_WIDTH;
-        cache = new LRUCache<>(MAX_CACHE_SIZE);
         visited = new boolean[ROWS * COLS];
         queue = new PriorityQueue<>(Comparator.comparingInt(cell -> cost[toIndex(cell.r, cell.c)]));
         setWeights();
@@ -84,7 +84,7 @@ public class PathFinder {
         assert weights.length == ROWS;
         assert weights[0].length == COLS;
         this.weights = toFlatArray(weights);
-        cache.evictAll();
+        resetCache();
     }
 
     private void setWeights() {
@@ -334,7 +334,7 @@ public class PathFinder {
                 }
             }
         }
-        cache.evictAll();
+        resetCache();
     }
 
     private static String flatToString(int[] flat, int rows, int cols) {
@@ -377,9 +377,10 @@ public class PathFinder {
         return setTarget(target.getY(), target.getX());
     }
 
-    /** Resets the LRU cache */
+    /** Resets the LRU caches */
     public void resetCache() {
-        cache.evictAll();
+        costCache.evictAll();
+        pathCache.evictAll();
     }
 
     /**
@@ -387,14 +388,19 @@ public class PathFinder {
      * @return Whether recomputing the cost was necessary.
      */
     private boolean setTarget(int row, int col) {
-        target = row << 16 | col; //Bit-pack a target.
-        int[] cachedResult = cache.get(target);
+        int tmp = row << 16 | col; //Bit-pack a target.
+        //Evict paths if we have a new target
+        if (target != tmp) {
+            pathCache.evictAll();
+            target = tmp;
+        }
+        int[] cachedResult = costCache.get(target);
         if (cachedResult != null) {
             cost = cachedResult;
             return false;
         } else {
             int[] solution = computeCost();
-            cache.put(target, solution);
+            costCache.put(target, solution);
             return true;
         }
     }
@@ -526,21 +532,39 @@ public class PathFinder {
         return optimalDirection;
     }
 
-    /** Computes the subgraph that represents all shortest possible paths to the current target from `from`.*/
+    /**
+     * Computes the subgraph that represents all shortest possible paths to the current target from `from`.
+     * Try not to call too often.
+     */
     public Path pathToTargetFrom(MapLocation from) {
-        return new Path(from);
+        int packed = from.getY() << 16 | from.getX(); //Bit-pack a location.
+        //Evict paths if we have a new target
+        Path cachedResult = pathCache.get(packed);
+        if (cachedResult != null) {
+            return cachedResult;
+        } else {
+            Path solution = new Path(from);
+            pathCache.put(packed, solution);
+            return solution;
+        }
     }
 
     /**
      * Represents the shortest path(s) from a start to the destination.
-     * Does not consider units as tangible obstacles. Does consider terrain as an obstacle.
+     * Only considers terrain as impassible.
+     * Caches results, but cache is invalidated each time target changes.
      */
     public class Path {
         private Node start;
         private final HashMap<Cell, Path.Node> cellMap = new HashMap<>(Utils.MAP_WIDTH * Utils.MAP_HEIGHT);
         private String description = null;
 
-        /** Describe the path. Note that this performs a full traversal of the path. */
+        /**
+         * Describe the path. Does cache result.
+         * Note that this performs a full traversal of the path the first time it is called.
+         * Each line represents the children of the previous step's explored nodes.
+         * Nodes are grouped by parent.
+         */
         public String describePath() {
             if (description != null) return description;
             HashSet<Node> set = new HashSet<>(1);
