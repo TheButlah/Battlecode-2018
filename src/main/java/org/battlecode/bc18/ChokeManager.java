@@ -5,6 +5,7 @@ import bc.Planet;
 import bc.PlanetMap;
 import org.battlecode.bc18.api.MyFactory;
 import org.battlecode.bc18.pathfinder.Cell;
+import org.battlecode.bc18.pathfinder.PathFinder;
 import org.battlecode.bc18.util.Utils;
 
 import java.util.ArrayList;
@@ -30,8 +31,13 @@ public class ChokeManager {
         dangerous = new boolean[ROWS * COLS];
     }
 
-    public List<Cell> getChokepoints(MyFactory factory) {
-        return null;
+    public List<Cell> getChokesInPath(PathFinder.Path path) {
+        PathFinder.Path.Node start = path.getStart();
+        return null; //TODO: Do this
+    }
+
+    public List<MapLocation> getChokepoints(MyFactory factory) {
+        return null; //TODO: Do this
     }
 
 
@@ -47,7 +53,7 @@ public class ChokeManager {
 
     public List<MapLocation> getChokepoints() {
         return chokepoints;
-    };
+    }
 
     /** Marks the given cell as dangerous */
     private void setDangerous(boolean isDangerous, int r, int c) {
