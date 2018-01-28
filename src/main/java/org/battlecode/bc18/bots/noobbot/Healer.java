@@ -75,6 +75,16 @@ public class Healer extends AHealer {
                 UnitType enemyType = enemy.unitType();
                 if (enemyType == UnitType.Knight || enemyType == UnitType.Ranger || enemyType == UnitType.Mage) {
                     MapLocation enemyLoc = enemy.location().mapLocation();
+                    long distToEnemy = enemyLoc.distanceSquaredTo(myMapLoc);
+                    if (enemyType == UnitType.Knight && distToEnemy > 30) {
+                        continue;
+                    }
+                    else if (enemyType == UnitType.Mage && distToEnemy > 35) {
+                        continue;
+                    }
+                    else if (enemyType == UnitType.Ranger && distToEnemy > 45) {
+                        continue;
+                    }
                     ++numCloseEnemies;
                     closeEnemyAvgX += (enemyLoc.getX() - closeEnemyAvgX) / numCloseEnemies;
                     closeEnemyAvgY += (enemyLoc.getY() - closeEnemyAvgY) / numCloseEnemies;
