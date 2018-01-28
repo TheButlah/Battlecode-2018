@@ -2,6 +2,7 @@ package org.battlecode.bc18.util.pathfinder;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
@@ -28,7 +29,7 @@ import bc.Planet;
 public class PathFinder {
 
     public static final int UNREACHABLE = 999999;
-    public static final int INFINITY = 1_000; //Weight for impassible tile; this is longer than the longest path through the grid
+    public static final int INFINITY = 5_000; //Weight for impassible tile; this is longer than the longest path through the grid
     private final int ROWS;
     private final int COLS;
     private final boolean[] visited;
@@ -96,8 +97,10 @@ public class PathFinder {
         if (weights == null) {
             weights = new int[ROWS * COLS];
         }
-        Queue<Pair<Integer, Integer>> q = new LinkedList<>();
+        Queue<Integer> q = new LinkedList<>();
         HashSet<Integer> visited = new HashSet<>();
+        HashMap<Integer, Integer> parents = new HashMap<>();
+        HashMap<Integer, Integer> distancesToWall = new HashMap<>();
         int counter = 0;
         for (int r = 0; r< ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
@@ -105,7 +108,8 @@ public class PathFinder {
                 if (isWall) {
                     weights[counter] = INFINITY;
                     int coord = (r << 16) | c ;
-                    q.add(new Pair<>(0, coord));
+                    q.add(coord);
+                    distancesToWall.put(coord, 0);
                     visited.add(coord);
                 }
                 counter++;
@@ -116,22 +120,25 @@ public class PathFinder {
         // Add walls on left and right
         for (int r = 0; r < ROWS; ++r) {
             int coord = (r << 16) | 0xFFFF;
-            q.add(new Pair<>(0, coord));
+            q.add(coord);
+            distancesToWall.put(coord, 0);
             coord = (r << 16) | Utils.MAP_WIDTH;
-            q.add(new Pair<>(0, coord));
+            q.add(coord);
+            distancesToWall.put(coord, 0);
         }
         // Add walls on top and bottom
         for (int c = 0; c < COLS; ++c) {
             int coord = 0xFFFF0000 | c;
-            q.add(new Pair<>(0, coord));
+            q.add(coord);
+            distancesToWall.put(coord, 0);
             coord = (Utils.MAP_HEIGHT << 16) | c;
-            q.add(new Pair<>(0, coord));
+            q.add(coord);
+            distancesToWall.put(coord, 0);
         }
         // Assign weights for passable terrain by calculating cost to the nearest wall
         while (!q.isEmpty()) {
-            Pair<Integer, Integer> distCoordPair = q.poll();
-            int distanceToWall = distCoordPair.getFirst();
-            int coord = distCoordPair.getSecond();
+            int coord = q.poll();
+            int distanceToWall = distancesToWall.get(coord);
             int row = coord >>> 16;
             if (row == 0xFFFF) {
                 row = -1;
@@ -141,26 +148,32 @@ public class PathFinder {
                 col = -1;
             }
             if (distanceToWall != 0) {
-                // Weight node inversely to the cost from the nearest wall
-                weights[toIndex(row, col)] = Math.max(1, 5 - distanceToWall);
+                weights[toIndex(row, col)] = distanceToWall;
             }
             int newRow = row;
             int newCol = col - 1;
             int newCoord;
+            boolean hasUndiscoveredNode = false;
             if (0 <= newRow && newRow < Utils.MAP_HEIGHT) {
                 if (newCol >= 0) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<>(distanceToWall + 1, newCoord));
+                        q.add(newCoord);
+                        distancesToWall.put(newCoord, distanceToWall + 1);
                         visited.add(newCoord);
+                        parents.put(newCoord, coord);
+                        hasUndiscoveredNode = true;
                     }
                 }
                 newCol = col + 1;
                 if (newCol < Utils.MAP_WIDTH) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<>(distanceToWall + 1, newCoord));
+                        q.add(newCoord);
+                        distancesToWall.put(newCoord, distanceToWall + 1);
                         visited.add(newCoord);
+                        parents.put(newCoord, coord);
+                        hasUndiscoveredNode = true;
                     }
                 }
             }
@@ -170,24 +183,33 @@ public class PathFinder {
                 if (0 <= newCol && newCol < Utils.MAP_WIDTH) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<>(distanceToWall + 1, newCoord));
+                        q.add(newCoord);
+                        distancesToWall.put(newCoord, distanceToWall + 1);
                         visited.add(newCoord);
+                        parents.put(newCoord, coord);
+                        hasUndiscoveredNode = true;
                     }
                 }
                 newCol = col - 1;
                 if (newCol >= 0) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<>(distanceToWall + 1, newCoord));
+                        q.add(newCoord);
+                        distancesToWall.put(newCoord, distanceToWall + 1);
                         visited.add(newCoord);
+                        parents.put(newCoord, coord);
+                        hasUndiscoveredNode = true;
                     }
                 }
                 newCol = col + 1;
                 if (newCol < Utils.MAP_WIDTH) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<>(distanceToWall + 1, newCoord));
+                        q.add(newCoord);
+                        distancesToWall.put(newCoord, distanceToWall + 1);
                         visited.add(newCoord);
+                        parents.put(newCoord, coord);
+                        hasUndiscoveredNode = true;
                     }
                 }
             }
@@ -197,25 +219,124 @@ public class PathFinder {
                 if (0 <= newCol && newCol < Utils.MAP_WIDTH) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<>(distanceToWall + 1, newCoord));
+                        q.add(newCoord);
+                        distancesToWall.put(newCoord, distanceToWall + 1);
                         visited.add(newCoord);
+                        parents.put(newCoord, coord);
+                        hasUndiscoveredNode = true;
                     }
                 }
                 newCol = col - 1;
                 if (newCol >= 0) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<>(distanceToWall + 1, newCoord));
+                        q.add(newCoord);
+                        distancesToWall.put(newCoord, distanceToWall + 1);
                         visited.add(newCoord);
+                        parents.put(newCoord, coord);
+                        hasUndiscoveredNode = true;
                     }
                 }
                 newCol = col + 1;
                 if (newCol < Utils.MAP_WIDTH) {
                     newCoord = (newRow << 16) | newCol;
                     if (!visited.contains(newCoord)) {
-                        q.add(new Pair<>(distanceToWall + 1, newCoord));
+                        q.add(newCoord);
+                        distancesToWall.put(newCoord, distanceToWall + 1);
                         visited.add(newCoord);
+                        parents.put(newCoord, coord);
+                        hasUndiscoveredNode = true;
                     }
+                }
+            }
+            // Backpropagate hallway width
+            if (!hasUndiscoveredNode && parents.containsKey(coord)) {
+                int parentCoord = parents.get(coord);
+                int parentRow = parentCoord >>> 16;
+                int parentCol = parentCoord & 0x0000FFFF;
+                int parentIdx = toIndex(parentRow, parentCol);
+                // Find max adjacent value
+                int adjRow, adjCol;
+                adjRow = row;
+                int maxWeight = distanceToWall;
+                if (0 <= adjRow && adjRow < Utils.MAP_HEIGHT) {
+                    adjCol = col - 1;
+                    if (0 <= adjCol) {
+                        int adjCoord = (adjRow << 16) | adjCol;
+                        if (distancesToWall.containsKey(adjCoord)) {
+                            maxWeight = Math.max(distancesToWall.get(adjCoord), maxWeight);
+                        }
+                    }
+                    adjCol = col + 1;
+                    if (adjCol < Utils.MAP_WIDTH) {
+                        int adjCoord = (adjRow << 16) | adjCol;
+                        if (distancesToWall.containsKey(adjCoord)) {
+                            maxWeight = Math.max(distancesToWall.get(adjCoord), maxWeight);
+                        }
+                    }
+                }
+                adjRow = row - 1;
+                if (0 <= adjRow) {
+                    adjCol = col;
+                    if (0 <= adjCol && adjCol < Utils.MAP_WIDTH) {
+                        int adjCoord = (adjRow << 16) | adjCol;
+                        if (distancesToWall.containsKey(adjCoord)) {
+                            maxWeight = Math.max(distancesToWall.get(adjCoord), maxWeight);
+                        }
+                    }
+                    adjCol = col - 1;
+                    if (0 <= adjCol) {
+                        int adjCoord = (adjRow << 16) | adjCol;
+                        if (distancesToWall.containsKey(adjCoord)) {
+                            maxWeight = Math.max(distancesToWall.get(adjCoord), maxWeight);
+                        }
+                    }
+                    adjCol = col + 1;
+                    if (adjCol < Utils.MAP_WIDTH) {
+                        int adjCoord = (adjRow << 16) | adjCol;
+                        if (distancesToWall.containsKey(adjCoord)) {
+                            maxWeight = Math.max(distancesToWall.get(adjCoord), maxWeight);
+                        }
+                    }
+                }
+                adjRow = row + 1;
+                if (adjRow < Utils.MAP_HEIGHT) {
+                    adjCol = col;
+                    if (0 <= adjCol && adjCol < Utils.MAP_WIDTH) {
+                        int adjCoord = (adjRow << 16) | adjCol;
+                        if (distancesToWall.containsKey(adjCoord)) {
+                            maxWeight = Math.max(distancesToWall.get(adjCoord), maxWeight);
+                        }
+                    }
+                    adjCol = col - 1;
+                    if (0 <= adjCol) {
+                        int adjCoord = (adjRow << 16) | adjCol;
+                        if (distancesToWall.containsKey(adjCoord)) {
+                            maxWeight = Math.max(distancesToWall.get(adjCoord), maxWeight);
+                        }
+                    }
+                    adjCol = col + 1;
+                    if (adjCol < Utils.MAP_WIDTH) {
+                        int adjCoord = (adjRow << 16) | adjCol;
+                        if (distancesToWall.containsKey(adjCoord)) {
+                            maxWeight = Math.max(distancesToWall.get(adjCoord), maxWeight);
+                        }
+                    }
+                }
+                // TODO: Scale weights more aggressively to discourage passing through narrow pathways?
+                int hallwayWidthWeight = 50 - 2 * maxWeight - 1;
+                if (0 <= col && col < Utils.MAP_WIDTH &&
+                    0 <= row && row < Utils.MAP_HEIGHT &&
+                    weights[toIndex(row, col)] != INFINITY) {
+                    weights[toIndex(row, col)] = hallwayWidthWeight;
+                }
+                while (0 <= parentCol && parentCol < Utils.MAP_WIDTH &&
+                       0 <= parentRow && parentRow < Utils.MAP_HEIGHT && weights[parentIdx] != INFINITY) {
+                    weights[parentIdx] = Math.max(hallwayWidthWeight, weights[parentIdx]);
+                    parentCoord = parents.get(parentCoord);
+                    parentRow = parentCoord >>> 16;
+                    parentCol = parentCoord & 0x0000FFFF;
+                    parentIdx = toIndex(parentRow, parentCol);
                 }
             }
         }
