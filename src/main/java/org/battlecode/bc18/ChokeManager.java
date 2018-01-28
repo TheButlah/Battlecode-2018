@@ -7,6 +7,7 @@ import org.battlecode.bc18.api.MyFactory;
 import org.battlecode.bc18.pathfinder.Cell;
 import org.battlecode.bc18.util.Utils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -19,8 +20,9 @@ public class ChokeManager {
 
     private final int ROWS, COLS;
     private final boolean[] dangerous;
-    private final HashMap<MyFactory, Cell> facMap = new HashMap<>(6);
-    private final HashMap<Cell, MyFactory> cellMap = new HashMap<>(10);
+    private final HashMap<MyFactory, MapLocation> facToChoke = new HashMap<>(6);
+    private final HashMap<MapLocation, MyFactory> chokeToFac = new HashMap<>(10);
+    private final ArrayList<MapLocation> chokepoints = new ArrayList<>(10);
 
     public ChokeManager() {
         this.ROWS = Utils.MAP_HEIGHT;
@@ -43,7 +45,9 @@ public class ChokeManager {
         return dangerous[toIndex(loc)];
     }
 
-    public List<Cell> chokepoints;
+    public List<MapLocation> getChokepoints() {
+        return chokepoints;
+    };
 
     /** Marks the given cell as dangerous */
     private void setDangerous(boolean isDangerous, int r, int c) {
