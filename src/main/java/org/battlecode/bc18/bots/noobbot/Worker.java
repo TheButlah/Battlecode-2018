@@ -70,6 +70,8 @@ public class Worker extends AWorker {
             Direction.North, Direction.Northeast, Direction.East, Direction.Southeast,
             Direction.South, Direction.Southwest, Direction.West, Direction.Northwest
     };
+
+    public boolean shouldLaunch = true;
     /**
      * Constructor for Worker.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
@@ -141,6 +143,7 @@ public class Worker extends AWorker {
                                 && !Utils.isAnyWithinDistance(nearbyStructuresLoc, myMapLoc.add(dir), 4)) {
                             targetStructure = (Rocket) blueprint(UnitType.Rocket, dir);
                             assignStructure(targetStructure);
+                            shouldLaunch = false; // Leave the worker who created the rocket on earth
                             break;
                         }
                     }

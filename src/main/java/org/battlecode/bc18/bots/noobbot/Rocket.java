@@ -52,13 +52,13 @@ public class Rocket extends ARocket {
                     }
                     // Do not move units towards rocket when it is close to taking off
                     if (liveRounds < TAKEOFF_DELAY - 5 && adjacentFriendlies.size() < myUnit.structureMaxCapacity() - myGarrison.size()) {
-                        List<AUnit> nearbyFriendlies = fastSenseNearbyFriendlies(ProductionManager.rushRockets() ? 100 : 30);
+                        List<AUnit> nearbyFriendlies = fastSenseNearbyFriendlies(ProductionManager.rushRockets() ? (gc.round() > 680 ? 300 : 100) : 30);
                         PathFinder.pf.setTarget(myMapLoc);
                         for (MyUnit unit : nearbyFriendlies) {
                             if (unit instanceof MyRobot) {
                                 MyRobot robot = (MyRobot) unit;
                                 UnitType robotType = robot.getType();
-                                if (robotType == UnitType.Worker && loadedWorkers >= MAX_WORKERS) {
+                                if (robotType == UnitType.Worker && (loadedWorkers >= MAX_WORKERS || !((Worker)robot).shouldLaunch)) {
                                     continue;
                                 }
                                 Direction towardsRocket = PathFinder.pf.directionToTargetFrom(robot.getMapLocation());
@@ -74,6 +74,9 @@ public class Rocket extends ARocket {
                         if (unit instanceof MyRobot) {
                             MyRobot robot = (MyRobot) unit;
                             UnitType robotType = robot.getType();
+                            if (robotType == UnitType.Worker && !((Worker)robot).shouldLaunch) {
+                                continue;
+                            }
                             if (canLoad(robot)) {
                                 load(robot);
                                 if (robotType == UnitType.Worker) {
