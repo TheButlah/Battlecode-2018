@@ -1,18 +1,39 @@
 
 package org.battlecode.bc18.util.pathfinder;
 
+import bc.MapLocation;
+import org.battlecode.bc18.util.Utils;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * A Cell in a pathfinding grid.
  *
  * @author Jared Junyoung Lim
  */
 public class Cell {
-    int c;
-    int r;
-    
+
+    final int c;
+    final int r;
+    private MapLocation loc;
+
     Cell(int r, int c) {
-        this.c = c;
         this.r = r;
+        this.c = c;
+    }
+
+    Cell(MapLocation loc) {
+        this.r = loc.getY();
+        this.c = loc.getX();
+        this.loc = loc;
+    }
+
+    public MapLocation getLoc() {
+        if (loc == null) {
+            loc = new MapLocation(Utils.PLANET, c, r);
+        }
+        return loc;
     }
 
     @Override

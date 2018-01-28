@@ -1,12 +1,6 @@
 package org.battlecode.bc18.util.pathfinder;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.PriorityQueue;
-import java.util.Queue;
+import java.util.*;
 
 import org.battlecode.bc18.util.Pair;
 import org.battlecode.bc18.util.Utils;
@@ -531,6 +525,97 @@ public class PathFinder {
         }
         return optimalDirection;
     }
+
+    /**
+     * Represents the shortest path(s) from a start to the destination.
+     * Does not consider units as tangible obstacles. Does consider terrain as an obstacle.
+     */
+    public class Path {
+        private Node start;
+        private final HashMap<Cell, Path.Node> cellMap = new HashMap<>(Utils.EARTH_MAP_WIDTH * Utils.EARTH_MAP_HEIGHT);
+
+
+        private Node getNode(Cell cell) {
+            return cellMap.computeIfAbsent(cell, (unused) -> new Node(cell, null, null));
+        }
+
+        private Node getNode(MapLocation loc) {
+            Cell cell = new Cell(loc);
+            return getNode(cell);
+        }
+
+        private void buildPath(Node from) {
+            MapLocation fromLoc = from.cell.getLoc();
+            ArrayList<MapLocation> optimalLocs = new ArrayList<>(9);
+            optimalLocs.add(fromLoc);
+            int optimalDist = UNREACHABLE;
+            for (Direction dir : Utils.dirs) {
+                if (dir == Direction.Center) continue;
+                MapLocation dirLoc = fromLoc.add(dir);
+                if (!Utils.toBool(Utils.EARTH_START.isPassableTerrainAt(dirLoc))) continue;
+                int c = from.cell.c;
+                int r = from.cell.r;
+
+                if (c >= 0 && c < COLS && r >= 0 && r < ROWS) {
+                    int index = toIndex(r, c);
+                    int theCost = cost[index];
+                    if (theCost == optimalDist) {
+                        optimalLocs.add(dirLoc);
+                    } else if (theCost < optimalDist) {
+                        optimalDist = cost[index];
+                        optimalLocs.clear();
+                        optimalLocs.add(dirLoc);
+                    }
+                }
+            }
+            ArrayList<Node> children = new ArrayList<>(optimalLocs.size());
+            for (MapLocation loc : optimalLocs) {
+                Node newNode = getNode(loc);
+                newNode.parents.add(from);
+                children.add(newNode);
+            }
+            from.setChildren(children);
+            for (Node child : children) {
+                buildPath(child);
+            }
+        }
+
+        private Path(MapLocation start) {
+            Node from = getNode(start);
+            buildPath(from);
+
+        }
+
+        public Node getStart() {
+            return start;
+        }
+
+        public class Node {
+            final Cell cell;
+            final ArrayList<Node> parents = new ArrayList<>(9);
+            final ArrayList<Node> children = new ArrayList<>(9);
+
+            public Node(Cell cell, ArrayList<Node> parents, ArrayList<Node> children) {
+                this.cell = cell;
+                this.parents.addAll(parents);
+                this.children.addAll(children);
+            }
+
+            public ArrayList<Node> setParents(ArrayList<Node> parents) {
+                this.parents.clear();
+                this.parents.addAll(parents);
+                return this.parents;
+            }
+
+            public ArrayList<Node> setChildren(ArrayList<Node> children) {
+                this.children.clear();
+                this.children.addAll(children);
+                return this.children;
+            }
+        }
+    }
+
+
 
     private static final int[][] WEIGHT2 = {
             {1, 2, 3},
