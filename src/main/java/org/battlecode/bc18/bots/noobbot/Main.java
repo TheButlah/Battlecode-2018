@@ -6,7 +6,7 @@ import static org.battlecode.bc18.util.Utils.gc;
 import java.util.Arrays;
 
 import bc.*;
-import org.battlecode.bc18.util.pathfinder.PathFinder;
+import org.battlecode.bc18.pathfinder.PathFinder;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.util.Utils;
 

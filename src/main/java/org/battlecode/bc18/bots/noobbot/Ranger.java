@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.battlecode.bc18.api.ARanger;
 import org.battlecode.bc18.util.Utils;
-import org.battlecode.bc18.util.pathfinder.PathFinder;
+import org.battlecode.bc18.pathfinder.PathFinder;
 
 import bc.Direction;
 import bc.MapLocation;

@@ -19,6 +19,7 @@ public class Factory extends AFactory {
     //static int time1, time2, time3;
     //static long startTime;
 
+
     /**
      * Constructor for Factory.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
@@ -117,5 +118,9 @@ public class Factory extends AFactory {
     @Override
     protected void onDeath() {
         Worker.workersPerStructure.remove(getID());
+    }
+
+    private void initChokepoints() {
+
     }
 }

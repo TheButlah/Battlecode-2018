@@ -8,7 +8,7 @@ import org.battlecode.bc18.api.AHealer;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.MyRobot;
 import org.battlecode.bc18.util.Utils;
-import org.battlecode.bc18.util.pathfinder.PathFinder;
+import org.battlecode.bc18.pathfinder.PathFinder;
 
 import bc.Direction;
 import bc.MapLocation;

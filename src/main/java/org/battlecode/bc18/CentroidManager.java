@@ -32,8 +32,7 @@ public class CentroidManager {
 
     public static final CentroidManager cman;
     static {
-        PlanetMap myMap = (Utils.PLANET == Planet.Earth) ? Utils.EARTH_START : Utils.MARS_START;
-        cman = new CentroidManager(myMap.getInitial_units(), 3);
+        cman = new CentroidManager(Utils.MAP_START.getInitial_units(), 3);
     }
 
     /** `K` centers of enemy mass */

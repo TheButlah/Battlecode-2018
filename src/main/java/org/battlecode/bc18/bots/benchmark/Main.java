@@ -3,12 +3,12 @@ package org.battlecode.bc18.bots.benchmark;
 import bc.*;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.util.Utils;
-import org.battlecode.bc18.util.pathfinder.PathFinder;
+import org.battlecode.bc18.pathfinder.PathFinder;
 
 import java.util.ArrayList;
 
 import static org.battlecode.bc18.util.Utils.gc;
-import static org.battlecode.bc18.util.pathfinder.PathFinder.pf;
+import static org.battlecode.bc18.pathfinder.PathFinder.pf;
 
 public class Main {
 

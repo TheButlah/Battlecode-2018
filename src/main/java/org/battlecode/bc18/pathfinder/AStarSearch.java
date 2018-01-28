@@ -1,5 +1,5 @@
 
-package org.battlecode.bc18.util.pathfinder;
+package org.battlecode.bc18.pathfinder;
 
 import bc.MapLocation;
 

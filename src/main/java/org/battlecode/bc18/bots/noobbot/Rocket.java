@@ -8,14 +8,13 @@ import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.MyRobot;
 import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.util.Utils;
-import org.battlecode.bc18.util.pathfinder.PathFinder;
+import org.battlecode.bc18.pathfinder.PathFinder;
 
 import bc.Direction;
 import bc.MapLocation;
 import bc.Planet;
 import bc.Unit;
 import bc.UnitType;
-import static org.battlecode.bc18.util.Utils.gc;
 import bc.VecUnitID;
 
 public class Rocket extends ARocket {

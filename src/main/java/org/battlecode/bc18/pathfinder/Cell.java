@@ -1,11 +1,8 @@
 
-package org.battlecode.bc18.util.pathfinder;
+package org.battlecode.bc18.pathfinder;
 
 import bc.MapLocation;
 import org.battlecode.bc18.util.Utils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A Cell in a pathfinding grid.
@@ -14,8 +11,8 @@ import java.util.Map;
  */
 public class Cell {
 
-    final int c;
-    final int r;
+    public final int c;
+    public final int r;
     private MapLocation loc;
 
     Cell(int r, int c) {
