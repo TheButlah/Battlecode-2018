@@ -3,9 +3,13 @@ package org.battlecode.bc18.bots.noobbot;
 import static org.battlecode.bc18.CentroidManager.cman;
 import static org.battlecode.bc18.util.Utils.gc;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import bc.*;
+import org.battlecode.bc18.ChokeManager;
+import org.battlecode.bc18.pathfinder.Cell;
 import org.battlecode.bc18.pathfinder.PathFinder;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.util.Utils;
@@ -55,6 +59,20 @@ public class Main {
                 }
             }
             initializingWorkerId = optimalInitializingWorker.id();
+
+            ArrayList<Unit> enemies = new ArrayList<>(3);
+            ArrayList<Unit> friendlies = new ArrayList<>(3);
+            VecUnit units = Utils.EARTH_START.getInitial_units();
+            for (int i=0; i<units.size(); i++) {
+                Unit u = units.get(i);
+                if (u.team() == Utils.TEAM) friendlies.add(u);
+                else enemies.add(u);
+            }
+            MapLocation enemyLoc = enemies.get(0).location().mapLocation();
+            MapLocation myLoc = friendlies.get(0).location().mapLocation();
+            List<MapLocation> chokes = ChokeManager.chman.computeChokesBetweenPoints(enemyLoc, myLoc);
+
+
         }
 
         while (true) {

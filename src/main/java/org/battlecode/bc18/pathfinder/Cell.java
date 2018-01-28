@@ -44,10 +44,7 @@ public class Cell {
     
     @Override
     public int hashCode() {
-        // Pairing function
-        // http://www.lsi.upc.edu/~alvarez/calculabilitat/enumerabilitat.pdf
-        int t = r + ((c+1)/2);
-        return c + (t * t);
+        return r << 16 | c;
     }
     
     @Override

@@ -8,7 +8,6 @@ import com.lodborg.cache.LRUCache;
 
 import bc.Direction;
 import bc.MapLocation;
-import bc.Planet;
 
 
 /**
@@ -22,11 +21,12 @@ import bc.Planet;
 public class PathFinder {
 
     public static final int UNREACHABLE = 999999;
-    public static final int INFINITY = 5_000; //Weight for impassible tile; this is longer than the longest path through the grid
+    public static final int INFINITY = 50_000; //Weight for impassible tile; this is longer than the longest path through the grid
     private final int ROWS;
     private final int COLS;
     private final boolean[] visited;
     private int[] cost;
+    private final boolean[] passable;
     private final PriorityQueue<Cell> queue;
     private int[] weights;
     private final int MAX_COST_CACHE_SIZE = 100;
@@ -38,25 +38,41 @@ public class PathFinder {
 
     public static PathFinder pf;
 
-    /** Constructs a PathFinder with the provided weights. Index argument by (y,x). */
-    public PathFinder(int[][] weights) {
-        this.ROWS = weights.length;
-        this.COLS = weights[0].length;
-        visited = new boolean[ROWS * COLS];
-        queue = new PriorityQueue<>(Comparator.comparingInt(cell -> cost[toIndex(cell.r, cell.c)]));
-        setWeights(weights);
-    }
-
     /** Constructs a PathFinder for the provided map and its terrain */
     public PathFinder() {
         this.ROWS = Utils.MAP_HEIGHT;
         this.COLS = Utils.MAP_WIDTH;
         visited = new boolean[ROWS * COLS];
+        passable = new boolean[ROWS * COLS];
+        initPassable();
         queue = new PriorityQueue<>(Comparator.comparingInt(cell -> cost[toIndex(cell.r, cell.c)]));
         setWeights();
     }
 
+    private void initPassable() {
+        for (int r=0; r<ROWS; r++) {
+            for (int c=0; c<COLS; c++) {
+                passable[toIndex(r,c)] = Utils.toBool(Utils.MAP_START.isPassableTerrainAt(new MapLocation(Utils.PLANET, c, r)));
+            }
+        }
+    }
+
+    /**
+     * Whether the location is passable.
+     * NOTE: The location should be on the planet's map.
+     */
+    public boolean isPassable(MapLocation loc) {
+        assert Utils.MAP_START.onMap(loc);
+        return passable[toIndex(loc)];
+    }
+
     private int toIndex(int r, int c) {
+        return c + r * COLS;
+    }
+
+    private int toIndex(MapLocation loc) {
+        int r = loc.getY();
+        int c = loc.getX();
         return c + r * COLS;
     }
 
@@ -319,9 +335,7 @@ public class PathFinder {
                 }
                 // TODO: Scale weights more aggressively to discourage passing through narrow pathways?
                 int hallwayWidthWeight = Math.max(1, 50 - 2 * maxWeight - 1);
-                if (0 <= col && col < Utils.MAP_WIDTH &&
-                    0 <= row && row < Utils.MAP_HEIGHT &&
-                    weights[toIndex(row, col)] != INFINITY) {
+                if (onMap(row, col) && weights[toIndex(row, col)] != INFINITY) {
                     weights[toIndex(row, col)] = hallwayWidthWeight;
                 }
                 while (0 <= parentCol && parentCol < Utils.MAP_WIDTH &&
@@ -355,7 +369,7 @@ public class PathFinder {
         return sb.toString();
     }
 
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         // execution time calculation
         int[][] testWeights = WEIGHT2;
         int height = testWeights.length;
@@ -367,7 +381,7 @@ public class PathFinder {
         System.out.println(pf.directionToTargetFrom(new MapLocation(Planet.Earth, width - 1, 0)));
         long end = System.nanoTime();
         System.out.println("exe time is " + (end - start) / 1000000d + " ms");
-    }
+    }*/
 
     /**
      * Updates the cost to get to the location provided.
@@ -515,7 +529,7 @@ public class PathFinder {
             MapLocation location = from.add(dir);
             int c = location.getX();
             int r = location.getY();
-            if (c >= 0 && c < COLS && r >= 0 && r < ROWS) {
+            if (onMap(r,c)) {
                 // Allow movement to starting location (i.e. no movement)
                 if (!location.equals(from)){
                     // Disallow movement to any occupied coordinate
@@ -549,6 +563,20 @@ public class PathFinder {
         }
     }
 
+    private boolean onMap(int r, int c) {
+        return r >= 0 && r < ROWS && c >= 0 && c < COLS;
+    }
+
+    boolean onMap(Cell cell) {
+        return onMap(cell.r, cell.c);
+    }
+
+    public boolean onMap(MapLocation loc) {
+        int r = loc.getY();
+        int c = loc.getX();
+        return onMap(r, c);
+    }
+
     /**
      * Represents the shortest path(s) from a start to the destination.
      * Only considers terrain as impassible.
@@ -567,13 +595,23 @@ public class PathFinder {
          */
         public String describePath() {
             if (description != null) return description;
-            HashSet<Node> set = new HashSet<>(1);
-            set.add(start);
-            description = describePath(null, set).toString();
+            //HashSet<Node> startSet = new HashSet<>(1);
+            //startSet.add(start);
+            Stack<Node> nodes = new Stack<>();
+            nodes.add(start);
+            StringBuilder sb = null;
+            while(!nodes.isEmpty()) {
+                //Set<Node> set = nodes.poll();
+                Node n = nodes.pop();
+                System.out.println(n);
+                nodes.addAll(n.children);
+            }
+            if (sb == null) return "No Path";
+            description = sb.toString();
             return description;
         }
 
-        private StringBuilder describePath(StringBuilder sb, Set<Node> currentNodes) {
+        private Set<Node> describePath(StringBuilder sb, Set<Node> currentNodes) {
             if (sb == null) {
                 sb = new StringBuilder();
                 sb.append("START: [");
@@ -592,7 +630,7 @@ public class PathFinder {
                 sb.append("],");
             }
             sb.append("\n");
-            return describePath(sb, allChildren);
+            return allChildren;
         }
 
         private Node getNode(Cell cell) {
@@ -604,46 +642,55 @@ public class PathFinder {
             return getNode(cell);
         }
 
-        private void buildPath(Node from) {
+        /**
+         * Given a node, builds the children of the node based on the shortest path to the target.
+         * Will return null if this is a leaf node (has no children).
+         */
+        private List<Node> stepPath(Node from) {
             MapLocation fromLoc = from.cell.getLoc();
-            ArrayList<MapLocation> optimalLocs = new ArrayList<>(9);
-            optimalLocs.add(fromLoc);
+            ArrayList<MapLocation> optimalLocs = new ArrayList<>(8);
             int optimalDist = UNREACHABLE;
             for (Direction dir : Utils.dirs) {
                 if (dir == Direction.Center) continue;
                 MapLocation dirLoc = fromLoc.add(dir);
-                if (!Utils.toBool(Utils.MAP_START.isPassableTerrainAt(dirLoc))) continue;
-                int c = from.cell.c;
-                int r = from.cell.r;
-
-                if (c >= 0 && c < COLS && r >= 0 && r < ROWS) {
-                    int index = toIndex(r, c);
-                    int theCost = cost[index];
-                    if (theCost == optimalDist) {
-                        optimalLocs.add(dirLoc);
-                    } else if (theCost < optimalDist) {
-                        optimalDist = cost[index];
-                        optimalLocs.clear();
-                        optimalLocs.add(dirLoc);
-                    }
+                if (!onMap(dirLoc) || !isPassable(dirLoc)) continue;
+                int c = dirLoc.getX();
+                int r = dirLoc.getY();
+                int index = toIndex(r, c);
+                int theCost = cost[index];
+                if (theCost == optimalDist) {
+                    optimalLocs.add(dirLoc);
+                } else if (theCost < optimalDist) {
+                    optimalDist = cost[index];
+                    optimalLocs.clear();
+                    optimalLocs.add(dirLoc);
                 }
+
             }
+            if (optimalLocs.size() == 0) return null;
             ArrayList<Node> children = new ArrayList<>(optimalLocs.size());
             for (MapLocation loc : optimalLocs) {
                 Node newNode = getNode(loc);
-                newNode.parents.add(from);
+                if (newNode.parents.contains(from) || newNode.children.contains(from)) { // Is the children one correct?
+                    continue;
+                }
+                newNode.addParent(from);
                 children.add(newNode);
             }
             from.setChildren(children);
-            for (Node child : children) {
-                buildPath(child);
-            }
+            return children;
         }
 
         private Path(MapLocation start) {
-            Node from = getNode(start);
-            buildPath(from);
-
+            Node startNode = getNode(start);
+            this.start = startNode;
+            Queue<Node> nodeList = new LinkedList<>();
+            nodeList.add(startNode);
+            while (!nodeList.isEmpty()) {
+                Node n = nodeList.poll();
+                List<Node> children = stepPath(n);
+                if (children != null) nodeList.addAll(children);
+            }
         }
 
         public Node getStart() {
@@ -652,39 +699,63 @@ public class PathFinder {
 
         public class Node {
             public final Cell cell;
-            private final ArrayList<Node> parents = new ArrayList<>(9);
-            private final ArrayList<Node> children = new ArrayList<>(9);
-            private final List<Node> unmodifiableParents = Collections.unmodifiableList(parents);
-            private final List<Node> unmodifiableChildren = Collections.unmodifiableList(children);
+            private final HashSet<Node> parents = new HashSet<>(9);
+            private final HashSet<Node> children = new HashSet<>(9);
+            private final Set<Node> unmodifiableParents = Collections.unmodifiableSet(parents);
+            private final Set<Node> unmodifiableChildren = Collections.unmodifiableSet(children);
             private int hash;
             private boolean hashValid = false;
 
             private Node(Cell cell, ArrayList<Node> parents, ArrayList<Node> children) {
                 this.cell = cell;
-                this.parents.addAll(parents);
-                this.children.addAll(children);
+                if (parents != null) this.parents.addAll(parents);
+                if (children != null) this.children.addAll(parents);
             }
 
             /** Returns the parents of this Node. Cannot be modified. */
-            public List<Node> getParents() {
+            public Set<Node> getParents() {
                 return unmodifiableParents;
             }
 
             /** Returns the children of this Node. Cannot be modified. */
-            public List<Node> getChildren() {
+            public Set<Node> getChildren() {
                 return unmodifiableChildren;
             }
 
-            private ArrayList<Node> setParents(ArrayList<Node> parents) {
+            private Set<Node> setParents(ArrayList<Node> parents) {
                 this.parents.clear();
                 this.parents.addAll(parents);
                 hashValid = false;
                 return this.parents;
             }
 
-            private ArrayList<Node> setChildren(ArrayList<Node> children) {
+            private Set<Node> setChildren(ArrayList<Node> children) {
                 this.children.clear();
                 this.children.addAll(children);
+                hashValid = false;
+                return this.children;
+            }
+
+            private Set<Node> addChildren(Collection<Node> children) {
+                this.children.addAll(children);
+                hashValid = false;
+                return this.children;
+            }
+
+            private Set<Node> addParents(Collection<Node> parents) {
+                this.parents.addAll(parents);
+                hashValid = false;
+                return this.parents;
+            }
+
+            private Set<Node> addParent(Node parent) {
+                this.parents.add(parent);
+                hashValid = false;
+                return this.parents;
+            }
+
+            private Set<Node> addChild(Node child) {
+                this.children.add(child);
                 hashValid = false;
                 return this.children;
             }
@@ -702,10 +773,15 @@ public class PathFinder {
 
             @Override
             public int hashCode() {
-                if (hashValid) return hash;
-                hash = Objects.hash(cell, parents.size(), children.size());
+                //if (hashValid) return hash;
+                hash = cell.hashCode();
                 hashValid = true;
                 return hash;
+            }
+
+            @Override
+            public String toString() {
+                return "Node(" + cell + ", " + parents.size() + ", " + children.size() + ")";
             }
         }
     }
