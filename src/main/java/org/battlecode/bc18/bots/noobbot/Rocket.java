@@ -88,7 +88,7 @@ public class Rocket extends ARocket {
                 }
                 //time1 += (System.currentTimeMillis() - startTime);
                 //println("time1: " + time1);
-                if (liveRounds >= TAKEOFF_DELAY || isGarrisonFull() || Utils.gc.round() >= 748) {
+                if (liveRounds >= TAKEOFF_DELAY || isGarrisonFull() || Utils.gc.round() >= 748 || getHealth() < getMaxHealth() / 2) {
                     //startTime = System.currentTimeMillis();
                     // Move adjacent robots away from factory
                     MapLocation myMapLoc = getMapLocation();
