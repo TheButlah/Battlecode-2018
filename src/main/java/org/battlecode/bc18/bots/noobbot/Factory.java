@@ -18,6 +18,7 @@ import java.util.List;
 public class Factory extends AFactory {
     //static int time1, time2, time3, time4, time5;
     //static long startTime;
+    private int myCC;
 
 
     /**
@@ -26,6 +27,8 @@ public class Factory extends AFactory {
      */
     Factory(Unit unit) {
         super(unit);
+        MapLocation myMapLoc = unit.location().mapLocation();
+        myCC = Utils.CONNECTED_COMPONENTS[myMapLoc.getY()][myMapLoc.getX()];
     }
 
     @Override
@@ -40,7 +43,10 @@ public class Factory extends AFactory {
 
         //startTime = System.currentTimeMillis();
         UnitType nextDesiredProduction = ProductionManager.getNextProductionType();
-        if (getHealth() < getMaxHealth() && canProduceRobot(UnitType.Worker) && fastSenseNearbyFriendlies(UnitType.Worker).size() == 0) {
+        if (Worker.workersPerCC.get(myCC) <= 0 && canProduceRobot(UnitType.Worker)) {
+            produceRobot(UnitType.Worker);
+        }
+        else if (getHealth() < getMaxHealth() && canProduceRobot(UnitType.Worker) && fastSenseNearbyFriendlies(UnitType.Worker).size() == 0) {
             produceRobot(UnitType.Worker);
         }
         else if (nextDesiredProduction == UnitType.Worker && canProduceRobot(UnitType.Worker)) {
@@ -93,7 +99,7 @@ public class Factory extends AFactory {
                     MyUnit myUnit = AUnit.getUnit(unit);
                     UnitType type = myUnit.getType();
                     int count = unitCounts.computeIfAbsent(type, (K) -> 0);
-                    unitCounts.put(type, count++);
+                    unitCounts.put(type, count + 1);
                     totalCount++;
                 }
                 //Decide which unit to destroy
