@@ -8,8 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import bc.*;
-import org.battlecode.bc18.ChokeManager;
-import org.battlecode.bc18.pathfinder.Cell;
+import org.battlecode.bc18.pathfinder.ChokeManager;
 import org.battlecode.bc18.pathfinder.PathFinder;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.util.Utils;
@@ -70,7 +69,7 @@ public class Main {
             }
             MapLocation enemyLoc = enemies.get(0).location().mapLocation();
             MapLocation myLoc = friendlies.get(0).location().mapLocation();
-            List<MapLocation> chokes = ChokeManager.chman.computeChokesBetweenPoints(enemyLoc, myLoc);
+            //List<MapLocation> chokes = ChokeManager.chman.computeChokesBetweenPoints(enemyLoc, myLoc);
 
 
         }

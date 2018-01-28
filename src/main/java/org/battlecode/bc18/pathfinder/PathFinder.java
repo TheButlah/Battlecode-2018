@@ -2,6 +2,7 @@ package org.battlecode.bc18.pathfinder;
 
 import java.util.*;
 
+import org.battlecode.bc18.util.ListNode;
 import org.battlecode.bc18.util.Utils;
 
 import com.lodborg.cache.LRUCache;
@@ -25,7 +26,7 @@ public class PathFinder {
     private final int ROWS;
     private final int COLS;
     private final boolean[] visited;
-    private int[] cost;
+    int[] cost;
     private final boolean[] passable;
     private final PriorityQueue<Cell> queue;
     private int[] weights;
@@ -577,6 +578,7 @@ public class PathFinder {
         return onMap(r, c);
     }
 
+
     /**
      * Represents the shortest path(s) from a start to the destination.
      * Only considers terrain as impassible.
@@ -684,13 +686,14 @@ public class PathFinder {
         private Path(MapLocation start) {
             Node startNode = getNode(start);
             this.start = startNode;
-            Queue<Node> nodeList = new LinkedList<>();
+            /*Queue<Node> nodeList = new LinkedList<>();
             nodeList.add(startNode);
             while (!nodeList.isEmpty()) {
                 Node n = nodeList.poll();
+                System.out.println(n);
                 List<Node> children = stepPath(n);
                 if (children != null) nodeList.addAll(children);
-            }
+            }*/
         }
 
         public Node getStart() {
