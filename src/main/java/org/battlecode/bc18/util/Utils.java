@@ -33,6 +33,7 @@ public final class Utils {
 
     public static final Direction[] dirs = Direction.values();
     public static final PlanetMap EARTH_START, MARS_START;
+    public static final PlanetMap MAP_START;
     public static final int EARTH_MAP_WIDTH, EARTH_MAP_HEIGHT;
     public static final int MARS_MAP_WIDTH, MARS_MAP_HEIGHT;
     public static final int MAP_WIDTH, MAP_HEIGHT;
@@ -57,6 +58,7 @@ public final class Utils {
         PLANET = gc.planet();
         EARTH_START = gc.startingMap(Planet.Earth);
         MARS_START = gc.startingMap(Planet.Mars);
+        MAP_START = PLANET == Planet.Earth ? EARTH_START : MARS_START;
         EARTH_MAP_WIDTH = (int) EARTH_START.getWidth();
         EARTH_MAP_HEIGHT = (int) EARTH_START.getHeight();
         MARS_MAP_WIDTH = (int) MARS_START.getWidth();

@@ -55,6 +55,6 @@ public class Cell {
     
     @Override
     public String toString() {
-        return "Cell (" + r + "," + c + ")";
+        return "Cell(" + r + "," + c + ")";
     }
 }

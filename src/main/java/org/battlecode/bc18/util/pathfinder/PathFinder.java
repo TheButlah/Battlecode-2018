@@ -526,14 +526,50 @@ public class PathFinder {
         return optimalDirection;
     }
 
+    /** Computes the subgraph that represents all shortest possible paths to the current target from `from`.*/
+    public Path pathToTargetFrom(MapLocation from) {
+        return new Path(from);
+    }
+
     /**
      * Represents the shortest path(s) from a start to the destination.
      * Does not consider units as tangible obstacles. Does consider terrain as an obstacle.
      */
     public class Path {
         private Node start;
-        private final HashMap<Cell, Path.Node> cellMap = new HashMap<>(Utils.EARTH_MAP_WIDTH * Utils.EARTH_MAP_HEIGHT);
+        private final HashMap<Cell, Path.Node> cellMap = new HashMap<>(Utils.MAP_WIDTH * Utils.MAP_HEIGHT);
+        private String description = null;
 
+        /** Describe the path. Note that this performs a full traversal of the path. */
+        public String describePath() {
+            if (description != null) return description;
+            HashSet<Node> set = new HashSet<>(1);
+            set.add(start);
+            description = describePath(null, set).toString();
+            return description;
+        }
+
+        private StringBuilder describePath(StringBuilder sb, Set<Node> currentNodes) {
+            if (sb == null) {
+                sb = new StringBuilder();
+                sb.append("START: [");
+                for (Node n : currentNodes) {
+                    sb.append(n.cell).append(",");
+                }
+                sb.append("],\n");
+            }
+            HashSet<Node> allChildren = new HashSet<>();
+            for (Node n : currentNodes) {
+                sb.append("[");
+                allChildren.addAll(n.children);
+                for (Node child : n.children) {
+                    sb.append(child.cell).append(",");
+                }
+                sb.append("],");
+            }
+            sb.append("\n");
+            return describePath(sb, allChildren);
+        }
 
         private Node getNode(Cell cell) {
             return cellMap.computeIfAbsent(cell, (unused) -> new Node(cell, null, null));
@@ -552,7 +588,7 @@ public class PathFinder {
             for (Direction dir : Utils.dirs) {
                 if (dir == Direction.Center) continue;
                 MapLocation dirLoc = fromLoc.add(dir);
-                if (!Utils.toBool(Utils.EARTH_START.isPassableTerrainAt(dirLoc))) continue;
+                if (!Utils.toBool(Utils.MAP_START.isPassableTerrainAt(dirLoc))) continue;
                 int c = from.cell.c;
                 int r = from.cell.r;
 
@@ -591,26 +627,61 @@ public class PathFinder {
         }
 
         public class Node {
-            final Cell cell;
-            final ArrayList<Node> parents = new ArrayList<>(9);
-            final ArrayList<Node> children = new ArrayList<>(9);
+            public final Cell cell;
+            private final ArrayList<Node> parents = new ArrayList<>(9);
+            private final ArrayList<Node> children = new ArrayList<>(9);
+            private final List<Node> unmodifiableParents = Collections.unmodifiableList(parents);
+            private final List<Node> unmodifiableChildren = Collections.unmodifiableList(children);
+            private int hash;
+            private boolean hashValid = false;
 
-            public Node(Cell cell, ArrayList<Node> parents, ArrayList<Node> children) {
+            private Node(Cell cell, ArrayList<Node> parents, ArrayList<Node> children) {
                 this.cell = cell;
                 this.parents.addAll(parents);
                 this.children.addAll(children);
             }
 
-            public ArrayList<Node> setParents(ArrayList<Node> parents) {
+            /** Returns the parents of this Node. Cannot be modified. */
+            public List<Node> getParents() {
+                return unmodifiableParents;
+            }
+
+            /** Returns the children of this Node. Cannot be modified. */
+            public List<Node> getChildren() {
+                return unmodifiableChildren;
+            }
+
+            private ArrayList<Node> setParents(ArrayList<Node> parents) {
                 this.parents.clear();
                 this.parents.addAll(parents);
+                hashValid = false;
                 return this.parents;
             }
 
-            public ArrayList<Node> setChildren(ArrayList<Node> children) {
+            private ArrayList<Node> setChildren(ArrayList<Node> children) {
                 this.children.clear();
                 this.children.addAll(children);
+                hashValid = false;
                 return this.children;
+            }
+
+            /** Uses shallow equality, by only comparing cell fields and numbers of parents and children. */
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || !(o instanceof Node)) return false;
+                Node node = (Node) o;
+                return Objects.equals(cell, node.cell) &&
+                    parents.size() == node.parents.size() &&
+                    children.size() == node.children.size();
+            }
+
+            @Override
+            public int hashCode() {
+                if (hashValid) return hash;
+                hash = Objects.hash(cell, parents.size(), children.size());
+                hashValid = true;
+                return hash;
             }
         }
     }
