@@ -12,7 +12,7 @@ public class ProductionManager {
         assert Utils.PLANET == Planet.Earth;
         long round = Utils.gc.round();
         long karbonite = Utils.gc.karbonite();
-        int desiredNumRockets = round >= 200 ? Math.min(10, AUnit.getNumUnits() / (rushRockets() ? 10 : 20)) : 0;
+        int desiredNumRockets = round >= 200 ? Math.min(5, AUnit.getNumUnits() / (rushRockets() ? 10 : 40)) : 0;
         int desiredNumHealers = AUnit.getNumUnits(UnitType.Knight) / 2;
         int desiredNumRangers = 0;
         if (getTotalUnits(UnitType.Worker) == 0) {
@@ -27,7 +27,7 @@ public class ProductionManager {
         else if (getTotalUnits(UnitType.Ranger) < desiredNumRangers){
             return UnitType.Ranger;
         }
-        else if ((round > 100 && getTotalUnits() < 15) || (karbonite >= 200 && AUnit.getNumUnits(UnitType.Factory) < 10)) {
+        else if ((round > 100 && getTotalUnits() < 15 && AUnit.getNumUnits(UnitType.Factory) < 2) || (karbonite >= 200 && AUnit.getNumUnits(UnitType.Factory) < 10)) {
             return UnitType.Factory;
         }
         else {

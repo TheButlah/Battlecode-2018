@@ -82,7 +82,7 @@ public class Healer extends AHealer {
                     else if (enemyType == UnitType.Mage && distToEnemy > 35) {
                         continue;
                     }
-                    else if (enemyType == UnitType.Ranger && distToEnemy > 45) {
+                    else if (enemyType == UnitType.Ranger && (10 < distToEnemy || distToEnemy > 45)) {
                         continue;
                     }
                     ++numCloseEnemies;
