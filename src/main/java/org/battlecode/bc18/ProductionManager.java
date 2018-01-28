@@ -36,7 +36,7 @@ public class ProductionManager {
     }
 
     public static boolean rushRockets() {
-        return Utils.gc.round() > 650 || CentroidManager.cman.hasEliminatedAll();
+        return Utils.gc.round() > 620 || CentroidManager.cman.hasEliminatedAll();
     }
 
     private static int getTotalUnits() {
