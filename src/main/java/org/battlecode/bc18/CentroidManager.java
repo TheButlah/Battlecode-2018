@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Manages the targets of our army. It achieves this by keeping track of a small number of "centroids"
+ * Estimates the centers of mass of the enemy. It achieves this by keeping track of a small number of "centroids"
  * that represent the center of mass of the enemy forces. These centroids are initialized at the start
  * to be the starting locations of the enemy. These centroids are updated any time we sense an enemy,
  * and they essentially are inspired by K-means clustering. Any time we call `updateCentroids()`, we
@@ -16,7 +16,7 @@ import java.util.Arrays;
  *
  * @author Ryan Butler
  */
-public class TargetManager {
+public class CentroidManager {
 
     /**
      * The base amount by which we resist moving centroids.
@@ -30,10 +30,10 @@ public class TargetManager {
     /** The random spread of centroids (as a diameter) when they are set directly to a point. */
     private static final float RAND_SPREAD = 4;
 
-    public static final TargetManager tman;
+    public static final CentroidManager cman;
     static {
         PlanetMap myMap = (Utils.PLANET == Planet.Earth) ? Utils.EARTH_START : Utils.MARS_START;
-        tman = new TargetManager(myMap.getInitial_units(), 3);
+        cman = new CentroidManager(myMap.getInitial_units(), 3);
     }
 
     /** `K` centers of enemy mass */
@@ -44,11 +44,11 @@ public class TargetManager {
 
     private boolean hasEliminatedAll = false;
 
-    /** Constructs a TargetManager.
+    /** Constructs a CentroidManager.
      * @param startingUnits The initial starting units. Will use to compute centroid locations.
      * @param numCentroids The number of centroids to use.
      */
-    public TargetManager(VecUnit startingUnits, int numCentroids) {
+    public CentroidManager(VecUnit startingUnits, int numCentroids) {
         assert numCentroids > 0;
         this.K = numCentroids;
         this.centroids = new float[K][2];
@@ -102,10 +102,10 @@ public class TargetManager {
     }
 
     /**
-     * Constructs a TargetManager.
+     * Constructs a CentroidManager.
      * @param startingUnits The initial starting units. Will use to compute centroid locations.
      */
-    public TargetManager(VecUnit startingUnits) {
+    public CentroidManager(VecUnit startingUnits) {
         this(startingUnits, 3);
     }
 
@@ -152,29 +152,28 @@ public class TargetManager {
     }
 
     /**
-     * Call this when we have reached a target but there are no enemies.
-     * @param targetLoc The location of the target centroid that has been eliminated.
-     * @return Whether all targets have been eliminated.
+     * Call this when we have reached a centroid but there are no enemies.
+     * @param eliminatedLoc The location of the centroid that has been eliminated.
+     * @return Whether all centroids have been eliminated.
      */
-    public boolean markTargetEliminated(float[] targetLoc) {
-        //System.out.println("Target Eliminated: " + Arrays.toString(targetLoc));
-        System.out.println("E: " + Arrays.toString(targetLoc) + "\n");
+    public boolean markCentroidEliminated(float[] eliminatedLoc) {
+        //System.out.println("Centroid Eliminated: " + Arrays.toString(eliminatedLoc));
+        System.out.println("E: " + Arrays.toString(eliminatedLoc) + "\n");
         ArrayList<Integer> closeCentroids = new ArrayList<>(K);
         ArrayList<Integer> farCentroids = new ArrayList<>(K);
-        //int indexOfTarget = -1; //We don't know the index yet.
-        //Split centroids into near and far while simultaneously searching for our target index.
+        //Split centroids into near and far while simultaneously searching for the eliminated index.
         for (int i = 0; i<K; i++) {
             float[] centroidLoc = centroids[i];
-            //targetLoc references the actual subarray in `centroids` so == will work
-            if (targetLoc == centroidLoc || Arrays.equals(targetLoc, centroidLoc)) {
+            //eliminatedLoc references the actual subarray in `centroids` so == will work
+            if (eliminatedLoc == centroidLoc || Arrays.equals(eliminatedLoc, centroidLoc)) {
                 //In order to update our location, put it in closeCentroids.
                 closeCentroids.add(i);
                 //Because we know that it should be added, skip the unnecessary calculations.
                 continue;
             }
 
-            float dx = Math.abs(centroids[i][0] - targetLoc[0]);
-            float dy = Math.abs(centroids[i][1] - targetLoc[1]);
+            float dx = Math.abs(centroids[i][0] - eliminatedLoc[0]);
+            float dy = Math.abs(centroids[i][1] - eliminatedLoc[1]);
             if (dx+dy < MIN_SEPARATION) closeCentroids.add(i);
             else farCentroids.add(i);
         }
@@ -200,8 +199,8 @@ public class TargetManager {
     }
 
     /**
-     * Whether we have eliminated all of the targets.
-     * True when all the targets are close together and we call `markTargetEliminated()`.
+     * Whether we have eliminated all of the centroids.
+     * True when all the centroids are close together and we call `markCentroidEliminated()`.
      * Will become false again when we next call `updateCentroids()`.
      */
     public boolean hasEliminatedAll() {
@@ -210,16 +209,16 @@ public class TargetManager {
         return hasEliminatedAll;
     }
 
-    public int numTargets() {
+    public int numCentroids() {
         return K;
     }
 
     /**
-     * Gets the target location based on its ID.
-     * NOTE: DO NOT MODIFY. This is an actual reference to the internal location of the target.
+     * Gets the centroid location based on its ID.
+     * NOTE: DO NOT MODIFY. This is an actual reference to the internal location of the centroid.
      */
-    public float[] getTarget(int targetID) {
-        return centroids[targetID];
+    public float[] getCentroid(int centroidID) {
+        return centroids[centroidID];
     }
 
 }

@@ -2,11 +2,6 @@ package org.battlecode.bc18.api;
 
 import static org.battlecode.bc18.util.Utils.gc;
 
-import org.battlecode.bc18.TargetManager;
-import org.battlecode.bc18.util.Utils;
-
-import bc.Planet;
-import bc.PlanetMap;
 import bc.Unit;
 import bc.UnitType;
 

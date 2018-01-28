@@ -1,6 +1,5 @@
 package org.battlecode.bc18;
 
-import org.battlecode.bc18.api.AKnight;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.util.Utils;
 
@@ -37,7 +36,7 @@ public class ProductionManager {
     }
 
     public static boolean rushRockets() {
-        return Utils.gc.round() > 650 || TargetManager.tman.hasEliminatedAll();
+        return Utils.gc.round() > 650 || CentroidManager.cman.hasEliminatedAll();
     }
 
     private static int getTotalUnits() {

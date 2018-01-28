@@ -1,6 +1,6 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import static org.battlecode.bc18.TargetManager.tman;
+import static org.battlecode.bc18.CentroidManager.cman;
 import static org.battlecode.bc18.util.Utils.gc;
 
 import java.util.Arrays;
@@ -79,9 +79,9 @@ public class Main {
                     Location loc = unit.location();
                     if (!loc.isOnMap()) continue;
                     MapLocation mapLoc = loc.mapLocation();
-                    tman.updateCentroids(mapLoc.getX(), mapLoc.getY());
+                    cman.updateCentroids(mapLoc.getX(), mapLoc.getY());
                 }
-                if (round % 10 == 0) System.out.println(Arrays.deepToString(tman.centroids));
+                if (round % 10 == 0) System.out.println(Arrays.deepToString(cman.centroids));
                 AUnit.doTurn();
 
             } catch (Exception e) {

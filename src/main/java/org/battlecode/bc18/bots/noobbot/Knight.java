@@ -11,7 +11,7 @@ import bc.MapLocation;
 import bc.Unit;
 import bc.UnitType;
 
-import static org.battlecode.bc18.TargetManager.tman;
+import static org.battlecode.bc18.CentroidManager.cman;
 
 public class Knight extends AKnight {
 
@@ -57,12 +57,12 @@ public class Knight extends AKnight {
         List<Unit> nearbyEnemies = fastSenseNearbyEnemies();
 
         // Update macro target
-        macroTarget = tman.getTarget(macroTargetSeed % tman.numTargets());
+        macroTarget = cman.getCentroid(macroTargetSeed % cman.numCentroids());
         //If we are very close to the macro target and there are no enemies, mark it as eliminated
         if (hasMacroTarget()) {
             macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
             if (nearbyEnemies.size() == 0 && macroLoc.distanceSquaredTo(myMapLoc) <= 4) {
-                tman.markTargetEliminated(macroTarget);
+                cman.markCentroidEliminated(macroTarget);
                 //Macro target location will change when eliminated so update its MapLocation
                 macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
             }
@@ -154,6 +154,6 @@ public class Knight extends AKnight {
     }
 
     private boolean hasMacroTarget() {
-        return macroTarget != null && !tman.hasEliminatedAll();
+        return macroTarget != null && !cman.hasEliminatedAll();
     }
 }

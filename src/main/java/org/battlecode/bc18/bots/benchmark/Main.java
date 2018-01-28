@@ -2,14 +2,11 @@ package org.battlecode.bc18.bots.benchmark;
 
 import bc.*;
 import org.battlecode.bc18.api.AUnit;
-import org.battlecode.bc18.bots.noobbot.UnitBuilder;
 import org.battlecode.bc18.util.Utils;
 import org.battlecode.bc18.util.pathfinder.PathFinder;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
-import static org.battlecode.bc18.TargetManager.tman;
 import static org.battlecode.bc18.util.Utils.gc;
 import static org.battlecode.bc18.util.pathfinder.PathFinder.pf;
 

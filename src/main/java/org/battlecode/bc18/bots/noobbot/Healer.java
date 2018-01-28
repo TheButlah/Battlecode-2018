@@ -1,6 +1,6 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import static org.battlecode.bc18.TargetManager.tman;
+import static org.battlecode.bc18.CentroidManager.cman;
 
 import java.util.List;
 
@@ -64,7 +64,7 @@ public class Healer extends AHealer {
             //startTime = System.currentTimeMillis();
             // Update macro target
             boolean moved = false;
-            macroTarget = tman.getTarget(macroTargetSeed % tman.numTargets());
+            macroTarget = cman.getCentroid(macroTargetSeed % cman.numCentroids());
             MapLocation macroLoc = null;
             List<Unit> nearbyEnemies = fastSenseNearbyEnemies();
             int numCloseEnemies = 0;
@@ -101,7 +101,7 @@ public class Healer extends AHealer {
                 //If we are very close to the macro target and there are no enemies, mark it as eliminated
                 macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
                 if (nearbyEnemies.size() == 0 && macroLoc.distanceSquaredTo(myMapLoc) <= 4) {
-                    tman.markTargetEliminated(macroTarget);
+                    cman.markCentroidEliminated(macroTarget);
                     //Macro target location will change when eliminated so update its MapLocation
                     macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
                 }
@@ -138,6 +138,6 @@ public class Healer extends AHealer {
     }
 
     private boolean hasMacroTarget() {
-        return macroTarget != null && !tman.hasEliminatedAll();
+        return macroTarget != null && !cman.hasEliminatedAll();
     }
 }

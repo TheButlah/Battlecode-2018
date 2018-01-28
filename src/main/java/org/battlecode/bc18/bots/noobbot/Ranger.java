@@ -1,6 +1,6 @@
 package org.battlecode.bc18.bots.noobbot;
 
-import static org.battlecode.bc18.TargetManager.tman;
+import static org.battlecode.bc18.CentroidManager.cman;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +57,7 @@ public class Ranger extends ARanger {
         List<Unit> nearbyEnemies = fastSenseNearbyEnemies();
 
         // Update macro target
-        macroTarget = tman.getTarget(macroTargetSeed % tman.numTargets());
+        macroTarget = cman.getCentroid(macroTargetSeed % cman.numCentroids());
         //If we are very close to the macro target and there are no enemies, mark it as eliminated
         if (hasMacroTarget()) {
             if (nearbyEnemies.size() == 0) {
@@ -66,7 +66,7 @@ public class Ranger extends ARanger {
                 int distanceToTarget = (int) macroLoc.distanceSquaredTo(myMapLoc);
                 if (distanceToTarget <= 4 || (distanceToTarget <= 30 && turnsMissingEnemies >= MAX_TURNS_MISSING_ENEMIES)) {
                     turnsMissingEnemies = 0;
-                    tman.markTargetEliminated(macroTarget);
+                    cman.markCentroidEliminated(macroTarget);
                     //Macro target location will change when eliminated so update its MapLocation
                     macroLoc = new MapLocation(Utils.PLANET, (int) macroTarget[0], (int) macroTarget[1]);
                 }
@@ -209,6 +209,6 @@ public class Ranger extends ARanger {
     }
 
     private boolean hasMacroTarget() {
-        return macroTarget != null && !tman.hasEliminatedAll();
+        return macroTarget != null && !cman.hasEliminatedAll();
     }
 }

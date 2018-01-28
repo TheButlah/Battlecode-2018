@@ -3,10 +3,9 @@ package org.battlecode.bc18.bots.noobbot;
 import static org.battlecode.bc18.util.Utils.gc;
 
 import bc.*;
-import org.battlecode.bc18.TargetManager;
+import org.battlecode.bc18.CentroidManager;
 import org.battlecode.bc18.api.AMage;
 import org.battlecode.bc18.util.Utils;
-import org.battlecode.bc18.util.pathfinder.PathFinder;
 
 public class Mage extends AMage {
 
@@ -68,7 +67,7 @@ public class Mage extends AMage {
         PlanetMap planetMap = gc.startingMap(planet);
         
         if (isBlinkReady()) {
-            TargetManager tman = new TargetManager(planetMap.getInitial_units(), 3);
+            CentroidManager tman = new CentroidManager(planetMap.getInitial_units(), 3);
 
             // FIXME: find a MapLocation to blink.
             MapLocation blinkLoc = new MapLocation(planet, 0, 0);
