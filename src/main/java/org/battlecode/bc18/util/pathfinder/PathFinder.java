@@ -318,7 +318,7 @@ public class PathFinder {
                     }
                 }
                 // TODO: Scale weights more aggressively to discourage passing through narrow pathways?
-                int hallwayWidthWeight = 50 - 2 * maxWeight - 1;
+                int hallwayWidthWeight = Math.max(1, 50 - 2 * maxWeight - 1);
                 if (0 <= col && col < Utils.MAP_WIDTH &&
                     0 <= row && row < Utils.MAP_HEIGHT &&
                     weights[toIndex(row, col)] != INFINITY) {
