@@ -5,7 +5,13 @@ import static org.battlecode.bc18.util.Utils.gc;
 import bc.*;
 import org.battlecode.bc18.CentroidManager;
 import org.battlecode.bc18.api.AMage;
+import org.battlecode.bc18.api.MyUnit;
+import org.battlecode.bc18.pathfinder.Cell;
+import org.battlecode.bc18.pathfinder.PathFinder;
 import org.battlecode.bc18.util.Utils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Mage extends AMage {
 
@@ -17,7 +23,6 @@ public class Mage extends AMage {
         super(unit);
         assert unit.unitType() == UnitType.Mage;
     }
-
 
     @Override
     public void act() {
@@ -62,28 +67,98 @@ public class Mage extends AMage {
         }
         
         // at this point, immediate attacking didn't happen.
-        // As a followup strategy, it will blink to the centroid.
-        Planet planet = gc.planet();
-        PlanetMap planetMap = gc.startingMap(planet);
+        // It will try blinking to the chokepoint.
         
-        if (isBlinkReady()) {
-            CentroidManager tman = new CentroidManager(planetMap.getInitial_units(), 3);
+        List<Cell> chokepoints = new ArrayList<>();
+        boolean[] isDangerZone = new boolean[1];
 
-            // FIXME: find a MapLocation to blink.
-            MapLocation blinkLoc = new MapLocation(planet, 0, 0);
+        MapLocation destinationChoke = getChokeToMoveTowards(myMapLoc, chokepoints);
+        
+        boolean success = false;
+        
+        if (canBlink(destinationChoke)) {
+            success = moveToChokePoint(null, destinationChoke, myMapLoc, chokepoints, isDangerZone, true);
+            if (success) return;
+        }
 
-            if (isAcessibleBlink(blinkLoc)) {
-                blink(blinkLoc);
-                return;
+        PathFinder.pf.setTarget(destinationChoke);
+        Direction towardsChoke = PathFinder.pf.directionToTargetFrom(myMapLoc);
+
+        if (canMove(towardsChoke)) {
+            success = moveToChokePoint(towardsChoke, destinationChoke, myMapLoc, chokepoints, isDangerZone, false);
+            if (success) return;
+        }
+
+        moveRandomly();
+        
+    }
+    
+    /** return true if successful, false otherwise */
+    private boolean moveToChokePoint(Direction towardsChoke, MapLocation destinationChoke, MapLocation myMapLoc, List<Cell> chokepoints, boolean[] isDangerZone, boolean blink) {
+        
+        if (chokepoints.size() < 1)
+            return false;
+        
+        if (blink) {
+            if (!isDangerZone[toIndex(destinationChoke.getY(), destinationChoke.getX())]) {
+                blink(destinationChoke);
+                return true;
+            } else {
+                int x = ((destinationChoke.getX() - myMapLoc.getX()) * 2 / 3) + myMapLoc.getX();
+                int y = ((destinationChoke.getY() - myMapLoc.getY()) * 2 / 3) + myMapLoc.getY();
+                if (!isDangerZone[toIndex(y,x)]) {
+                    blink(destinationChoke);
+                    return true;
+                }
+                else {
+                    if (towardsChoke != Direction.Center && isAccessible(towardsChoke)) {
+                        MapLocation towardsChokeLocation = myMapLoc.add(towardsChoke);
+                        if (!isDangerZone[toIndex(towardsChokeLocation.getY(), towardsChokeLocation.getX())]) {
+                            move(towardsChoke);
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+            }
+        } else {
+            if (towardsChoke != Direction.Center && isAccessible(towardsChoke)) {
+                MapLocation towardsChokeLocation = myMapLoc.add(towardsChoke);
+                if (!isDangerZone[toIndex(towardsChokeLocation.getY(), towardsChokeLocation.getX())]) {
+                    move(towardsChoke);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+    
+    private MapLocation getChokeToMoveTowards(MapLocation myMapLoc, List<Cell> chokepoints) {
+        
+        if (chokepoints.size() < 1)
+            return null;
+        
+        MapLocation destinationChoke = chokepoints.get(0).getLoc();
+        int myNearbyFriendsCount = (int) gc.senseNearbyUnitsByTeam(destinationChoke, 100, Utils.OTHER_TEAM).size();
+        
+        for (Cell cell : chokepoints) {
+            MapLocation candidateChoke = cell.getLoc();
+            int candidateCount = (int) gc.senseNearbyUnitsByTeam(candidateChoke, 100, Utils.OTHER_TEAM).size();
+            
+            double percentage = ((double) (candidateCount - myNearbyFriendsCount)) / ((double) myNearbyFriendsCount);
+            if (percentage >= 0.2) {
+                destinationChoke = candidateChoke;
+                myNearbyFriendsCount = candidateCount;
             }
         }
         
-        // At this point, blinking also didn't happen.
-        // TODO: move toward a centroid. 
-        
+        return destinationChoke;
+    }
 
-        // If we haven't yet moved, move randomly
-        moveRandomly();
+    private int toIndex(int r, int c) {
+        return c + r * Utils.MAP_WIDTH;
     }
 
     private void moveRandomly() {
