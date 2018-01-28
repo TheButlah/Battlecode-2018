@@ -34,27 +34,29 @@ public class Healer extends AHealer {
         if (!isOnMap()) {
             return;
         }
-        //startTime = System.currentTimeMillis();
         MapLocation myMapLoc = getMapLocation();
 
         // heals weakest ally in heal range, if possible. Else, moves randomly.
         MyRobot target = null;
-        int healRange = getHealRange();
-        int healthLeft = Integer.MAX_VALUE;
-        if (getHealth() < getMaxHealth()) {
-            target = this;
-            healthLeft = getHealth();
-        }
-        for (AUnit u : fastSenseNearbyFriendlies(healRange)) {
-            if (!(u instanceof MyRobot)) continue;
-            int health = u.getHealth();
-            if (health < u.getMaxHealth() && health < healthLeft) {
-                target = (MyRobot) u;
-                healthLeft = health;
+        if (isHealReady() || isMoveReady()) {
+            //startTime = System.currentTimeMillis();
+            int healRange = getHealRange();
+            int healthLeft = Integer.MAX_VALUE;
+            if (getHealth() < getMaxHealth()) {
+                target = this;
+                healthLeft = getHealth();
             }
+            for (AUnit u : fastSenseNearbyFriendlies(healRange)) {
+                if (!(u instanceof MyRobot)) continue;
+                int health = u.getHealth();
+                if (health < u.getMaxHealth() && health < healthLeft) {
+                    target = (MyRobot) u;
+                    healthLeft = health;
+                }
+            }
+            //time1 += (System.currentTimeMillis() - startTime);
+            //println("time1: " + time1);
         }
-        //time1 += (System.currentTimeMillis() - startTime);
-        //println("time1: " + time1);
 
         if (target != null && canHeal(target)) {
             heal(target);
@@ -82,7 +84,7 @@ public class Healer extends AHealer {
                     else if (enemyType == UnitType.Mage && distToEnemy > 35) {
                         continue;
                     }
-                    else if (enemyType == UnitType.Ranger && distToEnemy > 45) {
+                    else if (enemyType == UnitType.Ranger && (10 < distToEnemy || distToEnemy > 45)) {
                         continue;
                     }
                     ++numCloseEnemies;

@@ -88,6 +88,7 @@ public class Knight extends AKnight {
             boolean moved = false;
             // If we have a target, move towards it
             if (hasTarget()) {
+                //startTime = System.currentTimeMillis();
                 MapLocation targetLoc = target.location().mapLocation();
                 PathFinder.pf.setTarget(targetLoc);
                 Direction towardsEnemy = PathFinder.pf.directionToTargetFrom(myMapLoc);
@@ -99,6 +100,7 @@ public class Knight extends AKnight {
                 //time2 += System.currentTimeMillis() - startTime;
                 //System.out.println("time 2: " + time2);
             } else if (hasMacroTarget()) {
+                //startTime = System.currentTimeMillis();
                 //Attack our macro target
                 PathFinder.pf.setTarget(macroLoc);
                 Direction towardsEnemy = PathFinder.pf.directionToTargetFrom(myMapLoc);

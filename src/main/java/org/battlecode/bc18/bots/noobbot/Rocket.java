@@ -52,7 +52,7 @@ public class Rocket extends ARocket {
                     }
                     // Do not move units towards rocket when it is close to taking off
                     if (liveRounds < TAKEOFF_DELAY - 5 && adjacentFriendlies.size() < myUnit.structureMaxCapacity() - myGarrison.size()) {
-                        List<AUnit> nearbyFriendlies = fastSenseNearbyFriendlies(ProductionManager.rushRockets() ? (Utils.gc.round() > 680 ? 300 : 100) : 30);
+                        List<AUnit> nearbyFriendlies = fastSenseNearbyFriendlies(ProductionManager.rushRockets() ? 1000 : 30);
                         PathFinder.pf.setTarget(myMapLoc);
                         for (MyUnit unit : nearbyFriendlies) {
                             if (unit instanceof MyRobot) {
@@ -88,7 +88,7 @@ public class Rocket extends ARocket {
                 }
                 //time1 += (System.currentTimeMillis() - startTime);
                 //println("time1: " + time1);
-                if (liveRounds >= TAKEOFF_DELAY || isGarrisonFull()) {
+                if (liveRounds >= TAKEOFF_DELAY || isGarrisonFull() || Utils.gc.round() >= 748) {
                     //startTime = System.currentTimeMillis();
                     // Move adjacent robots away from factory
                     MapLocation myMapLoc = getMapLocation();

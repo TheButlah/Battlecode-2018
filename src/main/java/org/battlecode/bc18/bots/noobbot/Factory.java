@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Factory extends AFactory {
-    //static int time1, time2, time3;
+    //static int time1, time2, time3, time4, time5;
     //static long startTime;
 
 
@@ -40,7 +40,7 @@ public class Factory extends AFactory {
 
         //startTime = System.currentTimeMillis();
         UnitType nextDesiredProduction = ProductionManager.getNextProductionType();
-        if (getHealth() < getMaxHealth() && canProduceRobot(UnitType.Worker) && senseNearbyFriendlies(UnitType.Worker).size() == 0) {
+        if (getHealth() < getMaxHealth() && canProduceRobot(UnitType.Worker) && fastSenseNearbyFriendlies(UnitType.Worker).size() == 0) {
             produceRobot(UnitType.Worker);
         }
         else if (nextDesiredProduction == UnitType.Worker && canProduceRobot(UnitType.Worker)) {
@@ -63,7 +63,10 @@ public class Factory extends AFactory {
         //startTime = System.currentTimeMillis();
         // Unload units
         List<MyRobot> garrison = getGarrison();
+        //time3 += System.currentTimeMillis() - startTime;
+        //System.out.println("time3: " + time3);
         if (garrison.size() != 0) {
+            //startTime = System.currentTimeMillis();
             boolean hasUnloaded = false;
             for (Direction dir : Utils.dirs) {
                 if (canUnload(dir)) {
@@ -72,11 +75,15 @@ public class Factory extends AFactory {
                     break;
                 }
             }
+            //time4 += System.currentTimeMillis() - startTime;
+            //System.out.println("time4: " + time4);
             // Self destruct adjacent unit if blocked
             if (!hasUnloaded) {
+                //startTime = System.currentTimeMillis();
                 int totalCount = 0;
                 HashMap<UnitType, Integer> unitCounts = new HashMap<>();
                 for (Direction dir : Utils.dirs) {
+                    if (dir == Direction.Center) continue;
                     MapLocation loc = myLoc.add(dir);
                     //Skip dirs that dont have units
                     if (!Utils.gc.hasUnitAtLocation(loc)) continue;
@@ -103,16 +110,16 @@ public class Factory extends AFactory {
                     selectedType = UnitType.Knight;
                 }
                 // Destruct and unload
-                MyUnit sacrificeOffering = senseNearbyFriendlies(2, selectedType).get(0);
+                MyUnit sacrificeOffering = fastSenseNearbyFriendlies(2, selectedType).get(0);
                 if (sacrificeOffering != null) {
                     Direction dir = getMapLocation().directionTo(sacrificeOffering.getMapLocation());
                     sacrificeOffering.selfDestruct();
                     unload(dir);
                 }
+                //time5 += System.currentTimeMillis() - startTime;
+                //System.out.println("time5: " + time5);
             }
         }
-        //time3 += System.currentTimeMillis() - startTime;
-        //System.out.println("time3: " + time3);
     }
 
     @Override

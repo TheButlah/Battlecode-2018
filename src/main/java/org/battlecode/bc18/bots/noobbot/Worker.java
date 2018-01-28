@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.battlecode.bc18.ChokeManager;
 import org.battlecode.bc18.ProductionManager;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.AWorker;
@@ -23,7 +24,7 @@ import bc.Unit;
 import bc.UnitType;
 
 public class Worker extends AWorker {
-    //static int time1, time2, time3, time4, time5, time6, time7;
+    //static int time1, time2, time3, time4, time5, time6, time7, time8, time9, time10;
     //static long startTime;
 
     /**
@@ -72,6 +73,7 @@ public class Worker extends AWorker {
     };
 
     public boolean shouldLaunch = true;
+    private MapLocation targetKarboniteLoc = null;
     /**
      * Constructor for Worker.
      * @exception RuntimeException Occurs for unknown UnitType, unit already exists, unit doesn't belong to our player.
@@ -102,6 +104,7 @@ public class Worker extends AWorker {
         }
         //We already checked that we were on the map
         MapLocation myMapLoc = getMapLocation();
+        int myCCSize = Utils.CONNECTED_COMPONENT_SIZES.get(Utils.CONNECTED_COMPONENTS[myMapLoc.getY()][myMapLoc.getX()]);
 
         MyStructure targetStructure = getStructureAssignment();
         if (targetStructure != null && targetStructure.isDead()) {
@@ -110,9 +113,23 @@ public class Worker extends AWorker {
             targetStructure = null;
         }
 
+        if (targetKarboniteLoc != null) {
+            if (gc.canSenseLocation(targetKarboniteLoc) && gc.karboniteAt(targetKarboniteLoc) == 0) {
+                targetKarboniteLoc = null;
+            }
+        }
+
         if (targetStructure == null) {
             if (Utils.PLANET == Planet.Earth) {
                 UnitType nextDesiredProduction = ProductionManager.getNextProductionType();
+                // Close proximity is determined by the amount of available space on the connected
+                // component
+                List<AUnit> closeProximityEnemies = fastSenseNearbyFriendlies((int)Math.sqrt(myCCSize));
+                if (turn > 200 && closeProximityEnemies.size() > Math.sqrt(myCCSize) / 2) {
+                    // TODO: check not too close to chokepoint
+                    // If close proximity is highly populated (more than half of area)
+                    nextDesiredProduction = UnitType.Rocket;
+                }
                 if ((turn == 1 && getID() == Main.initializingWorkerId) || nextDesiredProduction == UnitType.Factory) {
                     //startTime = System.currentTimeMillis();
                     List<MyStructure> nearbyStructures = getNearbyStructures();
@@ -216,6 +233,16 @@ public class Worker extends AWorker {
                     UnitType enemyType = enemy.unitType();
                     if (enemyType == UnitType.Knight || enemyType == UnitType.Ranger || enemyType == UnitType.Mage) {
                         MapLocation enemyLoc = enemy.location().mapLocation();
+                        long distToEnemy = enemyLoc.distanceSquaredTo(myMapLoc);
+                        if (enemyType == UnitType.Knight && distToEnemy > 20) {
+                            continue;
+                        }
+                        else if (enemyType == UnitType.Mage && distToEnemy > 35) {
+                            continue;
+                        }
+                        else if (enemyType == UnitType.Ranger && (10 < distToEnemy || distToEnemy > 40)) {
+                            continue;
+                        }
                         ++numCloseEnemies;
                         closeEnemyAvgX += (enemyLoc.getX() - closeEnemyAvgX) / numCloseEnemies;
                         closeEnemyAvgY += (enemyLoc.getY() - closeEnemyAvgY) / numCloseEnemies;
@@ -230,20 +257,33 @@ public class Worker extends AWorker {
                         moved = true;
                     }
                 }
+                //time5 += System.currentTimeMillis() - startTime;
+                //System.out.println("time 5: " + time5);
 
                 if (!moved) {
                     //No target structure, so look for nearby karbonite
+                    //startTime = System.currentTimeMillis();
                     List<Pair<MapLocation, Integer>> deposits = senseNearbyKarbonite();
-                    if (deposits.size() != 0) {
-                        Pair<MapLocation, Integer> targetDeposit = Utils.closestPair(deposits, myMapLoc);
-                        MapLocation targetLoc = targetDeposit.getFirst();
-                        PathFinder.pf.setTarget(targetLoc);
+                    if (targetKarboniteLoc == null) {
+                        if (deposits.size() != 0) {
+                            Pair<MapLocation, Integer> targetDeposit = Utils.closestPair(deposits, myMapLoc);
+                            targetKarboniteLoc = targetDeposit.getFirst();
+                        }
+                    }
+                    //time8 += System.currentTimeMillis() - startTime;
+                    //System.out.println("time 8: " + time8);
+                    //startTime = System.currentTimeMillis();
+                    if (targetKarboniteLoc != null) {
+                        PathFinder.pf.setTarget(targetKarboniteLoc);
                         Direction towardsKarbonite = PathFinder.pf.directionToTargetFrom(myMapLoc);
                         if (towardsKarbonite != Direction.Center && isAccessible(towardsKarbonite)) {
                             move(towardsKarbonite);
                             moved = true;
                         }
                     }
+                    //time9 += System.currentTimeMillis() - startTime;
+                    //System.out.println("time 9: " + time9);
+                    //startTime = System.currentTimeMillis();
                     if (AUnit.getNumUnits(UnitType.Worker) < gc.round() / 5 && (deposits.size() > 5 || sumDeposits(deposits) > 100)) {
                         for (Direction dir : Utils.dirs) {
                             if (canReplicate(dir)) {
@@ -255,6 +295,8 @@ public class Worker extends AWorker {
                             }
                         }
                     }
+                    //time10 += System.currentTimeMillis() - startTime;
+                    //System.out.println("time 10: " + time10);
                 }
                 if (!moved) {
                     //Move randomly
@@ -268,8 +310,6 @@ public class Worker extends AWorker {
                         }
                     }
                 }
-                //time5 += System.currentTimeMillis() - startTime;
-                //System.out.println("time 5: " + time5);
             }
         }
 
@@ -295,6 +335,8 @@ public class Worker extends AWorker {
                         }
                     }
                 }
+                //time6 += System.currentTimeMillis() - startTime;
+                //System.out.println("time 6: " + time6);
                 // building a factory based on the blueprint created.
                 if (!structureBuilt) {
                     if (canBuild(targetStructure)) {
@@ -308,8 +350,6 @@ public class Worker extends AWorker {
                     repair(targetStructure);
                     return;
                 }
-                //time6 += System.currentTimeMillis() - startTime;
-                //System.out.println("time 6: " + time6);
             }
             else {
                 // De-assign worker from factory so he can explore the map

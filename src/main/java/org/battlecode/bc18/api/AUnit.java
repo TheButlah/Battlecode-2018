@@ -5,6 +5,7 @@ import static org.battlecode.bc18.util.Utils.gc;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -489,12 +490,16 @@ public abstract class AUnit implements MyUnit {
             // during a round. The visible locations are only updated by the game engine at the
             // beginning of a round, so we need this additional check. However, as of the moment,
             // this function is only called before the unit moves, so this cannot be the case.
-            if (!gc.canSenseLocation(loc)) {
+            int coord = (loc.getY() << 16) | loc.getX();
+            if ((Utils.PLANET == Planet.Earth && earthNonKarboniteLocations.contains(coord)) || !gc.canSenseLocation(loc)) {
                 continue;
             }
             int amount = (int) gc.karboniteAt(loc);
             if (amount > 0) {
                 nearbyKarbonite.add(new Pair<>(loc, amount));
+            }
+            else if (Utils.PLANET == Planet.Earth) {
+                earthNonKarboniteLocations.add(coord);
             }
         }
         return nearbyKarbonite;
@@ -567,6 +572,7 @@ public abstract class AUnit implements MyUnit {
     private static int totalUnitCount;
     private static final Queue<Pair<Integer, UnitType>> factoryProductionQueue = new LinkedList<>();
     private static final HashMap<UnitType, Integer> factoryProductionQueueCounts = new HashMap<>();
+    private static final HashSet<Integer> earthNonKarboniteLocations = new HashSet<>();
 
     /**
      * Constructor for AUnit.
