@@ -116,11 +116,13 @@ public class Factory extends AFactory {
                     selectedType = UnitType.Knight;
                 }
                 // Destruct and unload
-                MyUnit sacrificeOffering = fastSenseNearbyFriendlies(2, selectedType).get(0);
-                if (sacrificeOffering != null) {
-                    Direction dir = getMapLocation().directionTo(sacrificeOffering.getMapLocation());
-                    sacrificeOffering.selfDestruct();
-                    unload(dir);
+                if (selectedType != null) {
+                    MyUnit sacrificeOffering = fastSenseNearbyFriendlies(2, selectedType).get(0);
+                    if (sacrificeOffering != null) {
+                        Direction dir = getMapLocation().directionTo(sacrificeOffering.getMapLocation());
+                        sacrificeOffering.selfDestruct();
+                        unload(dir);
+                    }
                 }
                 //time5 += System.currentTimeMillis() - startTime;
                 //System.out.println("time5: " + time5);
