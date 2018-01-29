@@ -1,12 +1,16 @@
 package org.battlecode.bc18.bots.noobbot;
-
+import static org.battlecode.bc18.pathfinder.ChokeManager.chman;
+import static org.battlecode.bc18.util.Utils.gc;
 import static org.battlecode.bc18.CentroidManager.cman;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.battlecode.bc18.api.AHealer;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.MyRobot;
+import org.battlecode.bc18.pathfinder.Cell;
+import org.battlecode.bc18.pathfinder.ChokeManager;
 import org.battlecode.bc18.util.Utils;
 import org.battlecode.bc18.pathfinder.PathFinder;
 
@@ -76,6 +80,21 @@ public class Healer extends AHealer {
         }
 
         if (isMoveReady()) {
+
+            List<Cell> chokepoints = ChokeManager.chman.getChokepoints();
+            boolean[] isDangerZone = chman.dangerous;
+
+            MapLocation destinationChoke = getChokeToMoveTowards(myMapLoc, chokepoints);
+
+            PathFinder.pf.setTarget(destinationChoke);
+            Direction towardsChoke = PathFinder.pf.directionToTargetFrom(myMapLoc);
+
+            if (canMove(towardsChoke)) {
+                if (moveToChokePoint(towardsChoke, destinationChoke, myMapLoc, chokepoints, isDangerZone)) {
+                    return;
+                }
+            }
+            
             //startTime = System.currentTimeMillis();
             // Update macro target
             boolean moved = false;
@@ -155,6 +174,49 @@ public class Healer extends AHealer {
                 }
             }
         }
+    }
+
+    /** return true if successful, false otherwise */
+    private boolean moveToChokePoint(Direction towardsChoke, MapLocation destinationChoke, MapLocation myMapLoc, List<Cell> chokepoints, boolean[] isDangerZone) {
+
+        if (chokepoints.size() < 1)
+            return false;
+
+        if (towardsChoke != Direction.Center && isAccessible(towardsChoke)) {
+            MapLocation towardsChokeLocation = myMapLoc.add(towardsChoke);
+            if (!isDangerZone[toIndex(towardsChokeLocation.getY(), towardsChokeLocation.getX())]) {
+                move(towardsChoke);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private MapLocation getChokeToMoveTowards(MapLocation myMapLoc, List<Cell> chokepoints) {
+
+        if (chokepoints.size() < 1)
+            return null;
+
+        MapLocation destinationChoke = chokepoints.get(0).getLoc();
+        int myNearbyFriendsCount = (int) gc.senseNearbyUnitsByTeam(destinationChoke, 100, Utils.OTHER_TEAM).size();
+
+        for (Cell cell : chokepoints) {
+            MapLocation candidateChoke = cell.getLoc();
+            int candidateCount = (int) gc.senseNearbyUnitsByTeam(candidateChoke, 100, Utils.OTHER_TEAM).size();
+
+            double percentage = ((double) (candidateCount - myNearbyFriendsCount)) / ((double) myNearbyFriendsCount);
+            if (percentage >= 0.2) {
+                destinationChoke = candidateChoke;
+                myNearbyFriendsCount = candidateCount;
+            }
+        }
+
+        return destinationChoke;
+    }
+
+    private int toIndex(int r, int c) {
+        return c + r * Utils.MAP_WIDTH;
     }
 
     @Override
