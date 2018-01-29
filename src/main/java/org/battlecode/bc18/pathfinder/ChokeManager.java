@@ -38,7 +38,7 @@ public class ChokeManager {
     }
 
     /** `path` is the node at the start of our path (node where we are standing) */
-    public List<Cell> getChokesInPath(ListNode path) {
+    public Cell getChokeInPath(Pair<ListNode, ListNode> path) {
         return null; //TODO: Do this Jared
     }
 
@@ -58,10 +58,11 @@ public class ChokeManager {
 
 
 
-    public List<MapLocation> getChokepoints(MyFactory factory) {
+    public MapLocation getChokepoint(MyFactory factory) {
         MapLocation facLoc = factory.getMapLocation();
-
-        return null; //TODO: Do this
+        Pair<ListNode, ListNode> path = getPath(facLoc);
+        Cell choke = getChokeInPath(path);
+        return choke.getLoc();
     }
 
     /*public List<MapLocation> computeChokesBetweenPoints(MapLocation enemy, MapLocation us) {
