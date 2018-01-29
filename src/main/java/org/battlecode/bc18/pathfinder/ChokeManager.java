@@ -38,7 +38,40 @@ public class ChokeManager {
 
     /** `path` is the node at the start of our path (node where we are standing) */
     public List<Cell> getChokesInPath(ListNode path) {
-        return null; //TODO: Do this Jared
+
+        int limit = pathLength(path) / 2;
+        int current = Integer.MAX_VALUE;
+        List<Cell> chokepoints = new ArrayList<>();
+        boolean found = false;
+
+        for (int count = 0; count < limit; count++) {
+            int nextWidth = PathFinder.pf.cost[toIndex(path.cell)];
+            if (nextWidth <= current) {
+                current = nextWidth;
+                if (count == limit - 1) {
+                    chokepoints.add(path.cell);
+                }
+            }
+            else {
+                if (!found) {
+                    chokepoints.add(path.cell);
+                }
+                found = !found;
+            }
+
+            path = path.next;
+        }
+
+        return chokepoints;
+    }
+
+    private int pathLength(ListNode path) {
+        int count = 0;
+        while (path != null) {
+            path = path.next;
+            count++;
+        }
+        return count;
     }
 
     public List<MapLocation> getChokepoints(MyFactory factory) {
