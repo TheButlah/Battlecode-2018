@@ -44,11 +44,12 @@ public class Mage extends AMage {
             // Find immediate opponent
             Unit immediateTarget = null;
 
-            VecUnit vec = gc.senseNearbyUnitsByTeam(myMapLoc, 50, gc.team() == Team.Red ? Team.Blue : Team.Red);
+            VecUnit vec = Utils.gc.senseNearbyUnitsByTeam(myMapLoc, 50, gc.team() == Team.Red ? Team.Blue : Team.Red);
             for (int i = 0; i < vec.size(); i++) {
                 Unit enemy = vec.get(i);
+                if (!Utils.isAttacker(enemy)) continue;
                 MapLocation enemyMapLoc = enemy.location().mapLocation();
-                if (myMapLoc.distanceSquaredTo(enemyMapLoc) <= enemy.attackRange()) {
+                if (myMapLoc.distanceSquaredTo(enemyMapLoc) <= ChokeManager.DANGEROUS_RADIUS) {
                     if (immediateTarget == null) {
                         immediateTarget = enemy;
                     }
@@ -62,7 +63,7 @@ public class Mage extends AMage {
                 }
             }
             
-            if (immediateTarget != null && isWithinAttackRange(immediateTarget)) {
+            if (immediateTarget != null && canAttack(immediateTarget)) {
                 attack(immediateTarget);
                 return;
             }

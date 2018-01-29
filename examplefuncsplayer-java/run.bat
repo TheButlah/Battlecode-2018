@@ -5,5 +5,5 @@ REM javac -classpath ".;../battlecode/java/" *.java
 REM java -classpath ".;../battlecode/java/" Player
 
 REM remember to disable assertions by removing the -ea flag when not debugging!
-java -jar -ea Battlecode-2018-0.1-all.jar
+java -jar Battlecode-2018-0.1-all.jar
 pause
