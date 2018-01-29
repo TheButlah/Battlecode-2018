@@ -7,6 +7,7 @@ import org.battlecode.bc18.CentroidManager;
 import org.battlecode.bc18.api.AMage;
 import org.battlecode.bc18.api.MyUnit;
 import org.battlecode.bc18.pathfinder.Cell;
+import org.battlecode.bc18.pathfinder.ChokeManager;
 import org.battlecode.bc18.pathfinder.PathFinder;
 import org.battlecode.bc18.util.Utils;
 
@@ -69,7 +70,7 @@ public class Mage extends AMage {
         // at this point, immediate attacking didn't happen.
         // It will try blinking to the chokepoint.
         
-        List<Cell> chokepoints = new ArrayList<>();
+        List<Cell> chokepoints = ChokeManager.chman.getChokepoints();
         boolean[] isDangerZone = new boolean[1];
 
         MapLocation destinationChoke = getChokeToMoveTowards(myMapLoc, chokepoints);

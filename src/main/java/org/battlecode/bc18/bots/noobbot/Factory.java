@@ -6,6 +6,7 @@ import org.battlecode.bc18.api.AFactory;
 import org.battlecode.bc18.api.AUnit;
 import org.battlecode.bc18.api.MyRobot;
 import org.battlecode.bc18.api.MyUnit;
+import org.battlecode.bc18.pathfinder.ChokeManager;
 import org.battlecode.bc18.util.Utils;
 
 import bc.Direction;
@@ -19,6 +20,7 @@ public class Factory extends AFactory {
     //static int time1, time2, time3, time4, time5;
     //static long startTime;
     private int myCC;
+    private MapLocation chokepoint = null;
 
 
     /**
@@ -34,6 +36,7 @@ public class Factory extends AFactory {
     @Override
     public void act() {
         MapLocation myLoc = getMapLocation();
+        if (chokepoint == null) chokepoint = ChokeManager.chman.computeChokepoint(this);
         //System.out.println("Workers assigned to me: " + workersPerFactory.get(getID()));
         // Since we cant maintain the invariant for the units HashMap, manually add in units to ensure invariant.
 

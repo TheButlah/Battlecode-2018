@@ -29,7 +29,7 @@ public class ChokeManager {
     private final boolean[] dangerous;
     private final HashMap<MyFactory, MapLocation> facToChoke = new HashMap<>(6);
     private final HashMap<MapLocation, MyFactory> chokeToFac = new HashMap<>(10);
-    private final ArrayList<MapLocation> chokepoints = new ArrayList<>(10);
+    private final ArrayList<Cell> chokepoints = new ArrayList<>(10);
 
     public ChokeManager() {
         this.ROWS = Utils.MAP_HEIGHT;
@@ -43,8 +43,8 @@ public class ChokeManager {
     }
 
     /** Follows a path and marks the dangerous spots */
-    public void markDangerousPath(ListNode start) {
-        ListNode current = start;
+    public void markDangerousPath(Pair<ListNode, ListNode> path, Cell choke) {
+        ListNode current = path.getSecond();
         while (current != null) {
             MapLocation currentLoc = current.cell.getLoc();
             VecMapLocation locs = Utils.gc.allLocationsWithin(currentLoc, DANGEROUS_RADIUS);
@@ -52,17 +52,21 @@ public class ChokeManager {
                 MapLocation loc = locs.get(i);
                 setDangerous(true, loc);
             }
-            current = current.getNext();
+            if (current.cell.equals(choke)) return; //Quit when we get to the choke
+            current = current.getPrev();
         }
     }
 
 
 
-    public MapLocation getChokepoint(MyFactory factory) {
+    public MapLocation computeChokepoint(MyFactory factory) {
         MapLocation facLoc = factory.getMapLocation();
         Pair<ListNode, ListNode> path = getPath(facLoc);
         Cell choke = getChokeInPath(path);
-        return choke.getLoc();
+        markDangerousPath(path, choke);
+        MapLocation chokeLoc = choke.getLoc();
+        chokepoints.add(choke);
+        return chokeLoc;
     }
 
     /*public List<MapLocation> computeChokesBetweenPoints(MapLocation enemy, MapLocation us) {
@@ -88,7 +92,7 @@ public class ChokeManager {
         return dangerous[toIndex(loc)];
     }
 
-    public List<MapLocation> getChokepoints() {
+    public List<Cell> getChokepoints() {
         return chokepoints;
     }
 
