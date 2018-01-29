@@ -663,7 +663,7 @@ public class PathFinder {
                 if (theCost == optimalDist) {
                     optimalLocs.add(dirLoc);
                 } else if (theCost < optimalDist) {
-                    optimalDist = cost[index];
+                    optimalDist = theCost;
                     optimalLocs.clear();
                     optimalLocs.add(dirLoc);
                 }

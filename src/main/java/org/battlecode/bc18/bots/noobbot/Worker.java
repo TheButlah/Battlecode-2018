@@ -34,6 +34,7 @@ public class Worker extends AWorker {
      * A mapping of workers to the structures they are assigned to
      */
     public static final Map<Integer, MyStructure> workerStructureAssignment = new HashMap<>();
+    public static final Map<Integer, Integer> workersPerCC = new HashMap<>();
     private static final Direction[] dirsBottomLeft = new Direction[] {
             Direction.Northeast, Direction.North, Direction.East, Direction.Northwest,
             Direction.Southeast, Direction.West, Direction.South, Direction.Southwest
@@ -72,6 +73,9 @@ public class Worker extends AWorker {
     };
 
     public boolean shouldLaunch = true;
+    private boolean hasSpawned = false;
+    private int myCC;
+    private int myCCSize;
     private MapLocation targetKarboniteLoc = null;
     /**
      * Constructor for Worker.
@@ -88,6 +92,19 @@ public class Worker extends AWorker {
             // println("TODO: handle worker not on map");
             return;
         }
+        //We already checked that we were on the map
+        MapLocation myMapLoc = getMapLocation();
+        if (!hasSpawned) {
+            myCC = Utils.CONNECTED_COMPONENTS[myMapLoc.getY()][myMapLoc.getX()];
+            myCCSize = Utils.CONNECTED_COMPONENT_SIZES.get(myCC);
+            if (!workersPerCC.containsKey(myCC)) {
+                workersPerCC.put(myCC, 1);
+            }
+            else {
+                workersPerCC.put(myCC, workersPerCC.get(myCC) + 1);
+            }
+            hasSpawned = true;
+        }
         long turn = gc.round();
         if (Utils.PLANET == Planet.Mars && turn >= 750) {
             // Spam replicate after Earth is wiped out
@@ -101,9 +118,6 @@ public class Worker extends AWorker {
                 }
             }
         }
-        //We already checked that we were on the map
-        MapLocation myMapLoc = getMapLocation();
-        int myCCSize = Utils.CONNECTED_COMPONENT_SIZES.get(Utils.CONNECTED_COMPONENTS[myMapLoc.getY()][myMapLoc.getX()]);
 
         MyStructure targetStructure = getStructureAssignment();
         if (targetStructure != null && targetStructure.isDead()) {
@@ -372,6 +386,9 @@ public class Worker extends AWorker {
 
     @Override
     protected void onDeath() {
+        if (workersPerCC.containsKey(myCC)) {
+            workersPerCC.put(myCC, workersPerCC.get(myCC) - 1);
+        }
         deassignStructure();
     }
 
