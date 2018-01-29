@@ -38,6 +38,8 @@ public class Healer extends AHealer {
 
         // heals weakest ally in heal range, if possible. Else, moves randomly.
         MyRobot target = null;
+        boolean overchargeReady = isOverchargeReady();
+        MyRobot overchargeTarget = null;
         if (isHealReady() || isMoveReady()) {
             //startTime = System.currentTimeMillis();
             int healRange = getHealRange();
@@ -49,9 +51,17 @@ public class Healer extends AHealer {
             for (AUnit u : fastSenseNearbyFriendlies(healRange)) {
                 if (!(u instanceof MyRobot)) continue;
                 int health = u.getHealth();
-                if (health < u.getMaxHealth() && health < healthLeft) {
-                    target = (MyRobot) u;
-                    healthLeft = health;
+                if (health < u.getMaxHealth()) {
+                    if (u != this && overchargeReady && overchargeTarget == null) {
+                        UnitType type = u.getType();
+                        if (type == UnitType.Knight || type == UnitType.Ranger || type == UnitType.Mage) {
+                            overchargeTarget = (MyRobot) u;
+                        }
+                    }
+                    if (health < healthLeft) {
+                        target = (MyRobot) u;
+                        healthLeft = health;
+                    }
                 }
             }
             //time1 += (System.currentTimeMillis() - startTime);
@@ -60,6 +70,9 @@ public class Healer extends AHealer {
 
         if (target != null && canHeal(target)) {
             heal(target);
+        }
+        if (overchargeReady && overchargeTarget != null && canOvercharge(overchargeTarget)) {
+            overcharge(overchargeTarget);
         }
 
         if (isMoveReady()) {
