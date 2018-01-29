@@ -69,8 +69,8 @@ public class Mage extends AMage {
         // at this point, immediate attacking didn't happen.
         // It will try blinking to the chokepoint.
         
-        List<Cell> chokepoints = new ArrayList<>();
-        boolean[] isDangerZone = new boolean[1];
+        List<Cell> chokepoints = new ArrayList<>(); // TODO
+        boolean[] isDangerZone = new boolean[1]; // TODO
 
         MapLocation destinationChoke = getChokeToMoveTowards(myMapLoc, chokepoints);
         
