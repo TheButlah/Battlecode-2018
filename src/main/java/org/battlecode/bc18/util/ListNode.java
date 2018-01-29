@@ -7,13 +7,15 @@ import java.util.Objects;
 public class ListNode implements Cloneable{
 
     public Cell cell;
-    public ListNode prev;
-    public ListNode next;
+    private ListNode prev;
+    private ListNode next;
 
     public ListNode(Cell cell, ListNode prev, ListNode next) {
         this.cell = cell;
         this.prev = prev;
+        if (prev != null) prev.next = this;
         this.next = next;
+        if (next != null) next.prev = this;
     }
 
     @Override
@@ -34,5 +36,29 @@ public class ListNode implements Cloneable{
     @Override
     public ListNode clone() {
         return new ListNode(cell, prev == null ? null : prev.clone(), next == null ? null : next.clone());
+    }
+
+    public ListNode getNext() {
+        return next;
+    }
+
+    public ListNode getPrev() {
+        return prev;
+    }
+
+    public ListNode setNext(ListNode next) {
+        ListNode old = this.next;
+        old.prev = null;
+        next.prev = this;
+        this.next = next;
+        return old;
+    }
+
+    public ListNode setPrev(ListNode prev) {
+        ListNode old = this.prev;
+        old.next = null;
+        prev.next = this;
+        this.prev = prev;
+        return old;
     }
 }
