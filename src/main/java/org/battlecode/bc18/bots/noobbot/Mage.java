@@ -89,9 +89,8 @@ public class Mage extends AMage {
         if (canMove(towardsChoke)) {
             success = moveToChokePoint(towardsChoke, destinationChoke, myMapLoc, chokepoints, isDangerZone, false);
             if (success) return;
+            moveRandomly();
         }
-
-        moveRandomly();
         
     }
     
