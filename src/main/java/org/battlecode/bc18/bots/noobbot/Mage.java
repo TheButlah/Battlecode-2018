@@ -13,6 +13,7 @@ import org.battlecode.bc18.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import static org.battlecode.bc18.pathfinder.ChokeManager.chman;
 
 public class Mage extends AMage {
 
@@ -71,7 +72,7 @@ public class Mage extends AMage {
         // It will try blinking to the chokepoint.
         
         List<Cell> chokepoints = ChokeManager.chman.getChokepoints();
-        boolean[] isDangerZone = new boolean[1];
+        boolean[] isDangerZone = chman.dangerous;
 
         MapLocation destinationChoke = getChokeToMoveTowards(myMapLoc, chokepoints);
         

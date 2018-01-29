@@ -26,7 +26,7 @@ public class ChokeManager {
     }
 
     private final int ROWS, COLS;
-    private final boolean[] dangerous;
+    public final boolean[] dangerous;
     private final HashMap<MyFactory, MapLocation> facToChoke = new HashMap<>(6);
     private final HashMap<MapLocation, MyFactory> chokeToFac = new HashMap<>(10);
     private final ArrayList<Cell> chokepoints = new ArrayList<>(10);
@@ -39,7 +39,39 @@ public class ChokeManager {
 
     /** `path` is the node at the start of our path (node where we are standing) */
     public Cell getChokeInPath(Pair<ListNode, ListNode> path) {
-        return null; //TODO: Do this Jared
+        ListNode start = path.getFirst();
+        int limit = (int) (pathLength(start) * MAX_PCT_TO_ENEMY);
+        int current = Integer.MAX_VALUE;
+        Cell chokepoint = start.cell;
+        boolean found = false;
+        ListNode currentNode = start;
+        int count = 0;
+        while (currentNode != null && count < limit) {
+            int nextWidth = PathFinder.pf.cost[toIndex(currentNode.cell)];
+            if (nextWidth <= current) {
+                current = nextWidth;
+                if (count == limit - 1) {
+                    chokepoint = currentNode.cell;
+                }
+            } else {
+                if (!found) {
+                    chokepoints.add(start.cell);
+                }
+                found = !found;
+            }
+            count++;
+            currentNode = currentNode.getNext();
+        }
+        return chokepoint;
+    }
+
+    private int pathLength(ListNode path) {
+        int count = 0;
+        while (path != null) {
+            path = path.getNext();
+            count++;
+        }
+        return count;
     }
 
     /** Follows a path and marks the dangerous spots */
